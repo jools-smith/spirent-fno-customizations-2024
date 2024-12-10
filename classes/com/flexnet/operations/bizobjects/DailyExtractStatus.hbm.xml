@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.DailyExtractStatus" table="PLT_JOB_LAST_SUCCESS">
+		<meta attribute="class-description" inherit="false">
+			This class will
+			capture daily extract Status for all entities
+		</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.DailyExtractStatusData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.bizobjects.OperationsBaseEntity</meta>
+		<meta attribute="scope-field">private</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.products.bizobjects.IRecentlyAccessed</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+		<meta attribute="implement-equals">true</meta>
+		<meta attribute="scope-class" inherit="false">public abstract</meta>
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-set">public</meta>
+			<generator class="native" />
+		</id>
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+		</version>
+
+		<property name="tenantId_" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<column name="TENANT_ID"  not-null="true" />
+		</property>
+
+		<property name="jobName" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<column name="JOB_NAME" unique-key="JOB_LAST_SUCCESS_UNIQUE"
+				not-null="true" />
+		</property>
+
+		<property name="lastSuccessfullRunDate"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+			<column name="LAST_SUCCESSFUL_RUN"></column>
+		</property>
+
+		<component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+			<property name="createdBy" type="java.lang.Long">
+				<column name="AUDIT_CREATEDBY"></column>
+			</property>
+			<property name="createdOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="CREATED_ON"></column>
+			</property>
+			<property name="updatedBy" type="java.lang.Long">
+				<column name="AUDIT_UPDATEDBY"></column>
+			</property>
+			<property name="updatedOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LAST_MODIFIED"></column>
+			</property>
+		</component>
+	</class>
+</hibernate-mapping>
+

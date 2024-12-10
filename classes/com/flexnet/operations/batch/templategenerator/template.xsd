@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name="templates">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="column" type="globalColumnType" maxOccurs="unbounded"/>
+                <xs:element name="template" type="templateType" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="templateType">
+        <xs:annotation>
+            <xs:documentation>An Excel XLT workbook that is a basis for CSV transaction files</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="sheet" type="sheetType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="filename" type="nonEmptyString" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="sheetType">
+        <xs:annotation>
+            <xs:documentation>A sheet lists its transaction types, references identified columns from the templates or defines them locally, and specifies where UDFs of a given level might be inserted. The column references, local columns, and UDF references can come in any order, but all of them come after the listing of transaction types. Including the note child node will allow you override the note for the referenced column. Including the addtonote child node will allow you to append text to the note for the referenced column.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="transaction" type="transactionType" maxOccurs="unbounded"/>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="columnref">
+                    <xs:complexType>
+                        <xs:choice>
+                            <xs:element name="note" type="nonEmptyString" nillable="false" minOccurs="0"/>
+                            <xs:element name="addtonote" type="nonEmptyString" nillable="false" minOccurs="0"/>
+                        </xs:choice>
+                        <xs:attribute name="ref" type="nonEmptyString" use="required"/>
+                        <xs:attribute name="required" type="xs:boolean" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="column" type="columnType"/>
+                <xs:element name="udfs">
+                    <xs:complexType>
+                        <xs:attribute name="class" type="columnClassType" use="required"/>
+                        <xs:attribute name="level" type="levelType" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="lmas">
+                    <xs:complexType>
+                        <xs:attribute name="class" type="columnClassType" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="policies">
+                    <xs:complexType>
+                        <xs:attribute name="class" type="columnClassType" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="name" type="nonEmptyString" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="extNoteType">
+        <xs:sequence>
+    	<xs:element name="extnote" type="nonEmptyString" nillable="false" minOccurs="0"/>
+        </xs:sequence>
+    	<xs:attribute name="data" type="xs:string"/>
+    	<xs:attribute name="type" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="columnType">
+        <xs:annotation>
+            <xs:documentation>Data for a column header: its text, class (type of object it pertains to), and explanatory note.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="header" type="nonEmptyString" nillable="false"/>
+            <xs:element name="note" type="extNoteType"/>
+            <xs:element name="values" type="nonEmptyString" nillable="true" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="class" type="columnClassType" use="required"/>
+        <xs:attribute name="required" type="xs:boolean" use="optional" default="true"/>
+    </xs:complexType>
+    <xs:complexType name="globalColumnType">
+        <xs:annotation>
+            <xs:documentation>A global column must have an id and is referenced by sheets. This referencing helps avoid repeating header and note data.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="columnType">
+                <xs:attribute name="id" type="nonEmptyString" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="transactionType">
+        <xs:annotation>
+            <xs:documentation>The transaction type name and an explanatory note.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="type" type="nonEmptyString" nillable="false"/>
+            <xs:element name="note" type="nonEmptyString" nillable="false" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="columnClassType">
+        <xs:annotation>
+            <xs:documentation>An abstraction of what could end up represented as cell background colors.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Account"/>
+            <xs:enumeration value="Member"/>
+            <xs:enumeration value="Order"/>
+            <xs:enumeration value="OrderLine"/>
+            <xs:enumeration value="Product"/>
+            <xs:enumeration value="ProductLine"/>
+            <xs:enumeration value="SKU"/>
+            <xs:enumeration value="File"/>
+            <xs:enumeration value="License"/>
+            <xs:enumeration value="UDF"/>
+            <xs:enumeration value="Device"/>
+            <xs:enumeration value="Host"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="levelType">
+        <xs:annotation>
+            <xs:documentation>Enumeration of the UDF levels.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ACCT"/>
+            <xs:enumeration value="MBR"/>
+            <xs:enumeration value="ORD"/>
+            <xs:enumeration value="ORDLN"/>
+            <xs:enumeration value="SKU"/>
+            <xs:enumeration value="PRODUCT"/>
+            <xs:enumeration value="FILE"/>
+            <xs:enumeration value="LIC_TKN"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="nonEmptyString">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

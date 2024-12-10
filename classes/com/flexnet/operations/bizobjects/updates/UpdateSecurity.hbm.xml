@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.operations.bizobjects.updates.UpdateSecurity" table="OPS_UPDATE_SECURITY">
+        <meta attribute="class-description">This contains signing data for the update REST API.</meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.updates.UpdateSecurityData</meta>
+        <meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+        <meta attribute="implement-equals">true</meta>
+        <meta attribute="scope-field">private</meta>
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native" />
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+        <property name="tenantId" type="string" not-null="true" length="255">
+            <meta attribute="scope-get">public</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="TENANT_ID" not-null="true" />
+        </property>
+
+
+        <property name="publicKey" type="string" not-null="false" column="SIGN_PUB_KEY" length="2000">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <property name="privateKey" type="string" not-null="false" column="SIGN_PVT_KEY" length="3000">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <property name="algorithm" type="string" not-null="false" column="ALGORITHM" length="50">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <property name="authPublicKey" type="string" not-null="false" column="AUTH_PUB_KEY" length="2000">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <many-to-one name="account" class="com.flexnet.platform.bizobjects.OrgUnit" column="ORG_ID">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </many-to-one>
+        <component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+            <property name="createdBy" type="java.lang.Long">
+                <column name="AUDIT_CREATEDBY"></column>
+            </property>
+            <property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="CREATED_ON"></column>
+            </property>
+            <property name="updatedBy" type="java.lang.Long">
+                <column name="AUDIT_UPDATEDBY"></column>
+            </property>
+            <property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="LAST_MODIFIED" index="OPS_IDX_UPDATED_LASTMODIFIED"></column>
+            </property>
+
+        </component>
+    </class>
+
+</hibernate-mapping>

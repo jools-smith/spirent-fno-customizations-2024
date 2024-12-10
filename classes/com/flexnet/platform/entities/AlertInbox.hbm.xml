@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.platform.entities.AlertInbox" table="PLT_ALERT_INBOX">
+		
+			<meta attribute="class-description">
+				Represents an alert inbox entry for a particular user which occured while using FLEXnet application.
+    		</meta>
+		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<generator class="native"/>
+			</id>
+
+			<version column="HIB_VERSION" name="HibVersion">
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+			</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" unique-key="ALI_UK" not-null="true"/> 
+			</property>
+
+			<property column="LASTUPDATED" type="com.flexnet.platform.services.persistence.GMTTimestampType" name="lastUpdated" not-null="true">
+				<meta attribute="property-type">java.util.Date</meta>
+			</property>
+
+			<property name="dismissed" type="boolean" column="DISMISSED"/>
+
+			<property name="status" type="java.lang.String" column="STATUS" not-null="true" />
+
+			<many-to-one name="alert" class="com.flexnet.platform.entities.Alert" index="PLT_IDX_ALTINBOX_ALT" cascade="none">
+				<column name="ALERT_ID" not-null="true" unique-key="ALI_UK"/>
+			</many-to-one>
+			
+			<many-to-one name="user" class="com.flexnet.platform.bizobjects.User" index="PLT_IDX_ALTINBOX_USER" cascade="none" >
+				<column name="USER_ID" not-null="true" unique-key="ALI_UK"/>
+			</many-to-one>
+
+			<property name="severity" type="java.lang.String" column="SEVERITY" not-null="false" />
+		</class>
+	</hibernate-mapping>

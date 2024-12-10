@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.file.FileCustomAttributes"
+		table="OPS_FILE_CUSTOM_ATTRIBUTES">
+		<meta attribute="class-description"> This entity stores Custom Attribute values for a
+			File object.
+		</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.file.FileCustomAttributesData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.operations.bizobjects.ICustomAttributesData</meta>
+		<meta attribute="implement-equals">true</meta>
+		<meta attribute="scope-field">private</meta>
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<generator class="native" />
+		</id>
+
+		<version column="HIB_VERSION" name="HibVersion">
+		</version>
+
+		<property name="tenantId" type="string" not-null="true"
+			length="255">
+			<column name="TENANT_ID" not-null="true" />
+		</property>
+		
+		<property name="fileId" type="java.lang.Long"
+			insert="false" update="false">
+			<column name="FILE_ID" not-null="true" />
+		</property>
+
+		<many-to-one name="metadata" not-null="true" lazy="false"
+			class="com.flexnet.platform.bizobjects.ExtendedPropertyMetadata">
+			<column name="METADATA_ID" not-null="true" />
+		</many-to-one>
+
+		<property name="longTextValue"
+			type="com.flexnet.platform.services.persistence.StringClobType">
+			<meta attribute="property-type">java.lang.String</meta>
+			<column name="LONGTEXTVALUE" length="16384" not-null="false" />
+		</property>
+
+		<property name="textValue" type="string">
+			<column name="TEXTVALUE" not-null="false" length="4000" />
+		</property>
+
+		<property name="numberValue" type="java.lang.Double">
+			<column name="NUMBERVALUE" not-null="false" />
+		</property>
+
+		<property name="dateValue"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+			<column name="DATEVALUE" not-null="false" />
+		</property>
+
+		<property name="booleanValue" type="java.lang.Boolean">
+			<column name="BOOLEANVALUE" not-null="false" />
+		</property>
+
+		<property name="multiTextValue" type="string">
+			<column name="MULTITEXTVALUE" not-null="false" length="4000" />
+		</property>
+
+		<component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+			<property name="createdBy" type="java.lang.Long">
+				<column name="AUDIT_CREATEDBY"></column>
+			</property>
+			<property name="createdOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="CREATED_ON"></column>
+			</property>
+			<property name="updatedBy" type="java.lang.Long">
+				<column name="AUDIT_UPDATEDBY"></column>
+			</property>
+			<property name="updatedOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LAST_MODIFIED"></column>
+			</property>
+		</component>
+	</class>
+</hibernate-mapping>

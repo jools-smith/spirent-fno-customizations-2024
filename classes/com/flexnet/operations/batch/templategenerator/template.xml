@@ -1,0 +1,1457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="templates.xsd">
+    <!--
+        This file defines the Excel templates for delimited text
+        transaction file uploads. Columns that are reused by multiple
+        sheets are defined first, followed by the workbooks. Follow the
+        example here and/or see templates.xsd, especially the annotation to
+        sheetType. Order is important, and it is important that notes not
+        be empty strings. It helps to actually validate against the XSD
+        after making changes here.
+
+        Errors in this file can cause template generation to silently
+        fail. There will be no build failure. It is a good idea to
+        validate and also double check through the app.
+
+        That said, validity of this document does not ensure everything
+        will work fine; the generator needs to be called with the filenames
+        specified here, and there will be TemplateGeneratorExceptions at 
+        runtime if a columnref here has a ref attribute for which there is
+        no column with that id.
+    -->
+	<column id="AccountID" class="Org">
+		<header>AccountID</header>
+		<note type="String">Account ID - used to identify the Account-often comes from CRMs.More typically would be called 'Account ID'. This must be unique within a site.</note>
+	</column>  
+    <column id="Role" class="User">
+        <header>Role</header>
+        <note>User Role: PortalUser, PortalAdminUser, SysAdmin, OpsAdmin, ProdMgr, SalesOpMgr, ITBackOfficeMgr, OrderEntry, Executive, or CustSupport.</note>
+    </column>
+    <column id="Email" class="User">
+        <header>Email</header>
+        <note>User's Email Address.</note>
+    </column>
+	<column id="Country" class="User" required="false">
+		<header>Country</header>
+		<note type="CountryCode">Must be a valid ISO 3166 two letter Country Code.  Codes can be found at http://www.iso.org/iso/en/prods-services/iso3166ma/02iso-3166-code-lists/list-en1.html. Common codes are US for United States and CA for Canada.</note>
+	</column>
+    <column id="DeployState" class="Product" required="false">
+        <header>DeployState</header>
+        <note>Deployment State options: 
+- Deployed (default)
+- Draft
+- Inactive
+- Obsolete</note>
+    </column>
+    <column id="ProductName" class="Product">
+        <header>ProductName</header>
+        <note type="ProductName">Name of the product you are licensing and selling.</note>
+    </column>
+    <column id="ProductVersion" class="Product">
+        <header>ProductVersion</header>
+        <note type="ProductVersion">The version number (for example, 2 or 2.3) of the product.</note>
+    </column>
+    <column id="OldProductName" class="Product" required="false">
+        <header>OldProductName</header>
+        <note type="OldProductName">Name of the old product you are licensing and selling. This is mandatory if this is an update operation of product name/version. Please note if this field has valid value it will be considered as an update of the product name/version found matching the OldProductName and OldProductVersion, if product is not found with the given OldProductName and OldProductVersion then there will be no update to the product name/version. This field will be ignored in case a product is found with the original product name/version.</note>
+    </column>
+    <column id="OldProductVersion" class="Product" required="false">
+        <header>OldProductVersion</header>
+        <note type="OldProductVersion">The version number (for example, 2 or 2.3) of the old product. This is mandatory in case OldProductName has a value and this is an update operation of product name/version. If this is not specified in case of an update operation and if product is not found with the given OldProductName and OldProductVersion then there will be no update to the product name/version. This field will be ignored in case a product is found with the original product name/version.</note>
+    </column>    
+    <column id="ProductType" class="Product" required="false">
+        <header>ProductType</header>
+        <note>The type of product. Options are: 
+- LicensedProduct (default) 
+- Suite
+- Maintenance</note>
+	</column>
+	<column id="ProductCount" class="LineItem" required="false">
+    	<header>ProductCount</header>
+        	<note type="IntegerPositive">Number of products in the line item. Default is 1.</note>
+    </column>
+    <column id="ProductLine" class="Product" required="false">
+        <header>ProductLine</header>
+        <note data="productlines">Product Line to map to this product. Available product lines are:</note>
+    </column>
+    <column id="LicenseTechnology" class="Product">
+        <header>LicenseTechnology</header>
+        <note data="licensetechnology">License technology with which this product works. Available technologies are:</note>
+    </column>
+    <column id="LicenseGenerator" class="Product" required="false">
+        <header>LicenseGenerator</header>
+        <note data="licensegenerators">License generator configuration with which this product works. Available generators are:</note>
+    </column>
+    <column id="LicenseModels" class="Product" required="false">
+		<header>LicenseModels</header>
+		<note data="licensemodels">The License Models linked to this product, a model must be specified prior to deployment. Multiple models are delimited with the | (pipe) character. For example model1|model2|model3. Available model types are:</note>
+	</column>
+    <column id="TransactionKeyDefault" class="Product" required="false">
+		<header>TransactionKeyDefault</header>
+		<note data="transactionkeydefault">The default transaction key for the trusted license model. This is a required field when the LicenseModels field contains a trusted license model.</note>
+	</column>
+    <column id="TransactionKeyVirtual" class="Product" required="false">
+		<header>TransactionKeyVirtual</header>
+		<note data="transactionkeyvirtual">The virtual transaction key or the trusted license model. This is a required field when the LicenseModels field contains a trusted license model.</note>
+	</column>
+    <column id="ProductDescription" class="Product" required="false">
+        <header>Description</header>
+        <note type="Description">Detailed description.</note>
+    </column>
+    <column id="FNPVersion" class="Product" required="false">
+        <header>FNPVersion</header>
+        <note>Specify the FNP licensing version(s) for cross-version signature support required by your product.  This is a comma separated list (for example: 7.1,8.0) with possible values of: 
+- 7.1
+- 8.0
+- 8.1
+- 8.4
+- 10.1
+- 10.8
+- 11.4
+- 11.6</note>
+    </column>
+    <column id="PackageName" class="Product" required="false">
+        <header>PackageName</header>
+        <note type="Name30">Uniquely specify the Package Name, most of the time this is the same as the ProductName. When this field is filled in, PackageVersionFormat is also required to be set, and if PackageVersionFormat=Fixed, PackageVersion is also required to be set.  Applies to FlexNet Licensing only.</note>
+    </column>
+    <column id="PackageVersionFormat" class="Product" required="false">
+        <header>PackageVersionFormat</header>
+        <note>Specify the Package Version format.  Possible values are: 
+- Fixed (default)
+- Date Based
+This field is required if PackageName is set.  If PackageVersionFormat=Fixed, PackageVersion is also required to be set.
+Applies to FlexNet Licensing only.</note>
+    </column>
+    <column id="PackageVersion" class="Product" required="false">
+        <header>PackageVersion</header>
+        <note type="ProductVersion">Specify the Package Version number (like 2 or 2.3) that describes this package. This field is required if PackageVersionFormat=Fixed. Applies to FlexNet Licensing only.</note>
+    </column>
+    <column id="UsedOnDevice" class="Product" required="false">
+        <header>UsedOnDevice</header>
+        <note>If the product can be used on a device set to 'Yes' else set to 'No' (default). Applies to FlexNet Licensing only.</note>
+    </column>    
+    <column id="HeaderResourceBundleKey" class="Product" required="false">
+        <header>HeaderResourceBundleKey</header>
+        <note type="ProductName">The resource bundle key corresponding to the license header text.</note>
+    </column>
+    <column id="TrailerResourceBundleKey" class="Product" required="false">
+        <header>TrailerResourceBundleKey</header>
+        <note type="ProductName">The resource bundle key corresponding to the license trailer text.</note>
+    </column>
+    <column id="AdminObsoleteFulfillmentDnld" class="Product" required="false">
+        <header>AdminObsoleteFulfillmentDnld</header>
+        <note>Set to 'Yes' to permit the downloading of obsolete fulfillments from the Producer Portal. Set to 'No' (default) to prohibit it.</note>
+    </column>
+    <column id="PortalObsoleteFulfillmentDnld" class="Product" required="false">
+        <header>PortalObsoleteFulfillmentDnld</header>
+        <note>Set to 'Yes' to permit the downloading of obsolete fulfillments from the End-User Portal. Set to 'No' (default) to prohibit it.</note>
+    </column>
+    <column id="FeatureName" class="Feature">
+        <header>FeatureName</header>
+        <note type="Name30">A Feature is a capability that you want to license in a Product.</note>
+    </column>
+    <column id="FeatureVersion" class="Feature" required="false">
+        <header>FeatureVersion</header>
+        <note type="ProductVersion">The version number of this Feature. The FeatureVersion is only required when the VersionFormat is set to Fixed.</note>
+    </column>
+    <column id="LicenseModel" class="Product">
+        <header>LicenseModel</header>
+        <note data="licensemodels">License model to use.  Available license models are:</note>
+    </column>
+    <column id="PartNumber" class="Product">
+        <header>PartNumber</header>
+        <note type="String">The product part number mapped to this entitlement.</note>
+    </column>
+    <column id="EntitlementId" class="Entitlement">
+        <header>EntitlementId</header>
+        <note type="String">The identifier that uniquely identifies the entitlement.</note>
+    </column>
+    <column id="EntitlementState" class="Entitlement">
+        <header>EntitlementState</header>
+        <note>State of the entitlement. Choices are: 
+- Deployed (default)
+- Draft
+- Obsolete
+- Inactive</note>
+    </column>
+    <column id="EntitlementDescription" class="Entitlement" required="false">
+         <header>EntitlementDescription</header>
+         <note type="Description">Detailed description of the entitlement.</note>
+    </column>
+    <column id="AllowPortalLogin" class="Entitlement" required="false">
+         <header>AllowPortalLogin</header>
+         <note>Set to 'Yes' (default) to allow logging into the portal using the entitlement ID. Otherwise, set to 'No'.</note>
+    </column>
+    <column id="ShipToEmail" class="Entitlement" required="false">
+        <header>ShipToEmail</header>
+        <note type="ShipToEmail">Email address to which FlexNet Operations will send the license.</note>
+    </column>
+    <column id="EmailTemplateVariation" class="Entitlement" required="false">
+        <header>EmailTemplateVariation</header>
+        <note data="EmailTemplateVariation">Specify the email template variation to use with this entitlement.  Options are:</note>
+    </column>
+    <column id="Address" class="Entitlement" required="false">
+        <header>Address</header>
+        <note type="Address">Account's postal address.</note>
+    </column>
+    <column id="Account" class="Entitlement" required="false">
+        <header>Account</header>
+        <note type="String">A unique string representing the end customer's (or channel partner's) Account to which the entitlement is assigned.</note>
+    </column>
+    <column id="DistributionTierType" class="Entitlement" required="false">
+        <header>DistributionTierType</header>
+        <note data="distributiontiers">The distribution tier for this entitlement.  The DistributionTierType is mandatory if the Account is specified.  Distribution tiers available are:</note>
+    </column>
+    <column id="UserName" class="Entitlement" required="false">
+        <header>UserName</header>
+        <note type="String">End customer (or channel partner) contact's username (for example, email address). Use this when not specifying UserFirstName, UserLastName, UserEmail, and UserPhone.  Account contact information is specified by either UserName, or combination of UserFirstName, UserLastName, UserEmail, and UserPhone.</note>
+    </column>
+    <column id="UserFirstName" class="Entitlement" required="false">
+        <header>UserFirstName</header>
+        <note type="UserFirstLastName">End customer (or channel partner) contact's first name. Use this when not specifying UserName.  Account contact information is specified by either UserName, or combination of UserFirstName, UserLastName, UserEmail, and UserPhone.</note>
+    </column>
+    <column id="UserLastName" class="Entitlement" required="false">
+        <header>UserLastName</header>
+        <note type="UserFirstLastName">End customer (or channel partner) contact's last name. Use this when not specifying UserName.  Account contact information is specified by either UserName, or combination of UserFirstName, UserLastName, UserEmail, and UserPhone.</note>
+    </column>
+    <column id="UserEmail" class="Entitlement" required="false">
+        <header>UserEmail</header>
+        <note type="UserEmail">End customer (or channel partner) contact's email address. Use this when not specifying UserName.  Account contact information is specified by either UserName, or combination of UserFirstName, UserLastName, UserEmail, and UserPhone.</note>
+    </column>
+    <column id="UserPhone" class="Entitlement" required="false">
+        <header>UserPhone</header>
+        <note type="UserPhone">End customer (or channel partner) contact's phone number. Use this when not specifying UserName.  Account contact information is specified by either UserName, or combination of UserFirstName, UserLastName, UserEmail, and UserPhone.</note>
+    </column>
+    <column id="CurrentOwner" class="Entitlement" required="false">
+        <header>CurrentOwner</header>
+        <note data="CurrentOwner">Set Account to be the current owner. Possible values:</note>
+    </column>  
+    <column id="ActivationId" class="LineItem" required="false">
+        <header>ActivationId</header>
+        <note type="String">Activation identifier for the line item. ActivationID will be auto-generated if this column is left blank and the StartDateType, ProductName, and ProductVersion columns are set for this line item.</note>
+    </column>
+    <column id="ActivationState" class="LineItem" required="false">
+    	<header>ActivationState</header>
+        <note>Activation state for the line item.  Options are: 
+- Draft 
+- Deployed (default)
+- Obsolete 
+- Inactive</note>
+    </column>
+    <column id="OrderId" class="LineItem">
+        <header>OrderId</header>
+        <note type="String">The order ID can either be imported from the accounting application, or you may enter it here.</note>
+    </column>
+    <column id="OrderLineNumber" class="LineItem">
+        <header>OrderLineNumber</header>
+        <note type="String">The order line number can either be imported from the accounting application, or you may enter it here.</note>
+    </column>
+    <column id="OrderType" class="LineItem">
+        <header>OrderType</header>
+        <note>The type of order that is used to created this line item.  Options are: 
+- New (default)
+- Renewal
+- Upgrade
+- Upsell
+Note: If a line item has multiple products, then Upgrade, Upsell and Renewal line items can only be created by using the bulk operations wizard.</note>
+    </column>
+    <column id="OrderParent" class="LineItem">
+        <header>OrderParent</header>
+        <note type="String">Parent line item's ActivationID. This only applies when OrderType is Renewal, Upgrade, or Upsell.</note>
+    </column>
+    <column id="LineItemDescription" class="LineItem" required="false">
+		<header>LineItemDescription</header>
+		<note type="Description">Detailed description for this line item.</note>
+	</column>
+    <column id="LineItemQuantity" class="LineItem">
+        <header>LineItemQuantity</header>
+        <note type="Integer">Total quantity of this line item for the entitlement, this value must be greater than 0 in order for the line item to be deployed.  The default is 1.</note>
+    </column>
+    <column id="StartDateType" class="LineItem">
+        <header>StartDateType</header>
+        <note>Start date options: 
+- DefineNow (default) - StartDate column must be filled in
+- DefineAtFirstActivation - no additional version date columns must be filled in
+- DefineAtEachActivation - no additional version date columns must be filled in
+- DefineDateAtFirstActivation - no additional version date columns must be filled in
+- DefineDateAtEachActivation - no additional version date columns must be filled in</note>
+    </column>
+    <column id="StartDate" class="LineItem">
+        <header>StartDate</header>
+        <note type="Date">This field must be set if StartDateType=DefineNow.  Format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+    </column>
+    <column id="VersionDateType" class="LineItem">
+        <header>VersionDateType</header>
+        <note>When a product's or product feature's Version Format Type is set to 'Date Based', the VersionDateType field must be set in the line item. VersionDateType options are: 
+- DefineNow - VersionDate column must be filled in
+- UseActivationDate - VersionDurationUnits and VersionDuration columns must be filled in
+- UseStartDate - VersionDurationUnits and VersionDuration columns must be filled in
+- DefineLater - no additional version date columns must be filled in
+- DefineStartLater - VersionDurationUnits and VersionDuration columns must be filled in</note>
+    </column>
+    <column id="VersionDate" class="LineItem">
+        <header>VersionDate</header>
+        <note type="Date">This field must be set if VersionDateType=DefineNow. Format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+    </column>
+    <column id="IsActivationPermanent" class="LineItem" required="false">
+        <header>IsActivationPermanent</header>
+        <note> If the line item never expires set to 'Yes', otherwise set to 'No' (default). If set to 'No', either the EndDate or the EndDateDuration columns must be filled in.</note>
+    </column>
+    <column id="EndDate" class="LineItem">
+        <header>EndDate</header>
+        <note type="Date">This column must be set if IsActivationPermanent is set to 'No' and EndDateDuration is not set.  Format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+    </column>
+    <column id="EndDurationUnits" class="LineItem">
+        <header>EndDurationUnits</header>
+        <note>End duration units must be set when IsActivationPermanent is set to 'No' and no EndDate is specified. EndDurationUnit options are:
+- Days (default)
+- Weeks
+- Months
+- Years</note>
+    </column>
+    <column id="EndDuration" class="LineItem">
+        <header>EndDuration</header>
+        <note type="Integer">Line item validity duration. A numerical value to be used with EndDurationUnits. This must be set when IsActivationPermanent is set to 'No' and EndDate is not specified. Default is 0.</note>
+    </column>
+    <column id="VersionDurationUnits" class="LineItem">
+        <header>VersionDurationUnits</header>
+        <note>Version date duration unit to be used with VersionDuration. This field must be set if VersionDateType is set to either UseActivationDate, UseStartDate, or DefineStartLater. VersionDurationUnit options are:
+- Days (default)
+- Weeks
+- Months
+- Years</note>
+    </column>
+    <column id="VersionDuration" class="LineItem">
+        <header>VersionDuration</header>
+        <note type="Integer">Version date duration numerical value (default is 0) to be used with VersionDurationUnits. This field must be set if VersionDateType is set to either UseActivationDate, UseStartDate , or DefineStartLater.</note>
+    </column>
+    <!-- Download Package related fields 
+    <column id="DownloadPackageID" class="Product">
+        <header>DownloadPackageID</header>
+        <note>DownloadPackageID</note>
+    </column>
+    <column id="DownloadPackageName" class="Product">
+        <header>Name</header>
+        <note>Name</note>
+    </column>
+    <column id="DownloadPackageExtendedDescription" class="Product">
+        <header>ExtendedDescription</header>
+        <note>ExtendedDescription</note>
+    </column>    
+    <column id="DownloadPackageVersion" class="Product">
+        <header>Version</header>
+        <note>Version</note>
+    </column>
+    <column id="DownloadPackageReleaseGroup" class="Product">
+        <header>ReleaseGroup</header>
+        <note>ReleaseGroup</note>
+    </column>    
+    <column id="DownloadPackageEffectiveDate" class="Product">
+        <header>EffectiveDate</header>
+        <note>EffectiveDate</note>
+    </column>    
+
+    <column id="DownloadPackageExpirationDate" class="Product">
+        <header>ExpirationDate</header>
+        <note>ExpirationDate</note>
+    </column>   
+    
+    <column id="DownloadPackageArchiveDate" class="Product">
+        <header>ArchiveDate</header>
+        <note>ArchiveDate</note>
+    </column>
+        
+    <column id="ManufacturerID" class="Product">
+        <header>ManufacturerID</header>
+        <note>ManufacturerID</note>
+    </column>
+    
+    <column id="ProductLineID" class="Product">
+        <header>ProductLineID</header>
+        <note>ProductLineID</note>
+    </column>
+    
+    <column id="EULA" class="Product">
+        <header>EULA</header>
+        <note>EULA</note>
+    </column>
+    
+    <column id="PhysicalDistribution" class="Product">
+        <header>PhysicalDistribution</header>
+        <note>PhysicalDistribution</note>
+    </column>
+    
+    <column id="ExportComplianceClassification" class="Product">
+        <header>ExportComplianceClassification</header>
+        <note>ExportComplianceClassification</note>
+    </column>
+    
+    <column id="DownloadPackageNLR" class="Product">
+        <header>NLR</header>
+        <note>NLR</note>
+    </column>
+    
+    <column id="DownloadPackageECCNCode" class="Product">
+        <header>ECCNCode</header>
+        <note>ECCNCode</note>
+    </column>
+    
+    <column id="DownloadPackageENCCode" class="Product">
+        <header>ENCCode</header>
+        <note>ENCCode</note>
+    </column>
+    
+    <column id="DownloadPackageCCATSCode" class="Product">
+        <header>CCATSCode</header>
+        <note>CCATSCode</note>
+    </column>
+    
+    -->
+    
+    <template filename="AccountUserManagement.xlsx">
+        <sheet name="Create-Update User">
+            <transaction>
+                <type>CreateUpdateUser</type>
+            </transaction>
+            <!-- transaction>
+                <type>UpdateUser</type>
+            </transaction>
+            <transaction>
+                <type>AddUser</type>
+            </transaction>
+            <transaction>
+                <type>RemoveUser</type>
+            </transaction-->
+
+		    <column id="FirstName" class="User" required="true">
+		        <header>FirstName</header>
+		        <note type="UserFirstLastName">User's first name.</note>
+		    </column>
+		    <column id="LastName" class="User" required="true">
+		        <header>LastName</header>
+		        <note type="UserFirstLastName">User's last name.</note>
+		    </column>
+		    <column id="EmailAddress" class="User" required="true">
+		        <header>EmailAddress</header>
+		        <note type="UserEmail">User's Email Address. Required to be unique across the entire site for FlexNet Operations Cloud. Highly recommended to be unique for FlexNet Operations On-Premises.</note>
+		    </column>
+			<column id="UserName" class="User" required="false">
+				<header>UserName</header>
+				<note type="String">Identifier used for web services and sometimes displayed in the UI. If not provided, email address is used. For FlexNet Operations Cloud-this field is ignored. </note>
+			</column>
+			<column id="Role" class="User">
+				<header>Role</header>
+				<note type="String">User Roles defined for each user type. For multiple roles, each must be separated by a '|' field, e.g. Portal User Role|Portal Admin User Role|System Administrator</note>
+			</column>
+		    <column id="Active" class="User" required="false">
+		        <header>Status</header>
+		        <note>Set to 'YES' (default) for Active, 'NO' for InActive.</note>
+		    </column>
+            <columnref ref="AccountID"/>
+            <column id="ExpiryDate" class="Org" required="false">
+              <header>ExpiryDate</header>
+               <note type="Date">Expiry Date of user for respective account.Format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+            </column>
+		    <column id="SharedLogin" class="User" required="false">
+		        <header>SharedLogin</header>
+		        <note>Set to 'YES' if this account is shared by multiple users, otherwise set to 'NO' (default).</note>
+		    </column>
+		    <column id="PortalLogin" class="User" required="false">
+		        <header>PortalLogin</header>
+		        <note>Set to 'YES' (default) if user can log into FlexNet Operations, otherwise set to 'NO', which creates a Contact.</note>
+		    </column>
+		    <column id="StreetAddress" class="User" required="false">
+		        <header>StreetAddress</header>
+		        <note type="Address">User's Street Address.</note>
+		    </column>
+		    <column id="City" class="User" required="false">
+		        <header>City</header>
+		        <note type="String100">User's City.</note>
+		    </column>
+		    <column id="State" class="User" required="false">
+		        <header>State</header>
+		        <note type="String50">User's State.</note>
+		    </column>
+		    <column id="PostalCode" class="User" required="false">
+		        <header>PostalCode</header>
+		        <note type="Name30">User's Postal Code.</note>
+		    </column>
+			<columnref ref="Country"/>
+		    <column id="TimeZone" class="User" required="false">
+		        <header>TimeZone</header>
+		        <note type="String50">Should be the user's Time Zone roughly based on ISO-8601 format. Some examples are GMT-1.0DST60, GMT-1.0DST0, GMT3.5DST60) where the +/- offset in hours follows 'GMT' and DST0, DST60, DST120, denotes Daylight Savings hour offset values for a given region. For a complete list see the 'Importing and Exporting Entities' section of the Help pages: 'flexnet/help/Operations/wwhelp_Left.htm'.</note>
+		    </column>
+		    <column id="Locale" class="User" required="false">
+		        <header>Locale</header>
+				<note type="String">This is the Locale in which all the portal text will be displayed. ISO 2 digit language code + “_” + ISO Country code are accepted. The complete list can be found at http://www.oracle.com/technetwork/java/javase/javase7locales-334809.html. If the input is not supported the default is returned (en_US).</note>
+		    </column>
+		    <column id="Phone" class="User" required="false">
+		        <header>Phone</header>
+		        <note type="UserPhone">User's Phone Number.</note>
+		    </column>
+		    <column id="Fax" class="User" required="false">
+		        <header>Fax</header>
+		        <note type="UserPhone">User's Fax Number.</note>
+		    </column>
+		    <column id="ReceiveEmail" class="User" required="false">
+		        <header>ReceiveEmail</header>
+		        <note>Set to 'YES' for user to receive marketing emails, otherwise set to 'NO' (default).</note>
+		    </column>
+		    <column id="ReceiveExpiringEmails" class="User" required="false">
+		        <header>ReceiveExpiringEmails</header>
+		        <note>Set to 'YES' to receive notifications about expiring entitlements, otherwise set to 'NO' (default).</note>
+		    </column>			
+			<column id="SelfRegisteredUser" class="User" required="false">
+		        <header>SelfRegisteredUser</header>
+		        <note>This field is informational only, provided when users are exported but not used when importing a user.</note>
+		    </column>			
+            <udfs class="User" level="USER" required="false"/>
+        </sheet>
+        <!-- sheet name="Add - Update User Account">
+            <transaction>
+                <type>AddUpdateAccountUser</type>
+            </transaction>
+            <transaction>
+                <type>RemoveAccountUser</type>
+            </transaction>
+            <columnref ref="AccountName"/>
+            <columnref ref="Role"/>
+            <columnref ref="Email"/>
+        </sheet-->
+        <!-- sheet name="ReId User">
+            <transaction>
+                <type>ReIdUser</type>
+            </transaction>
+            <columnref ref="AccountName"/>
+            <columnref ref="Email"/>
+		    <column id="NewEmail" class="User">
+		        <header>NewEmail</header>
+		        <note>User's New Email Address</note>
+		    </column>
+        </sheet-->
+        <sheet name="Create-Update Account">
+            <transaction>
+                <type>CreateUpdateAccount</type>
+            </transaction>
+			<!--
+            <transaction>
+                <type>UpdateAccount</type>
+            </transaction>
+            <transaction>
+                <type>AddAccount</type>
+            </transaction>
+            <transaction>
+                <type>RemoveAccount</type>
+            </transaction>
+			-->
+            <columnref ref="AccountID"/>
+		    <column id="AccountName" class="Org">
+		        <header>AccountName</header>
+		        <note type="String">Account name as it is displayed in the UI when listing Accounts. More typically called 'Account Name' in most CRMs.</note>
+		    </column>
+		    <column id="AccountType" class="Org">
+		        <header>AccountType</header>
+		        <note>Account Type: PUBLISHER, CUSTOMER or CHANNEL_PARTNER.</note>
+		    </column>
+		    <column id="ParentAccount" class="Org" required="false">
+		        <header>ParentAccount</header>
+		        <note type="String">Account's parent Account name. This field supports multiple values. Multiple values in a single cell may be specified by using the | (pipe) delimiter character. For example, the contents of the cell could be 'value1|value2|value3' to represent three values.</note>
+		    </column>
+
+		    <column id="Address1" class="Org" required="false">
+		        <header>Address1</header>
+				<note type="Address">This is the Account's primary address.</note>
+		    </column>
+		    <column id="Address2" class="Org" required="false">
+		        <header>Address2</header>
+				<note type="Address">This is the Account's secondary address.</note>
+		    </column>
+		    <column id="City" class="Org" required="false">
+		        <header>City</header>
+		        <note type="String">Account's City</note>
+		    </column>
+		    <column id="State" class="Org" required="false">
+		        <header>State</header>
+		        <note type="String">Account's State</note>
+		    </column>
+		    <column id="PostalCode" class="Org" required="false">
+		        <header>PostalCode</header>
+		        <note type="String">Account's Postal Code</note>
+		    </column>
+			<columnref ref="Country"/>
+            <column id="Visible" class="Org" required="false">
+                <header>Visible</header>
+                <note>'To prevent channel partners from seeing this Account, set to 'No'. Otherwise set to 'Yes'. </note>
+            </column>
+		    <column id="Region" class="Org" required="false">
+		        <header>Region</header>
+		        <note type="String">Account's region. This is used for reporting only.</note>
+		    </column>
+		    <column id="AccountDescription" class="Org" required="false">
+		        <header>AccountDescription</header>
+                <note type="String">Description of the Account for internal notes only.</note>
+		    </column>
+            <udfs class="Org" level="ACCT" required="false"/>
+        </sheet>
+        <!-- sheet name="ReId Account">
+            <transaction>
+                <type>ReIdAccount</type>
+            </transaction>
+            <columnref ref="AccountName"/>
+		    <column id="NewAccountName" class="Org">
+		        <header>NewAccountName</header>
+		        <note>New Account name.</note>
+		    </column>   
+        </sheet-->
+        <!-- sheet name="Link Accounts">
+            <transaction>
+                <type>LinkAccount</type>
+            </transaction>
+            <transaction>
+                <type>UnLinkAccount</type>
+            </transaction>
+		    <column id="BaseAccountName" class="Org">
+		        <header>BaseAccountName</header>
+		        <note>Base Account name.</note>
+		    </column> 
+		    <column id="LinkAccountName" class="Org">
+		        <header>LinkAccountName</header>
+		        <note>Account name to link to.</note>
+		    </column> 
+        </sheet-->
+    </template>
+    <template filename="PackageProducts.xlsx">
+        <sheet name="Create-Update Product">
+            <transaction>
+                <type>CreateUpdateProduct</type>
+            </transaction>
+            <columnref ref="ProductName"/>
+            <columnref ref="ProductVersion"/>
+            <columnref ref="OldProductName"/>
+            <columnref ref="OldProductVersion"/>            
+            <columnref ref="DeployState"/>
+            <columnref ref="ProductDescription"/>
+			<column id="FeatureName" class="Feature" required="false">
+        		<header>FeatureName</header>
+        		<note type="Name30">A Feature is a capability that you want to license in a Product. 
+Feature Name must be specified if DeployState is "Deployed".</note>
+    		</column>
+    		<column id="FeatureVersion" class="Feature" required="true">
+        		<header>FeatureVersion</header>
+        		<note type="FeatureVersion">The version number of this Feature. 
+Feature Version must be specified if DeployState is "Deployed".</note>
+    		</column>		    
+    		<column id="FeatureType" class="Feature" required="false">
+		        <header>FeatureType</header>
+		        <note>Specify the feature type.  Options are:
+Feature (default)
+Bundle</note>
+		    </column>
+		    <column id="FeatureQuantity" class="Feature" required="false">
+		        <header>Quantity</header>
+		        <note type="IntegerPositive">Enter a number that expresses the cardinality of the feature or feature bundle in the product. Default is 1.</note>
+		    </column>
+            <columnref ref="LicenseTechnology"/>
+		    <column id="HostType" class="Product" required="false">
+		        <header>HostType</header>
+		        <note data="hosttype">Select the host type of this product. This field is mandatory for License Technologies that are not set to FlexNet Licensing, and have host types defined.  Available host types for each license technology are:</note>
+		    </column>
+            <column id="LicenseGenerator" class="Product" required="false">
+        		<header>LicenseGenerator</header>
+       			<note data="licensegenerators">License generator configuration with which this product works. 
+License generator must be specified if DeployState is "Deployed".
+Available generators are:</note>
+    		</column>
+    		<column id="LicenseModels" class="Product" required="false">
+				<header>LicenseModels</header>
+				<note data="licensemodels">The License Models linked to this product, a model must be specified prior to deployment. 
+Multiple models are delimited with the | (pipe) character. For example model1|model2|model3. 
+License Model must be specified if DeployState is "Deployed".
+Available model types are:</note>
+			</column>
+		    <columnref ref="TransactionKeyDefault"/>
+		    <columnref ref="TransactionKeyVirtual"/>
+            <columnref ref="PackageName"/>
+            <columnref ref="PackageVersionFormat"/>
+            <columnref ref="PackageVersion"/>
+            <columnref ref="UsedOnDevice"/>
+		    <column id="UsageModel" class="Product" required="false">
+		        <header>UsageModel</header>
+		        <note data="usagemodels">The Usage Model attribute is available when UsedOnDevice=Yes.  Default is None.  Enter the integral identifier associated with the usage model.  The available usage models are:</note>
+		    </column>
+            <columnref ref="ProductLine"/>
+            <columnref ref="FNPVersion"/>
+            <columnref ref="HeaderResourceBundleKey"/>
+            <columnref ref="TrailerResourceBundleKey"/>
+            <columnref ref="AdminObsoleteFulfillmentDnld"/>
+            <columnref ref="PortalObsoleteFulfillmentDnld"/>
+		    <column id="ProductStartDate" class="Product" required="false">
+		        <header>StartDate</header>
+		        <note>Specify the start date of this product.  Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+		    </column>
+		    <column id="ProductEndDate" class="Product" required="false">
+		        <header>EndDate</header>
+		        <note>Specify the end date of this product.  Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+		    </column>
+            <column id="EmailTemplate" class="Product" required="false">
+		        <header>EmailTemplate</header>
+		        <note data="emailtemplate">Specify the email template variation to use with this product.  Options are:</note>
+		    </column>
+		    <udfs class="Product" level="PROD" required="false"/>
+        </sheet>
+        <!-- sheet name="Create-Update Product Suite">
+            <transaction>
+                <type>CreateUpdateSuite</type>
+            </transaction>
+            <columnref ref="DeployState"/>
+		    <column id="SuiteName" class="Product">
+		        <header>SuiteName</header>
+		        <note>Name of the Product Suite you are licensing and selling.</note>
+		    </column>
+		    <column id="SuiteVersion" class="Product">
+		        <header>SuiteVersion</header>
+		        <note>The version number (like 2 or 2.3) that describes this Product Suite.</note>
+		    </column>
+            <columnref ref="ProductName" required="false"/>
+            <columnref ref="ProductVersion" required="false"/>
+		    <column id="ProductQuantity" class="Product" required="false">
+		        <header>Quantity</header>
+		        <note>Enter a number that expresses the cardinality of the product in this suite.</note>
+		    </column>
+            <columnref ref="ProductLine"/>
+            <columnref ref="LicenseTechnology"/>
+            <columnref ref="LicenseGenerator"/>
+		    <columnref ref="LicenseModels"/>
+            <columnref ref="ProductDescription"/>
+            <columnref ref="FNPVersion"/>
+            <columnref ref="PackageName"/>
+            <columnref ref="PackageVersionFormat"/>
+            <columnref ref="PackageVersion"/>
+            <columnref ref="UsedOnDevice"/>
+            <columnref ref="HeaderResourceBundleKey"/>
+            <columnref ref="TrailerResourceBundleKey"/>
+            <columnref ref="AdminObsoleteFulfillmentDnld"/>
+            <columnref ref="PortalObsoleteFulfillmentDnld"/>
+            <udfs class="Product" level="PROD" required="false"/>
+        </sheet-->
+        <sheet name="Create-Update Maintenance">
+            <transaction>
+                <type>CreateUpdateMaintenance</type>
+            </transaction>
+		    <column id="MaintenanceName" class="Product">
+		        <header>MaintenanceName</header>
+		        <note type="ProductName">Name of the Maintenance Product you are selling.</note>
+		    </column>
+		    <column id="MaintenanceVersion" class="Product">
+		        <header>MaintenanceVersion</header>
+		        <note type="ProductVersion">The version number (E.g. 2 or 2.3) of this Maintenance Product.</note>
+		    </column>
+		    <column id="OldMaintenanceName" class="Product" required="false">
+       			 <header>OldMaintenanceName</header>
+       			 <note type="OldMaintenanceName">Name of the old maintenance you are selling. This is mandatory if this is an update operation of maintenance name. Please note if this field has valid value it will be considered as an update of the maintenance name found matching the OldMaintenaceName and MaintenanceVersion, if maintenance is not found with the given OldMaintenaceName and MaintenanceVersion then there will be no update to the maintenance name. This field will be ignored in case a maintenance is found with the original maintenance name/version.</note>
+    		</column>
+            <columnref ref="DeployState"/>
+            <columnref ref="ProductDescription"/>
+		    <column id="AllowUpgrades" class="Product" required="false">
+		        <header>AllowUpgrades</header>
+		        <note>Set to 'Yes' if the maintenance covers associated product upgrades, 'No' (default) otherwise.</note>
+		    </column>
+		    <column id="AllowUpsells" class="Product" required="false">
+		        <header>AllowUpsells</header>
+		        <note>Set to 'Yes' if the maintenance covers associated product upsells, 'No' (default) otherwise.</note>
+		    </column>
+		    <column id="AllowRenewals" class="Product" required="false">
+		        <header>AllowRenewals</header>
+		        <note>Set to 'Yes' if the maintenance covers associated product renewals, 'No' (default) otherwise.</note>
+		    </column>
+            <column id="MaintenanceProductLine" class="Product" required="false">
+        		<header>ProductLine</header>
+        		<note data="productlines">Product Line to map to this maintenance product. Available product lines are:</note>
+    		</column>
+        </sheet>
+        <sheet name="Create-Update Part Number">
+            <transaction>
+                <type>CreateUpdatePartNumber</type>
+            </transaction>
+            <columnref ref="PartNumber">
+                <note type="String">The part number.</note>
+            </columnref>
+            <columnref ref="ProductDescription"/> 
+		    <column id="PartNumberProductName" class="Product" required="false">
+		        <header>ProductName</header>
+		        <note type="ProductName">Existing product name to be mapped to this part number (must be exact match). The field is optional but required if submitting Product Version.</note>
+		    </column>
+		    <column id="PartNumberProductVersion" class="Product" required="false">
+		        <header>ProductVersion</header>
+		        <note type="ProductVersion">The product version associated with ProductName to which you want to map this part number. The field is optional but required if submitting Product Name.</note>
+		    </column>
+		    <column id="PartNumberLicenseModel" class="Product" required="false">
+		        <header>LicenseModel</header>
+		        <note data="licensemodels">The License model of the ProductName and ProductVersion to which you want to Map this Part Number. Available license models are:</note>
+		    </column>
+		    <column id="AvailableForTrial" class="Product" required="false">
+		        <header>AvailableForTrial</header>
+		        <note>To make the associated product available for trial registration set to 'Yes', otherwise set to 'No' (default).</note>
+		    </column>
+        </sheet>
+        <sheet name="Create-Update Product Relation">
+            <transaction>
+                <type>CreateUpdateProductRelation</type>
+            </transaction>
+            <column id="ProductRelationProductName" class="Product">
+		        <header>ProductName</header>
+		        <note type="ProductName">Name (and identifier) of the product on entitlements.</note>
+    		</column>
+    		<column id="ProductRelationProductVersion" class="Product">
+        		<header>ProductVersion</header>
+        		<note type="ProductVersion">The version of the product associated with entitlements. Examples: 2, 2.3, 2016 R1, Not Applicable</note>
+    		</column>
+            <columnref ref="ProductType"/>
+			<column id="RelationshipType" class="Product">
+				<header>RelationshipType</header>
+				<note>Specify the type of relationship between this ProductName and the RelatedProductName. Options are: 
+- PRODUCTION_VERSION_OF
+- DEMO_OF
+- UPGRADE_FROM
+- UPGRADE_TO
+- UPSELL_FROM
+- UPSELL_TO
+- IS_MAINTENANCE
+- HAS_MAINTENANCE</note>
+			</column>
+		    <column id="RelatedProductName" class="Product">
+				<header>RelatedProductName</header>
+				<note type="ProductName">The related product name (must be an exact match along with version).</note>
+			</column>
+				<column id="RelatedProductVersion" class="Product">
+				<header>RelatedProductVersion</header>
+				<note type="ProductVersion">The version number of the related product (must be an exact match).</note>
+			</column>
+				<column id="RelatedProductType" class="Product" required="false">
+				<header>RelatedProductType</header>
+				<note>Product type of the RelatedProductName.  Values can be: 
+- Product (default) 
+- Suite
+- Maintenance</note>
+			</column>
+        </sheet>
+        <sheet name="Create-Update Feature">
+            <transaction>
+                <type>CreateUpdateFeature</type>
+            </transaction>
+            <column id="FeatureFeatureName" class="Feature">
+        		<header>FeatureName</header>
+        		<note type="Name30">Name of the feature as used by the licensing technology in the application (binary) to turn on/off a licensed capacity or capability.</note>
+    		</column>
+            <column id="FeatureVersion" class="Feature" required="false">
+        		<header>FeatureVersion</header>
+        		<note type="ProductVersion">If a Fixed version format is selected, enter the latest (highest-numbered) version of this feature that is supported by a generated license certificate. 
+For FlexNet Licensing technology, the version consists of numbers and at most one decimal point, with a ten character maximum, for example, 1 or 1.5. 
+For custom license technologies:</note>
+    		</column>
+		    <column id="VersionFormat" class="Feature" required="false">
+		        <header>VersionFormat</header>
+		        <note>Specify feature version format of 'Fixed' (default) or 'Date Based'.</note>
+		    </column>
+            <column id="FeatureState" class="Feature" required="false">
+                <header>FeatureState</header>
+                <note>Deployment State options: 
+- Deployed (default)
+- Draft</note>
+            </column>
+		    <column id="Units" class="Feature" required="false">
+		        <header>Units</header>
+		        <note type="ProductVersion">Word used after displaying a quantity ("unit of measure") when displaying usage in Usage Reports UI and other reports. For example, bytes , kilobytes or gigabytes. Works with Scale to describe what metered feature is counting.</note>
+		    </column>
+		    <column id="Scale" class="Feature" required="false">
+		        <header>Scale</header>
+		        <note type="ProductVersion">Used with Usage events only. Divider used to take actual quantity used and convert to a smaller number for display purposes in the Usage Reports UI and other reports.  For example, if  Units are in bytes but you want to report usage in kilobytes, enter 1024 for Scale.</note>
+		    </column>
+            <column id="FeatureDescription" class="Feature" required="false">
+		        <header>FeatureDescription</header>
+		        <note type="Description">Description of the feature and how it is used. Internal only.</note>
+		    </column>
+		    <column id="VendorString" class="Feature" required="false">
+		        <header>VendorString</header>
+		        <note type="Description">Used in some licensing technology to add to specific vendor information on the license key. A feature level vendor overrides a license model, entitlement or activation. Variable substitution is available.</note>
+		    </column>
+		    <column id="FeatureNotice" class="Feature" required="false">
+		        <header>Notice</header>
+		        <note type="Description">Used in some licensing technology to add to specific notice information on the license key. A feature level notice overrides a license model, entitlement or activation. Variable substitution is available.</note>
+		    </column>
+		    <column id="SerialNumber" class="Feature" required="false">
+		        <header>SerialNumber</header>
+		        <note type="Description">Used in some licensing technology to add to specific number (numeric and text) on the license key. A feature level serial number overrides license model, entitlement or activation. Variable substitution is available.</note>
+		    </column>
+		    <column id="Counted" class="Feature" required="false">
+		        <header>Counted</header>
+		        <note>Determines whether a feature is counted. Options are: 
+- NO_OVERRIDE (Default)
+- Yes
+- No
+Choosing a value other than NO_OVERRIDE, overrides the value set in the license model.</note>
+		    </column>
+		    <column id="Reusable" class="Feature" required="false">
+		        <header>Reusable</header>
+		        <note>Determines whether a feature is reusuable (only applies to metered features).  Options are: 
+- NO_OVERRIDE (Default)
+- Yes
+- No
+Choosing a value other than NO_OVERRIDE, overrides the value set in the license model.</note>
+		    </column>
+		    <column id="ClientUniqueness" class="Feature" required="false">
+		        <header>ClientUniqueness</header>
+		        <note>Specify which combination of unique identifiers define a group.  Options are: 
+- NO_OVERRIDE (Default)
+- GROUPMASK
+- NONE
+Note: The ClientUniqueness setting is overridden if the GroupMask column exists.  ClientUniqueness will be set to GROUPMASK if GroupMask contains a mask or NONE if a GroupMask column exists but is empty.  Delete the GroupMask column if you do not want your ClientUniqueness setting overridden.</note>
+		    </column>
+		    <column id="GroupMask" class="Feature" required="false">
+		        <header>GroupMask</header>
+		        <note>Available only with FlexNet Publisher licensing technology. 
+
+If feature's ClientUniquess is set to "GROUPMASK", then must specify groupings. Options are:
+USER, HOST, DISPLAY, VENDOR
+Use a comma to separate multiple (e.g., USER,DISPLAY)
+		        </note>
+		    </column>
+        </sheet>
+        <sheet name="Create-Update Product Line">
+            <transaction>
+                <type>CreateUpdateProductLine</type>
+            </transaction>
+		    <column id="ProductLineName" class="Product">
+		        <header>ProductLineName</header>
+		        <note type="ProductVersion">Enter a unique description for a grouping of products (called product line).</note>
+		    </column>
+		    <column id="OldProductLineName" class="Product" required="false">
+       			 <header>OldProductLineName</header>
+       			 <note type="OldProductLineName">Name of the old product line name. This is mandatory if this is an update operation of product line name. Please note if this field has valid value it will be considered as an update of the product line name found matching the OldProductLineName, if product line is not found with the given oldProductLineName then there will be no update to the product line name. This field will be ignored in case a product line is found with the original product line name.</note>
+    		</column>
+		    <column id="ProductLineDescription" class="Product" required="false">
+		        <header>Description</header>
+		        <note type="Description">Optional description of product line (internal only-not used in UI).</note>
+		    </column>
+        </sheet>
+    </template>
+    <template filename="DownloadPackaging.xlsx">
+        <sheet name="Create-Update DownloadPackage">
+            <transaction>
+                <type>CreateUpdateDownloadPackage</type>
+            </transaction>
+		    <column id="DownloadPackageID" class="Product">
+		        <header>DownloadPackageID</header>
+		        <note type="String100">This is your company's unique identifier for this Download Package . We recommend that you use this field to facilitate Download Package management between versions, bug fixes, or patches.</note>
+		    </column>
+		    <column id="DownloadPackageName" class="Product">
+		        <header>DownloadPackageName</header>
+		        <note type="String">This is the full name relating to the Download Package ID. The description may include producer name, version, operating system, encryption level, or language. This description appears on the " Download Package Information" page from the End-User Portal.</note>
+		    </column>
+		    <column id="ExtendedDescription" class="Product" required="false">
+		        <header>ExtendedDescription</header>
+		        <note type="String1000">This is the Extended Description.</note>
+		    </column>
+		    <column id="Version" class="Product" required="false">
+		        <header>Version</header>
+		        <note type="String20">This is the version of the Download Package . This description appears on the " Download Package Information" page from the End-User Portal.</note>
+		    </column>
+		    <column id="ReleaseGroup" class="Product" required="false">
+		        <header>ReleaseGroup</header>
+		        <note type="String20">The Release Group of the Download Package controls the sorting of Download Package in FlexNet Operations on the " Download Package Information" page. The value of this field should include padding to force the desired sorting. If your Download Package follows a release number schema of x.y.z, the release group should be of the form xxx.yyy.zzz. For example version 9.1 would map to a Release Group of 009.001.000. Version 10.2.3 would map to 010.002.003. The Release Group could also just apply to the top level release number if desired. Version 10.1.2 could have a release group of 010 as would version 10 SP2. The second level sort of the Download Package list is the effective date of the Download Package .</note>
+		    </column>
+		    <column id="EffectiveDate" class="Product">
+		        <header>EffectiveDate</header>
+		        <note type="Date">The date the Download Package is available for download. The date description appears on the " Download Package Information" page from the End-User Portal site. Accounts have access to the Download Package if the Download Package 's Effective Date occurs within an Entitlement's Effective and Expiration dates on the Line Item for that Download Package. Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+		    </column>
+		    <column id="ExpirationDate" class="Product">
+		        <header>ExpirationDate</header>
+		        <note type="Date">If the Expiration Date is in the future the Download Package appears on the new versions section of the End-User Portal. If the Expiration Date is in the past, the Download Package moves to the “Previous Versions” tab in the End-User Portal. Accounts have access to the Download Package from the release archives section even if the Download Package is expired, provided there is an overlap between the Download Package 's Effective and Expiration dates and the Entitlement's Effective and Expiration dates. Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+		    </column>
+		    <column id="ArchiveDate" class="Product" required="false">
+		        <header>ArchiveDate</header>
+		        <note type="Date">Once this date has passed the Download Package will be moved to the “Previous Versions” tab in the End-User Portal. Users will still be able to download it if they have access through an overlap with their entitlement dates, but will not see it unless they click on the Archive tab on the FlexNet End-User Portal. (New entitlements with beginning dates after the Expiration date will not have access to this Download Package at all). Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+		    </column>
+		    <column id="Producer" class="Product">
+		        <header>Producer</header>
+		        <note data="producerList">This is the Producer attribute for the Download Package. This is set up in the Products:Producers section of the Producer Portal. This is typically the same Producer attribute set on the Product this Download Package is associated to. The available Producers include:</note>
+		    </column>
+            <column id="ProductLine" class="Product" required="true">
+        		<header>ProductLine</header>
+        		<note data="productlines">Product Line to map to this Download Package. Available product lines are:</note>
+    		</column>
+		    <column id="AgreementName" class="Product" required="false">
+		        <header>AgreementName</header>
+		        <note data="agreementList">The End User License Agreement associated with this Download Package . The content for the EULA is set up in the Products section of FlexNet Producer Portal. The default value is blank. Available agreements are:</note>
+		    </column>
+		    <column id="PhysicalDistributionAvailable" class="Product">
+		        <header>PhysicalDistributionAvailable</header>
+		        <note>With this option set to 'true'/'yes', the End User will have the option to request a physical copy of the Download Package. When the End User requests physical delivery, an email is sent to the email address configured in FlexNet Operations. Otherwise set to 'false'/'no'.</note>
+		    </column>
+		    <column id="NLR" class="Product">
+		        <header>RestrictToUS/CANADA(NLR)</header>
+		        <note>If 'true'/'yes', export compliance validation will restrict export/distribution to the US and Canada only. If the value of 'true'/'yes' is used in this field, an ECCNCode value is not required. If 'false'/'no', then proceed to enter valid data combination for ECCNCode/ENCCode/CCATSCode fields</note>
+		    </column>
+		    <column id="ECCNCode" class="Product">
+		        <header>ECCNCode</header>
+		        <note> The ECCNCode for this Download Package. To enforce U.S. Dept. of Commerce export regulations you must provide information about the encryption levels and export licenses of the Download Packages. If you do not provide this information your Download Package cannot be delivered outside of the United States. For more information about the Dept. of Commerce regulations and the meaning of these codes please refer to the Bureau of Industry and Standards web site at http://www.bxa.doc.gov or contact your company's legal department.
+				(NO_EXPORT/UNKNOWN/5D991/5D992/5D002/EAR99/3D002/3D991/3E991/3E201/4D993/4D994/4E992/4E993/5D001/5E991/5E992)</note>
+		    </column>
+		    <column id="ENCCode" class="Product">
+		        <header>ENCCode</header>
+		        <note>The ENCCode for this Download Package. See note on ECCNCode.
+				(RETAIL/NON_RETAIL/TMP_BETA/TSU/UNKNOWN/RESTRICTED/UNRESTRICTED)</note>
+		    </column>
+		    <column id="CCATSCode" class="Product">
+		        <header>CCATSCode</header>
+		        <note>The CCATS code(s) for this Download Package.
+This field supports multiple values. Multiple values in a single cell may be specified by using the | (pipe) delimiter character. 
+For example, the contents of the cell could be 'value1|value2|value3' to represent three values. 	          
+		        </note>
+		    </column>
+			<column id="DownloadInstructions" class="Product" required="false">
+				<header>DownloadInstructions</header>
+				<note>Enter text or HTML content in this field to make content appear above the list of downloads on the End-User Portal . (Example: "Please refer to the release notes for installation requirements.")</note>
+			</column>
+            <udfs class="Product" level="DNLD" required="false"/>
+        </sheet>
+        <!-- sheet name="Create-Update Feature Bundle">
+            <transaction>
+                <type>CreateUpdateFeatureBundle</type>
+            </transaction>
+            <columnref ref="DeployState"/>
+		    <column id="BundleName" class="Feature">
+		        <header>BundleName</header>
+		        <note>Bundles are sets of Features. Enter the name of the Feature Bundle.</note>
+		    </column>
+            <columnref ref="FeatureName"/>
+            <columnref ref="FeatureVersion"/>
+            <column id="FeatureBundleQuantity" class="Feature">
+		        <header>Quantity</header>
+		        <note>The cardinality of the feature in the feature bundle. For example, say the cardinality of a 
+		        Feature A is 3 in feature bundle FB1. When one unit of FB1 is added to a product, a license generated 
+		        for the product contains 3 counts of Feature A.</note>
+		    </column>
+            <column id="BundleDescription" class="Feature">
+		        <header>BundleDescription</header>
+		        <note>Describe what's unique about this Feature Bundle.</note>
+		    </column>
+        </sheet-->
+        <!-- sheet name="Add - Update Transaction Keys">
+            <transaction>
+                <type>AddTransactionKey</type>
+            </transaction>
+            <transaction>
+                <type>UpdateTransactionKey</type>
+            </transaction>
+            <transaction>
+                <type>AddUpdateTransactionKey</type>
+            </transaction>
+            <columnref ref="DeployState"/>
+            <column class="Product">
+                <header>KeyName</header>
+            </column>
+            <column class="Product">
+                <header>Seed1</header>
+            </column>
+            <column class="Product">
+                <header>Seed2</header>
+            </column>
+            <column class="Product">
+                <header>Seed3</header>
+            </column>
+            <column class="Product">
+                <header>Seed4</header>
+            </column>
+            <column class="Product">
+                <header>Seed5</header>
+            </column>
+            <column class="Product">
+                <header>Seed6</header>
+            </column>
+            <column class="Product">
+                <header>Seed7</header>
+            </column>
+            <column class="Product">
+                <header>Seed8</header>
+            </column>
+            <column class="Product">
+                <header>Anchoring</header>
+            </column>
+            <column class="Product">
+                <header>BindType</header>
+            </column>
+            <columnref ref="ProductDescription"/>
+        </sheet-->
+        <!--<sheet name="Create-Update Download Package">
+            <transaction>
+                <type>CreateUpdateDownloadPackage</type>
+            </transaction>
+		    <columnref ref="DownloadPackageID"/>
+		    <columnref ref="DownloadPackageName"/>
+		    <columnref ref="DownloadPackageExtendedDescription" required="false"/>
+		    <columnref ref="DownloadPackageVersion" required="false"/>
+		    <columnref ref="DownloadPackageReleaseGroup" required="false"/>
+		    <columnref ref="DownloadPackageEffectiveDate"/>
+		    <columnref ref="DownloadPackageExpirationDate"/>
+		    <columnref ref="DownloadPackageArchiveDate"/>
+		    <columnref ref="ManufacturerID"/>
+		    <columnref ref="ProductLineID"/>
+		    <columnref ref="EULA" required="false"/>
+		    <columnref ref="PhysicalDistribution"/>
+		    <columnref ref="DownloadPackageNLR" />
+		    <columnref ref="DownloadPackageECCNCode"/>
+		    <columnref ref="DownloadPackageENCCode"/>
+		    <columnref ref="DownloadPackageCCATSCode"/>
+		    <udfs class="Product" level="DNLD" required="false"/>
+        </sheet>-->
+        <sheet name="Create-Update File">
+            <transaction>
+                <type>CreateUpdateFile</type>
+            </transaction>
+            <column id="FileID" class="File" required="true">
+        		<header>FileID</header>
+        		<note type="String100">This is your company's unique identifier for this File. We recommend you use this field to facilitate file management between versions, bug fixes, or patches.</note>
+    		</column>
+    		<column id="FileDescription" class="File" required="true">
+        		<header>FileDescription</header>
+        		<note type="String500">This is the full name of the File. The description may include producer name, version, operating system, encryption level, or language. This description appears on the End-User Portal.</note>
+    		</column>
+    		<column id="ExtendedDescription" class="File" required="false">
+        		<header>ExtendedDescription</header>
+        		<note type="String1000">This is the Extended Description.</note>
+    		</column>
+    		<column id="FileName" class="File" required="false">
+        		<header>FileName</header>
+        		<note type="String">The name of the File binary (for example: filename.zip). This field is overwritten with the name of the File when using the File Upload function. Alternately, this field may be edited to enter different content to present to the end user. File name is a mandatory field when a file is in LOADED state. Non-ascii characters are not allowed in the file name.</note>
+    		</column>
+		    <udfs class="Product" level="FILE" required="false"/>
+        </sheet>
+                <sheet name="Load File Image">
+            <transaction>
+                <type>LoadFileImage</type>
+            </transaction>
+            <column id="FileID" class="File" required="true">
+        		<header>FileID</header>
+        		<note type="String100">This is your company's unique identifier used to identify an existing File.</note>
+    		</column>
+    		<column id="RetrieveFromLocation" class="File" required="true">
+        		<header>RetrieveFromLocation</header>
+        		<note type="String500">If using the Flexera FTP server, this is the relative path to the file on the ftp server. It should not begin with a forward slash (/) and is a Unix or URL style path (/ separates the directories).
+If using an external FTP server, enter a value in this format - ftp://user:password@host:port/path</note>
+    		</column>
+    		<column id="ExpectedCheckSum" class="File" required="false">
+        		<header>ExpectedCheckSum</header>
+        		<note>The MD5 checksum for the file will always be a 32-digit hexadecimal value. If you calculate this before uploading to the ftp server and also pass it to FNO using this transaction, FNO can verify that the file was uploaded to the ftp server correctly.</note>
+    		</column>
+        </sheet>
+		<sheet name="Associate Download Pkg to Prod">
+            <transaction>
+                <type>AssociateDownloadPackageToProduct</type>
+            </transaction>		
+		    <column id="DownloadPackageID" class="Product">
+		        <header>DownloadPackageID</header>
+		        <note type="String100">This is your company's unique identifier for this Download Package . We recommend that you use this field to facilitate Download Package management between versions, bug fixes, or patches.</note>
+		    </column>
+           <column id="ProductName" class="Product">
+				<header>ProductName</header>
+                <note type="String">Name of the product to associate with this Download Package.</note>
+            </column>
+           <column id="ProductVersion" class="Product">
+				<header>ProductVersion</header>
+                <note type="String">The Version of the Product to associate with this Download Package.</note>
+            </column>
+		</sheet>
+        <sheet name="Associate File to Download Pkg">
+            <transaction>
+                <type>AssociateFileToDownloadPackage</type>
+            </transaction>
+		    <column id="FileID" class="File">
+		        <header>FileID</header>
+		        <note type="String100">This is your company's unique identifier used to identify an existing File.</note>
+		    </column>
+		    <column id="DownloadPackageID" class="Product">
+		        <header>DownloadPackageID</header>
+		        <note type="String100">ID of the download package, to associate the file. This is your company's unique identifier used to identify an existing Download Package.</note>
+		    </column>
+		    <column id="SortOrder" class="Product" required="false">
+		        <header>SortOrder</header>
+		        <note type="String">The sort order of the files associated with the download package.</note>
+		    </column>
+        </sheet>
+    </template>
+    <template filename="EntitlementManagement.xlsx">
+        <sheet name="Create-Update Entitlement">
+            <transaction>
+                <type>CreateUpdateEntitlement</type>
+            </transaction>
+            <columnref ref="EntitlementId"/>
+		    <columnref ref="EntitlementState" required="false"/>
+            <columnref ref="EntitlementDescription"/>
+            <columnref ref="AllowPortalLogin" />
+            <columnref ref="ShipToEmail" />
+            <columnref ref="EmailTemplateVariation" />
+            <columnref ref="Address" />
+			
+			<udfs class="Entitlement" level="ENT_ORG"/> 
+            <columnref ref="CurrentOwner" />
+            <udfs class="Entitlement" level="ENT"/> 
+            <columnref ref="ActivationId" />
+            <columnref ref="ActivationState" />
+            <columnref ref="LineItemQuantity" required="false"/>
+            <columnref ref="OrderLineNumber" required="false"/>
+            <columnref ref="OrderId" required="false"/>
+            <columnref ref="StartDateType" required="false"/>
+            <columnref ref="StartDate" required="false"/>
+            <columnref ref="IsActivationPermanent"/>
+            <columnref ref="EndDate" required="false"/>
+            <columnref ref="EndDurationUnits" required="false"/>
+            <columnref ref="EndDuration" required="false"/>
+            <columnref ref="VersionDateType"  required="false"/>
+            <columnref ref="VersionDate" required="false"/>
+            <columnref ref="VersionDurationUnits" required="false"/>
+            <columnref ref="VersionDuration" required="false"/>
+            <columnref ref="OrderType" required="false"/>
+            <columnref ref="OrderParent" required="false"/>
+            <columnref ref="LineItemDescription" required="false"/>
+            <column id="MaintenanceLineItem" class="LineItem" required="false">
+                <header>MaintenanceLineItem</header>
+                <note type="String">The maintenance line item activation id that will be associated with this product.</note>
+            </column>            
+            <columnref ref="ProductName"/>
+            <columnref ref="ProductVersion"/>
+            <columnref ref="ProductType"/>
+            <columnref ref="ProductCount"/>
+            <columnref ref="PartNumber" required="false"/>
+            <columnref ref="LicenseModel"/> 
+            <lmas class="LineItem"/>
+            <policies class="LineItem"/>            
+            <udfs class="LineItem" level="LINE"/>
+        </sheet>
+        <sheet name="Create-Update MaintenanceLine">
+            <transaction>
+                <type>CreateUpdateMaintenanceLine</type>
+            </transaction>
+            <columnref ref="EntitlementId"/>
+		    <columnref ref="EntitlementState" required="false"/>
+            <columnref ref="EntitlementDescription"/>
+            <columnref ref="AllowPortalLogin" />
+            <columnref ref="ShipToEmail" />
+            <columnref ref="EmailTemplateVariation" />
+            <columnref ref="Address" />
+			<udfs class="Entitlement" level="ENT_ORG_MLINE"/>
+            <columnref ref="CurrentOwner" />
+            <udfs class="Entitlement" level="ENT"/>
+            <columnref ref="ActivationId">
+                <note type="String">Activation identifier for the maintenance line item. The ActivationID will be auto-generated if this column is left blank and the StartDate, ProductName, and ProductVersion columns are set for this line item.</note>
+            </columnref>
+            <column id="LineItemLink" class="LineItem" required="false">
+                <header>LineItemLink</header>
+                <note type="String">Specify the activation id of the line item to which this maintenance line item is linked with.</note>
+            </column>
+            <columnref ref="ActivationState">
+                <note>Activation state for the maintenance line item.  Options are: 
+- Draft 
+- Deployed (default)
+- Obsolete 
+- Inactive</note>
+            </columnref>
+            <columnref ref="ProductName">
+                <note type="ProductName">Name of the maintenance product.</note>
+            </columnref>
+            <columnref ref="ProductVersion">
+                <note type="ProductVersion">The version number (for example, 2 or 2.3) of the maintenance product.</note>
+            </columnref>
+            <columnref ref="PartNumber" required="false">
+                <note type="String">The product part number mapped to this maintenance line.</note>
+            </columnref>
+            <columnref ref="OrderLineNumber" required="false"/>
+            <columnref ref="OrderId" required="false"/>
+            <columnref ref="StartDate">
+                 <note type="Date">Specify the start date of this maintenance line item.  Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+            </columnref>
+            <columnref ref="IsActivationPermanent">
+                <note> If the maintenance line item never expires set to 'Yes', otherwise set to 'No' (default). If set to 'No', the EndDate column must be filled in.</note>
+            </columnref>
+            <columnref ref="EndDate" required="false">
+               <note type="Date">This must column must be set if IsActivationPermanent is set to 'No'.  Format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+            </columnref>
+            <!-- <udfs class="MaintenanceLineItem" level="MAINT_LINE"/> -->
+            <udfs class="LineItem" level="MAINT_LINE"/>
+        </sheet>
+        <sheet name="Create-Update BulkEntitlement">
+            <transaction>
+                <type>CreateUpdateBulkEntitlement</type>
+            </transaction>
+            <columnref ref="EntitlementId"/>
+		    <columnref ref="EntitlementState" required="false"/>
+            <columnref ref="EntitlementDescription"/>
+            <columnref ref="AllowPortalLogin" />
+            <columnref ref="ShipToEmail" />
+            <columnref ref="Address" />
+			<udfs class="Entitlement" level="ENT_ORG_BULK_ENT"/> 
+            <columnref ref="CurrentOwner" />
+            <columnref ref="LineItemQuantity" required="false"/>
+            <columnref ref="OrderLineNumber" required="false"/>
+            <columnref ref="OrderId" required="false"/>
+            <columnref ref="OrderType" required="false"/>
+            <columnref ref="VersionDateType" required="false"/>
+            <columnref ref="VersionDate" required="false"/>
+            <columnref ref="VersionDurationUnits" required="false"/>
+            <columnref ref="VersionDuration" required="false"/>
+            <columnref ref="StartDateType" required="false">
+                <note>Start date options: 
+- DefineAtFirstActivation (default) - no additional version date columns must be filled in
+- DefineAtEachActivation - no additional version date columns must be filled in
+- DefineDateAtFirstActivation - no additional version date columns must be filled in
+- DefineDateAtEachActivation - no additional version date columns must be filled in</note>
+            </columnref>
+            <columnref ref="IsActivationPermanent"/>
+            <columnref ref="EndDate" required="false"/>
+            <columnref ref="EndDurationUnits" required="false"/>
+            <columnref ref="EndDuration" required="false" />
+            <columnref ref="ProductName">
+                <note type="ProductName">Name of the bulk entitlement product.</note>
+            </columnref>
+            <columnref ref="ProductVersion">
+                <note type="ProductVersion">The version number (for example, 2 or 2.3) of the bulk entitlement product.</note>
+            </columnref>
+            <columnref ref="PartNumber" required="false">            
+                <note type="String">The product part number mapped to this bulk entitlement product.</note>
+            </columnref>
+            <columnref ref="ProductType"/>
+            <columnref ref="ProductCount" required="false"/>
+            <columnref ref="LicenseModel"/>
+            <lmas class="LineItem"/>
+            <policies class="LineItem"/>
+        </sheet>
+        <sheet name="Create Web Register Keys">
+            <transaction>
+                <type>CreateWebRegisterKeys</type>
+            </transaction>
+            <!-- transaction>
+                <type>DeleteWebRegisterKeys</type>
+            </transaction-->
+            <columnref ref="EntitlementId">
+                <note type="String">The identifier that uniquely identifies the Bulk Entitlement that the Web Register Keys will be associated with.</note>
+            </columnref>
+            <column id="WebRegisterKey" class="Entitlement" required="false">
+                <header>WebRegisterKey</header>
+                <note type="String">Specify the Web Register Key identifier. If this field is left empty, then the system will auto-generate a number of Web Register Keys as specified by the NumberOfCopies field.</note>
+            </column>
+            <column id="NumberOfCopies" class="Entitlement" required="false">
+                <header>NumberOfCopies</header>
+                <note  type="IntegerPositive">Specify the number of Web Register Keys to auto-generate when the WebRegisterKey field is empty (this field is ignored if the WebRegisterKey is not empty).  The default value is 1.</note>
+            </column>
+        </sheet>
+        <!-- sheet name="Merge Entitlements">
+            <transaction>
+                <type>MergeEntitlements</type>
+            </transaction>
+            <column id="SourceAccount" class="Org">
+                <header>SourceAccount</header>
+                <note>This is the company that currently own the assets.</note>
+            </column>
+            <column id="TargetAccount" class="Org">
+                <header>TargetAccount</header>
+                <note>This is the company that will receive the assets.</note>
+            </column>
+            <column id="MergeEnt" class="Entitlement">
+                <header>MergeEnt</header>
+                <note>Set to 'Yes' to associate all entitlements, fulfillments, and host ID values to the Target Account. Set to No otherwise.  Default is 'Yes'.</note>
+            </column>
+            <column id="MergeUsers" class="User">
+                <header>MergeUsers</header>
+                <note>Set to 'Yes' to associate all users and contacts from the Source Account to the Target Account. Set to No otherwise.  Default is 'Yes'.</note>
+            </column>
+        </sheet-->
+        <!-- sheet name="Transfer Line Items">
+            <transaction>
+                <type>TransferLineItem</type>
+            </transaction>
+            <columnref ref="EntitlementId"/>
+            <columnref ref="ActivationId"/>
+            <column id="TransferAmount" class="LineItem">
+                <header>TransferAmount</header>
+                <note>Quantity to be transferred.</note>
+            </column>
+            <columnref ref="TargetAccount"/>
+            <column id="TransferToSimilar" class="Entitlement">
+                <header>TransferToSimilar</header>
+                <note>Set to 'Yes' to transfer to a similar line item in the target Account.  'No' (default) to create a new entitlement and line item in the target Account.</note>
+            </column>
+            <column id="TargetEntId" class="Entitlement">
+                <header>TargetEntId</header>
+                <note>Target entitlement ID where the line item will be transferred to.</note>
+            </column>
+        </sheet-->
+    </template>
+    <template filename="Updates.xlsx">
+        <sheet name="Create-Update Update">
+            <transaction>
+                <type>CreateUpdateUpdate</type>
+            </transaction>
+            <column id="UpdateId" class="Product" required="true">
+                <header>UpdateId</header>
+                <note>The unique alphanumeric identification of the Update.</note>
+            </column>
+            <column id="UpdateName" class="Product" required="true">
+                <header>UpdateName</header>
+                <note type="String">The name of the update.</note>
+            </column>
+            <column id="Status" class="Product" required="false">
+                <header>Status</header>
+                <note>Determines whether the Update will be visible to the requesting client.
+- active (default)
+- inactive
+                </note>
+            </column>
+            <column id="StartDate" class="Product" required="false">
+                <header>StartDate</header>
+                <note type="Date">The date when the update will be available. Date format is YYYY-MM-DD, or MM/DD/YYYY.
+Default (today's date)
+                </note>
+            </column>
+            <column id="EndDate" class="Product" required="false">
+                <header>EndDate</header>
+                <note type="Date">The date the update expires. Date format is YYYY-MM-DD, or MM/DD/YYYY.</note>
+            </column>
+            <column id="Description" class="Product" required="false">
+                <header>Description</header>
+                <note type="String">A description of the update</note>
+            </column>
+            <column id="EntitlementCheck" class="Product" required="false">
+                <header>EntitlementCheck</header>
+                <note>Indicates how an entitlement check should be performed before returning the update.
+Valid values are : Account (default),Device or None
+                </note>
+            </column>
+            <column id="UpdateFromPkgId" class="UpdateFrom" required="false">
+                <header>UpdateFromPkgId</header>
+                <note type="String">The ID of a download package that the update is for. At least one release from download package ID must be specified for a create.</note>
+            </column>
+            <column id="UpdateToPkgId" class="UpdateTo" required="false">
+                <header>UpdateToPkgId</header>
+                <note type="String">The ID of the download package that will be delivered for the update. At least one release to download package ID must be specified for a create.</note>
+            </column>
+            <column id="Platforms" class="UpdateTo" required="false">
+                <header>Platforms</header>
+                <note data="updateplatforms" type="String">Platforms associated with the update to download package. For multiple platforms, each must be separated by a '|' field. At least one platform must be specified for a download package.
+Valid platforms are:</note>
+            </column>
+            <column id="LanguageName" class="Language" required="false">
+                <header>LanguageName</header>
+                <note data="updatelanguages" type="String">The language for the update. At least one language must be specified for a create. Valid languages are: </note>
+            </column>
+            <column id="LanguageTitle" class="Language" required="false">
+                <header>LanguageTitle</header>
+                <note type="String">Update title that is sent to the client. This field is required if languageName has been specified.</note>
+            </column>
+            <column id="LanguageDescription" class="Language" required="false">
+                <header>LanguageDescription</header>
+                <note type="String">Update description that is sent to the client. This field is required if languageName has been specified.</note>
+            </column>
+        </sheet>
+    </template>
+</templates>

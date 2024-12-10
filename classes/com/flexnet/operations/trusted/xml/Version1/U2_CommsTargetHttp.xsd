@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!-- 
+	* Copyright (c) 1989-2009 Flexera Software, Inc. All Rights Reserved. 
+	* 
+	* This software has been provided pursuant to a License Agreement containing
+	* restrictions on its use. This software contains valuable trade secrets 
+	* and proprietary information of Flexera Software, Inc. and is protected 
+	* by law. It may not be copied or distributed in any form or medium, 
+	* disclosed to third parties, reverse engineered or used in any manner not 
+	* provided for in said License Agreement except with the prior written 
+	* authorization from Flexera Software, Inc. 
+    -->
+<xsd:schema 
+targetNamespace="http://www.macrovision.com/fnp/2004/11/activation" 
+xmlns="http://www.macrovision.com/fnp/2004/11/activation" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:fnp="http://www.macrovision.com/fnp/2004/11/activation"
+elementFormDefault="qualified">
+	
+    <xsd:include schemaLocation="M2_NonEmptyString.xsd"/>
+	
+	<!-- Root element -->
+	<xsd:element name="CommsTargetHttp">
+		<xsd:complexType>
+			<xsd:sequence>			
+			    <xsd:element name="ServerName" type="fnp:NonEmptyString"/>
+			    <xsd:element name="ServerPage" type="fnp:NonEmptyString"/>
+			    <xsd:element name="UseSSL" type="xsd:boolean" minOccurs="0"/>
+			    <xsd:element name="UseFormUrlEncoding" type="xsd:boolean" minOccurs="0"/>
+			    <xsd:element name="Timeout" type="xsd:nonNegativeInteger" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+</xsd:schema>

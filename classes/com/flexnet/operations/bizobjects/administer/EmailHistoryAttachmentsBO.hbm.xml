@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.administer.EmailHistoryAttachmentsBO" table="OPS_EMAIL_HISTORY_ATTACHMENTS">
+			<meta attribute="class-description">
+				This class represents the attchement for the hostorical emails
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.administer.EmailHistoryAttachments</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<many-to-one name="emailHistoryId" column="EMAIL_HISTORY_ID"
+				 class="com.flexnet.operations.bizobjects.administer.EmailHistoryBO" not-null="true">
+				 <meta attribute="field-description">             
+					the set of attachements with the emails from the email history table
+				 </meta>
+			</many-to-one>	
+			
+			<property name="attachmentName" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<column name="ATTACHMENT_NAME" length="255" not-null="true"/>
+			</property>
+			
+			<property name="attachmentContent" type="java.sql.Blob">
+				<meta attribute="scope-set">protected</meta>
+				<column name="ATTACHMENT_CONTENT" not-null="true"/>
+			</property>
+			
+			<property name="mimeType" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<column name="MIME_TYPE" length="100" not-null="true"/>
+			</property>
+			
+			<property name="tenantId" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<column name="TENANT_ID" length="255" not-null="true"/>
+			</property>
+			
+		</class>
+	</hibernate-mapping>

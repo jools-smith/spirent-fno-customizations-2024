@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.operations.unifiedhost.dao.entities.UnifiedHost"
+		table="OPS_UNIFIED_HOST">
+		<meta attribute="class-description">
+			This class represents the host entity.
+			</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.unifiedhost.dao.entities.UnifiedHostData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+		<meta attribute="implement-equals">true</meta>
+		<meta attribute="scope-class">public abstract</meta>
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+		   <meta attribute="field-description">Id of the unified host</meta>
+			<meta attribute="scope-set">public</meta>
+			<meta attribute="scope-get">public</meta>
+			<generator class="native" />
+		</id>
+
+		<version column="HIB_VERSION" name="HibVersion">
+		   <meta attribute="field-description">Hibernate version</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+			<property name="tenantId_" type="string" unique-key="unifedHost_unique_key" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+			</property>
+
+		<property name="name" column="UH_NAME" type="string" length="128"
+			unique-key="unifedHost_unique_key">
+			<meta attribute="field-description">Unique name for the unified host</meta>
+			<meta attribute="scope-set">public</meta>
+			<meta attribute="scope-get">public</meta>
+		</property>
+		
+		<property name="description" column="UH_DESC" type="string" length="1024">
+			<meta attribute="field-description">Description of the unified host</meta>
+			<meta attribute="scope-set">public</meta>
+			<meta attribute="scope-get">public</meta>
+		</property>
+
+		<set name="hostIdentifiers" inverse="true"
+			cascade="all" lazy="true">
+			<meta attribute="field-description">Set of Host entities belonging to this unified host. all the HId's contain same sold to org</meta>
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<key column="UHID" />
+			<one-to-many class="com.flexnet.operations.bizobjects.HostEntityBO" />
+		</set>
+		
+		<many-to-one name="soldTo" column="SOLD_TO" 
+				class="com.flexnet.platform.bizobjects.OrgUnit" not-null="true" index="OPS_IDX_UNIFIED_HOST_ORG" unique-key="unifedHost_unique_key">
+				<meta attribute="field-description">sold to org of the unified host</meta>
+				<meta attribute="scope-set">public</meta>
+				<meta attribute="scope-get">public</meta>
+		</many-to-one>
+		
+		<many-to-one name="owner" column="OWNER" 
+				class="com.flexnet.platform.bizobjects.User" not-null="true" index="OPS_IDX_UNIFIED_HOST_OWNER" unique-key="unifedHost_unique_key">
+				<meta attribute="use-in-equals">true</meta>				
+				<meta attribute="scope-set">public</meta>
+				<meta attribute="scope-get">public</meta>
+		</many-to-one>
+
+	</class>
+
+
+</hibernate-mapping>

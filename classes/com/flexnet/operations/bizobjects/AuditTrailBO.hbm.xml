@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<!--
+<property name="hibernate.hbm2ddl.auto">update</property>	 
+-->	 
+	
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.AuditTrailBO" table="OPS_AUDITTRAIL">
+			
+			<meta attribute="class-description">
+				This class captures all entity activity updates (except deletes) and archives it into the DB. 
+			</meta>
+			
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.bizobjects.AuditTrail</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<meta attribute="implement-equals" inherit="false">true</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<!--	<meta attribute="scope-set">protected</meta> -->
+				<generator class="native"/>
+			</id>
+
+			<property name="tenantId" type="java.lang.String" column="TENANT_ID"  not-null="true"/>
+			<property name="entity_id" column="ENTITY_ID" type="java.lang.Long" not-null="true">
+						<meta attribute="class-description">
+						It is delivered by the bean factory in the header. It is within the json too but we can avoid cracking it open.
+						</meta>
+			</property>
+			
+			<property name="entityType" type="java.lang.String" column="ENTITY_TYPE" index="IX_OPS_AUDTRAIL_REF_VAL_TYPE" not-null="true"/>
+			<property name="entityValue" type="java.lang.String" column="ENTITY_REFERENCE_VALUE" index="IX_OPS_AUDTRAIL_REF_VAL_TYPE" length="255" not-null="true"/>
+			<property name="userId" type="java.lang.String" column="USER_ID" not-null="true"/>
+
+			<property name="eventType" type="java.lang.String" column="EVENT_TYPE" not-null="true"/>		
+			<property name="datetime" type="java.util.Date" column="LAST_MODIFIED" index="IX_OPS_AUDTRAIL_LAST_MODIFIED"/>
+
+			<property name="jsonClob" type="java.lang.String">
+				<column name="JSON_CLOB" length="999999" />
+			</property>
+				
+			</class>
+		
+	</hibernate-mapping>

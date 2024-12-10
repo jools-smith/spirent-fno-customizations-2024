@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.ActivationInstance" table="OPS_ACTIVATION_INSTANCE">
+		<meta attribute="class-description" inherit="false">
+			This class a single license activation, aka fulfillment. It encapsulates
+			all the fulfillment parameters that are passed to the underlying
+			license generator.
+		</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.ActivationInstanceData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.bizobjects.OperationsBaseEntity</meta>
+		<meta attribute="scope-field">private</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.products.bizobjects.IRecentlyAccessed</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+		<meta attribute="implement-equals">true</meta>
+		<meta attribute="scope-class" inherit="false">public abstract</meta>
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-set">protected</meta>
+			<generator class="native" />
+		</id>
+
+		<discriminator column="FULFILLMENT_TYPE" type="string"
+			length="64" not-null="true" force="true" />
+
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+		<property name="tenantId_" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TENANT_ID" unique-key="ACT_INST_UK" not-null="true" />
+		</property>
+
+		<component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+			<property name="createdBy" type="java.lang.Long">
+				<column name="AUDIT_CREATEDBY"></column>
+			</property>
+			<property name="createdOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="ACTIVATION_DATE"></column>
+			</property>
+			<property name="updatedBy" type="java.lang.Long">
+				<column name="AUDIT_UPDATEDBY"></column>
+			</property>
+			<property name="updatedOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LAST_MODIFIED" index="OPS_IDX_FULFILL_LASTMODIFIED"></column>
+			</property>
+		</component>
+
+		<property name="fulfillmentId" type="string" length="64"
+			column="FULFILLMENT_ID" unique-key="ACT_INST_UK" not-null="true">
+			<meta attribute="use-in-equals">true</meta>
+			<meta attribute="scope-set">protected</meta>
+		</property>
+
+		<property name="fulfillmentType" type="string" insert="false"
+			update="false">
+			<meta attribute="use-in-equals">true</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="FULFILLMENT_TYPE" length="64" />
+		</property>
+
+		<property name="status_" column="STATUS" index="OPS_IDX_ACTIVINST_STATUS"
+			type="string" length="32" not-null="true">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="lifeCycleStatus_" column="LIFECYCLE_STATUS"
+			type="string" length="64" not-null="false">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="startDate" column="START_DATE"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="property-type">java.util.Date</meta>
+		</property>
+
+		<property name="expirationDate" column="EXPIRATION_DATE"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="property-type">java.util.Date</meta>
+			<meta attribute="field-description">
+				Expiration date of this license, or null if permanent.
+			</meta>
+		</property>
+
+		<property name="fulfillmentCount" column="ACTIVATION_COUNT"
+			type="int" not-null="true">
+			<meta attribute="scope-set">public</meta>
+		</property>
+
+		<property name="activeCount" column="ACTIVE_COUNT" type="int"
+			not-null="true">
+			<meta attribute="scope-set">protected</meta>
+		</property>
+
+		<property name="overdraftCount" column="OVERDRAFT_COUNT"
+			type="int" not-null="true">
+			<meta attribute="scope-set">protected</meta>
+		</property>
+
+		<component name="trustedCounts"
+			class="com.flexnet.operations.entities.TrustedCountsData">
+			<property name="activationCount" column="TRUSTED_ACTIVATION_COUNT"
+				type="int" not-null="true">
+			</property>
+
+			<property name="activationOverdraft" column="TRUSTED_ACTIVATION_OVERDRAFT"
+				type="int" not-null="true">
+			</property>
+
+			<property name="concurrentCount" column="TRUSTED_CONCURRENT_COUNT"
+				type="int" not-null="true">
+			</property>
+
+			<property name="concurrentOverdraft" column="TRUSTED_CONCURRENT_OVERDRAFT"
+				type="int" not-null="true">
+			</property>
+
+			<property name="hybridCount" column="TRUSTED_HYBRID_COUNT"
+				type="int" not-null="true">
+			</property>
+
+			<property name="hybridOverdraft" column="TRUSTED_HYBRID_OVERDRAFT"
+				type="int" not-null="true">
+			</property>
+
+			<property name="fulfilledRepairCount" column="TRUSTED_REPAIR_COUNT"
+				type="int" not-null="false">
+			</property>
+		</component>
+
+		<component name="trustedClientState"
+			class="com.flexnet.operations.entities.TrustedClientStateData">
+			<property name="enabled" column="IS_TRUSTED_ENABLED" type="boolean" />
+			<property name="trusted" column="IS_TRUSTED" type="boolean" />
+			<property name="binding" column="TRUSTED_BINDING" type="boolean" />
+			<property name="anchoring" column="TRUSTED_ANCHORING" type="boolean" />
+			<property name="time" column="TRUSTED_TIME" type="boolean" />
+		</component>
+
+		<property name="activationDuration" column="ACTIVATION_DURATION"
+			type="int">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="durationUnits" column="DURATION_UNITS" type="string"
+			length="32">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+
+
+		<many-to-one name="extendedPropertySet" column="EXTENDED_PROPERTIES"
+			index="OPS_IDX_ACTIVINST_STATUS, FK_OPS_ACT_INST_EXTPROP" class="com.flexnet.platform.bizobjects.ExtendedPropertySet"
+			cascade="all">
+			<meta attribute="field-description">
+				The set of extended properties assigned to this activation;
+				usually these represent customized inputs to the license
+				generator.
+			</meta>
+		</many-to-one>
+
+		<many-to-one name="entitlementLineItem" column="ENTITLEMENT_LINEITEM"
+			index="OPS_IDX_FULFILLMENT_LINE_ITEM"
+			class="com.flexnet.operations.bizobjects.entitlements.EntitlementLineItemBO">
+			<meta attribute="field-description">
+				The entitlement lineitem from which this activation was generated.
+			</meta>
+		</many-to-one>
+
+		<many-to-one name="parentFulfillment" column="PARENT_FULFILLMENT"
+			not-null="false" class="com.flexnet.operations.bizobjects.ActivationInstance">
+			<meta attribute="field-description">
+				The parent fulfillment reference from which this activation was
+				generated.
+			</meta>
+		</many-to-one>
+
+		<many-to-one name="licenseModel_"
+			class="com.flexnet.products.bizobjects.LicenseModelBO">
+			<column name="LICENSEMODEL_ID" />
+		</many-to-one>
+
+		<many-to-one name="hostEntity" column="HOST_ENTITY"
+			class="com.flexnet.operations.bizobjects.HostEntityBO" index="OPS_IDX_FULFILLMENT_HOST">
+			<meta attribute="field-description">
+				Host Entity associated with the activation instance.
+			</meta>
+		</many-to-one>
+
+		<set name="nodelockedHostUnits" table="OPS_ACT_NL_HOST_UNITS"
+			lazy="true">
+			<meta attribute="field-description">
+				Nodelocked Host Units associated with the activation instance.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+			<key column="ACTIVATION_INSTANCE_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.ActivationNodelockedHostUnit">
+
+				<many-to-one name="nodelockedHostUnit" column="NODELOCKED_HOST_UNIT"
+					class="com.flexnet.operations.bizobjects.HostUnit" not-null="true"
+					index="OPS_IDX_FULFILLMENT_NLHOST">
+					<meta attribute="use-in-equals">true</meta>
+				</many-to-one>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="255">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property> 
+			</composite-element>
+		</set>
+
+		<set name="parentFulfillmentsForUpgrade" table="OPS_ACT_PARENT_FULFILLMENTS"
+			lazy="true">
+			<meta attribute="field-description">
+				Parent Fulfillments associated with the activation instance specially for
+				upgrade lifecycle.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+			<key column="ACTIVATION_INSTANCE_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.ActivationParentFulfillment">
+				<many-to-one name="parentFulfillmentId" column="PARENT_FULFILLMENT_ID"
+					class="com.flexnet.operations.bizobjects.ActivationInstance"
+					not-null="true" index="OPS_IDX_PARENT_FULFILLMENT">
+					<meta attribute="use-in-equals">true</meta>
+				</many-to-one>
+				<property name="upgradedCount" column="UPGRADED_COUNT"
+					type="int">
+				</property>
+				<property name="tenantId_" column="TENANT_ID" type="string" length="255">
+				</property>		
+			</composite-element>
+		</set>
+
+		<set name="supersededFeatures" table="OPS_SUPERSEDED_FEATURES"
+			lazy="true">
+			<meta attribute="field-description">
+				superseded features for this activation instance
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<key column="ACTIVATION_INSTANCE_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.SupersededFeature">
+				<property name="featureName" column="FEATURE_NAME" type="string">
+					<meta attribute="use-in-equals">true</meta>
+				</property>
+                <property name="tenantId_" type="string" not-null="false" length="255">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                    <meta attribute="use-in-equals">true</meta>
+                    <column name="TENANT_ID" not-null="false" />
+                </property>
+			</composite-element>
+		</set>
+		<set name="supersedeSign" table="OPS_SUPERSEDE_SIGN" lazy="true">
+			<meta attribute="field-description">
+				superseded sign values for this activation instance
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<key column="ACTIVATION_INSTANCE_ID" />
+			<composite-element class="com.flexnet.operations.bizobjects.SupersedeSign">
+				<property name="sign" column="SIGN" type="string">
+					<meta attribute="use-in-equals">true</meta>
+				</property>
+				<property name="tenantId_" type="string" not-null="false" length="255">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+					<meta attribute="use-in-equals">true</meta>
+					<column name="TENANT_ID" not-null="false" />
+				</property>
+			</composite-element>
+		</set>
+
+
+		<set name="licenseText_" inverse="true" cascade="all" lazy="true">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<key column="ACTIVATION_INST_ID" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.FulfillmentLicenseTextBO" />
+		</set>
+
+		<set name="stringLicenseAttrs_" table="OPS_FUL_STR_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentStringLicenseAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentStringLicenseAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="attributeValue_" column="ATTRIBUTE_VALUE"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+			</composite-element>
+		</set>
+
+		<set name="stringHostAttrs_" table="OPS_FUL_HOST_STR_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom host attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentStringHostAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentStringHostAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="attributeValue_" column="ATTRIBUTE_VALUE"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+			</composite-element>
+		</set>
+
+
+		<set name="booleanLicenseAttrs_" table="OPS_FUL_BOOLEAN_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentBooleanLicenseAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentBooleanLicenseAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+
+				<property name="attributeValue_" column="ATTRIBUTE_VALUE"
+					type="boolean">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+			</composite-element>
+		</set>
+
+		<set name="booleanHostAttrs_" table="OPS_FUL_HOST_BOOL_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentBooleanHostAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentBooleanHostAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+
+				<property name="attributeValue_" column="ATTRIBUTE_VALUE"
+					type="boolean">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+			</composite-element>
+		</set>
+
+		<set name="numberLicenseAttrs_" table="OPS_FUL_NUMBER_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentNumberLicenseAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentNumberLicenseAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+
+				<property name="attributeValue_" column="ATTRIBUTE_VALUE"
+					type="java.lang.Double">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+			</composite-element>
+		</set>
+
+		<set name="numberHostAttrs_" table="OPS_FUL_HOST_NUM_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentNumberHostAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentNumberHostAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+
+				<property name="attributeValue_" column="ATTRIBUTE_VALUE"
+					type="java.lang.Double">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+			</composite-element>
+		</set>
+
+		<set name="dateLicenseAttrs_" table="OPS_FUL_DATE_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentDateLicenseAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentDateLicenseAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+
+				<property name="attributeValue_"
+					type="com.flexnet.platform.services.persistence.GMTTimestampType">
+					<meta attribute="property-type">java.util.Date</meta>
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+					<column name="ATTRIBUTE_VALUE"></column>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+			</composite-element>
+		</set>
+
+		<set name="dateHostAttrs_" table="OPS_FUL_HOST_DATE_ATTRS_DBVIEW"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The set of string custom attrs in a fulfillment
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FULFILLMENT_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.FulfillmentDateHostAttrBO">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.FulfillmentDateHostAttrData</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<property name="attributeName_" column="ATTRIBUTE_NAME"
+					type="string" length="64">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+
+				<property name="attributeValue_"
+					type="com.flexnet.platform.services.persistence.GMTTimestampType">
+					<meta attribute="property-type">java.util.Date</meta>
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+					<column name="ATTRIBUTE_VALUE"></column>
+				</property>
+				<property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+			</composite-element>
+		</set>
+
+		<property name="shipToEmail" column="SHIP_TO_EMAIL" type="string"
+			length="1024">
+			<meta attribute="scope-set">protected</meta>
+		</property>
+
+		<property name="shipToAddress" column="SHIP_TO_ADDRESS" type="string"
+			length="1000">
+			<meta attribute="scope-set">protected</meta>
+		</property>
+
+		<property name="source_" column="FULFILLMENT_SOURCE" type="string"
+			length="255">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</property>
+
+		<property name="vendorDaemonName_" column="vendor_daemon_name"
+			type="string" length="128">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="migrationID_" column="MIGRATION_ID" type="string"
+			length="128" index="OPS_IDX_FULFILL_MIGRATIONID">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+		<property name="activationType" column="ACTIVATION_TYPE"
+			type="string" length="64">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="shortCodeFIDSuffix" column="SC_FID_SUFFIX"
+			type="string" length="64">
+			<meta attribute="scope-set">public</meta>
+			<meta attribute="scope-get">public</meta>
+		</property>
+		
+		<property name="asrAlias" column="SC_ASR_ALIAS"	type="int" not-null="false">
+			<meta attribute="scope-set">public</meta>
+			<meta attribute="scope-get">public</meta>
+		</property>
+		
+		<many-to-one name="timeZoneValue" column="TIME_ZONE_VALUE"
+			class="com.flexnet.products.bizobjects.FNPTimeZoneDO">
+			<meta attribute="scope-set">public</meta>
+		</many-to-one>
+
+		<set name="consolidatedLicenses" table="OPS_CONSOLIDATION_MAP"
+			lazy="true" inverse="true">
+			<meta attribute="field-description">
+				The list of licensable features within this orderable, if it is of type
+				licensedproduct.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="ACTIVATION_ID" />
+			<composite-element
+				class="com.flexnet.operations.bizobjects.ConsolidatedLicenses">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.ConsolidatedLicensesData</meta>				
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>				
+				<many-to-one name="consolidatedLicense"
+					class="com.flexnet.operations.bizobjects.ConsolidatedLicenseBO"
+					column="CONSOLIDATED_LICENSE_ID" index="OPS_IDX_FULFILLMENT_CONLIC">
+					<meta attribute="use-in-equals">true</meta>
+				</many-to-one>
+			</composite-element>
+		</set>
+
+		<subclass
+			name="com.flexnet.operations.bizobjects.CertificateActivationInstance"
+			discriminator-value="bo.constants.fulfillment.type.certificate">
+			<meta attribute="generated-class">com.flexnet.operations.entities.CertificateActivationData</meta>
+			<meta attribute="scope-class" inherit="false">public abstract</meta>
+			<meta attribute="scope-set">protected</meta>
+		</subclass>
+
+		<subclass name="com.flexnet.operations.trusted.TrustedActivationInstance"
+			discriminator-value="bo.constants.fulfillment.type.trusted">
+			<meta attribute="generated-class">com.flexnet.operations.entities.TrustedActivationData</meta>
+			<meta attribute="scope-class" inherit="false">public abstract</meta>
+			<meta attribute="scope-set">protected</meta>
+		</subclass>
+
+		<subclass name="com.flexnet.operations.bizobjects.CustomActivationInstance"
+			discriminator-value="bo.constants.fulfillment.type.custom">
+			<meta attribute="generated-class">com.flexnet.operations.entities.CustomActivationData</meta>
+			<meta attribute="scope-class" inherit="false">public abstract</meta>
+			<meta attribute="scope-set">protected</meta>
+		</subclass>
+
+
+
+	</class>
+</hibernate-mapping>
+

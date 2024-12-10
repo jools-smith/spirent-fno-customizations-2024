@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+<hibernate-mapping>
+    <meta attribute="generated-class">com.flexnet.platform.entities.ExtendedPropertyMetadataData</meta>
+    <class lazy="false" name="com.flexnet.platform.bizobjects.ExtendedPropertyMetadata" table="PLT_EXTPROPMETADATA">
+        <meta attribute="class-description">
+            This entity stores the meta-data for all extended properties in the system.
+            @author Navin Melville
+            July 20th, 2004
+        </meta>
+        <meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native"/>
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+            <property name="tenantId_" type="string" not-null="true" length="255"> 
+            <meta attribute="scope-get">protected</meta> 
+            <meta attribute="scope-set">protected</meta> 
+            <column name="TENANT_ID" unique-key="PLEXPMD_UK" not-null="true"/> 
+            </property>
+        
+        <property column="LASTUPDATED" type="com.flexnet.platform.services.persistence.GMTTimestampType" name="lastUpdated" not-null="true">
+            <meta attribute="property-type">java.util.Date</meta>
+        </property>
+        
+        <property name="className" type="string" length="255" not-null="true" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="CLASSNAME" unique-key="PLEXPMD_UK" length="255" not-null="true" />
+        </property>
+        
+        <property name="name" type="string" length="255" not-null="true" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="NAME" unique-key="PLEXPMD_UK" length="255" not-null="true" />
+        </property>
+        
+        <property name="subgroupName" type="string" length="255" not-null="true" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="SUBGROUPNAME" unique-key="PLEXPMD_UK" length="255" not-null="true" />
+        </property>
+        
+        <property name="type" type="string" length="255" not-null="true" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="TYPE" not-null="true" />
+        </property>
+        
+        <property name="textType" type="string" length="255" not-null="false" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="TEXTTYPE" not-null="false" />
+        </property>
+        
+        <property name="required" type="boolean" not-null="true" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="REQUIRED" not-null="true" />
+        </property>
+        
+        <property name="status" type="java.lang.Integer" not-null="false" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="STATUS" not-null="false" />
+        </property>
+        
+        <property name="defaultValue" type="string" length="255" not-null="false" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="DEFAULTVALUE" not-null="false" />
+        </property>
+        
+        <property name="createdUserId" type="string" length="255" not-null="false" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="CREATEDUSER_ID" not-null="false" />
+        </property>
+        
+        <property name="maxLength" type="java.lang.Integer" not-null="false" >
+            <meta attribute="scope-set">protected</meta>
+            <column name="MAXLENGTH" not-null="false" />
+        </property>
+        
+        <property name="constraintType" type="string" length="1" not-null="false" >
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="CONSTRAINTTYPE" length="1" not-null="false" />
+        </property>
+        
+        <property name="neededForReporting" type="boolean">
+            <column name="FOR_REPORTING" default="0" not-null="false" />
+        </property> 
+        
+        <property name="reportingOrder" type="java.lang.Integer" not-null="false" >
+            <column name="REPORTING_ORDER" default="0" not-null="false" />
+        </property>
+        
+        <set name="rangeValues" inverse="true" cascade="all" lazy="true">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <key column="METADATA_ID" />
+            <one-to-many class="com.flexnet.platform.bizobjects.RangeValues" />
+        </set>
+
+        <set name="validValues_" inverse="true" cascade="all" lazy="true">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <key column="METADATA_ID" />
+            <one-to-many class="com.flexnet.platform.bizobjects.ValidValue" />
+        </set>
+
+    </class>
+</hibernate-mapping>
+

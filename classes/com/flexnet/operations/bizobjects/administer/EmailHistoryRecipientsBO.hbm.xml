@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.administer.EmailHistoryRecipientsBO" table="OPS_EMAIL_HISTORY_RECIPIENTS">
+			<meta attribute="class-description">
+				This class represents email recipients record for historical emails
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.administer.EmailHistoryRecipients</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<many-to-one name="emailHistoryId" column="EMAIL_HISTORY_ID"
+				 class="com.flexnet.operations.bizobjects.administer.EmailHistoryBO" not-null="true">
+				 <meta attribute="field-description">             
+					The set of TO, CC, BCC email addresses per email in email hostory
+				 </meta>
+			</many-to-one>	
+			
+			<property name="recipientAddress" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<column name="RECIPIENT_ADDRESS" length="254" not-null="true"/>
+			</property>
+			
+			<property name="recipientType" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<column name="RECIPIENT_TYPE" length="3" not-null="true"/>
+			</property>
+			
+			<property name="recipientSequenceNum" type="int">
+				<meta attribute="scope-set">protected</meta>
+				<column name="RECIPIENT_SEQUENCE_NUM" not-null="true"/>
+			</property>
+			
+			<property name="tenantId" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<column name="TENANT_ID" length="255" not-null="true"/>
+			</property>
+			
+		</class>
+	</hibernate-mapping>

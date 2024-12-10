@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+<hibernate-mapping>
+    <!-- SWM-2230 added tenant id to mapping table PLT_ORGUNIT_ORGUNITTYPE, getting stack overflow due to recursively trying to load
+    contact try to load orgunit and orgunit try to load orgunittype this happening infinite so making lazy=true this solve the problem -->
+    <class lazy="false" name="com.flexnet.platform.bizobjects.OrgUnit" table="PLT_ORGUNIT">
+        <meta attribute="class-description" inherit="false">
+            This is a unit of an organization.  It can be the company or a site or division of the company.  It models the smallest level of granularity that is expected by an application.
+            @author Navin Melville
+            June 9th, 2004
+        </meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.platform.entities.OrgUnitData</meta>
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IExtendable</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+            
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native"/>
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+            <property name="tenantId_" type="string" not-null="true" length="255"> 
+            <meta attribute="scope-get">protected</meta> 
+            <meta attribute="scope-set">protected</meta> 
+            <column name="TENANT_ID" unique-key="PLTOU_UK" not-null="true"/> 
+            </property>
+        
+        <property column="LASTUPDATED" type="com.flexnet.platform.services.persistence.GMTTimestampType" name="lastUpdated" not-null="true">
+            <meta attribute="property-type">java.util.Date</meta>
+        </property>
+        
+        <property name="name_" type="string" length="255" unique="true" not-null="true" >
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="NAME" unique-key="PLTOU_UK" not-null="true" />
+        </property>
+        
+        <property name="displayName_" type="string" length="255" not-null="true" >
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="DISPLAYNAME" not-null="true" />
+        </property>
+        
+        <property name="description_" type="string" length="255" not-null="true" >
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="DESCRIPTION" not-null="false"/>
+        </property>
+        
+        <property name="lineage_" type="string" length="255" not-null="false" >
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="LINEAGE" not-null="false" />
+        </property>
+
+        <component name="auditInfo"
+            class="com.flexnet.platform.entities.AuditInfo">
+
+            <property name="createdBy" type="java.lang.Long">
+                <column name="AUDIT_CREATEDBY"></column>
+            </property>
+            <property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType" >
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="AUDIT_CREATEDON"></column>
+            </property>
+            <property name="updatedBy" type="java.lang.Long">
+                <column name="AUDIT_UPDATEDBY"></column>
+            </property>
+            <property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType" >
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="AUDIT_UPDATEDON"></column>
+            </property>
+
+        </component>
+        
+        <component name="address" class="com.flexnet.platform.entities.Address" >
+            <property name="address1" type="java.lang.String" length="255" column="ADDR_ADDR1"/>  
+            <property name="address2" type="java.lang.String" length="255" column="ADDR_ADDR2"/>  
+            <property name="city" type="java.lang.String" length="150" column="ADDR_CITY"/>
+            <property name="state" type="java.lang.String" length="75" column="ADDR_STATE"/>
+            <property name="zipCode" type="string" length="45" column="ADDR_ZIPCODE"/>
+            <property name="country" type="string" length="75" column="ADDR_COUNTRY"/>
+            <property name="region" type="string"  length="75" column="ADDR_REGION"/>
+        </component>
+        
+        <many-to-one name="belongsTo_" class="com.flexnet.platform.bizobjects.OrgUnit" column="BELONGSTO_ID" not-null="false" index="PLT_IDX_PARENTORG">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </many-to-one>
+        
+        <set name="contains_" cascade="none" lazy="true">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <key column="BELONGSTO_ID" />
+            <one-to-many class="com.flexnet.platform.bizobjects.OrgUnit" />
+        </set>
+        
+        <set name="members_" cascade="all,delete" lazy="true" inverse="true" table="PLT_ORGUNIT_CONTACT">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <key column="ORG_ID"/>
+            <one-to-many class="com.flexnet.platform.bizobjects.ContactOrgUnit"/>            
+        </set>
+
+        <!-- The name of the property "extendedPropertySet" (below) is not prefixed with an underscore nor are its getter and setter methods protected because the contract stipulated in the "IExtendable" interface requires that the "getextendedPropertySet" and "setExtendedPropertySet" methods be public. -->
+        
+        <many-to-one name="extendedPropertySet" cascade="all" not-null="false" class="com.flexnet.platform.bizobjects.ExtendedPropertySet" column="EXTENDEDPROPERTYSET_ID" index="PLT_IDX_ORG_EPS">
+        </many-to-one>
+
+         <set name="types_" table="PLT_ORGUNIT_ORGUNITTYPE" cascade="all" inverse="true" lazy="false">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <key>
+                <column name="ORGUNIT_ID" not-null="true"/>
+            </key>
+            <one-to-many class="com.flexnet.platform.bizobjects.OrgUnitOrgUnitType"/>
+        </set>
+    </class>
+</hibernate-mapping>
+

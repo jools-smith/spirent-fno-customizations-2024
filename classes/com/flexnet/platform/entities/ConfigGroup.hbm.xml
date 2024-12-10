@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<meta attribute="generated-class">com.flexnet.platform.entities.ConfigGroupData</meta>
+	<class lazy="false" name="com.flexnet.platform.entities.ConfigGroup"
+		table="PLT_CONFIGGROUP">
+
+		<meta attribute="class-description">
+			This class represents a Config Group, a group of configuration entries
+			@author Steve Cheng
+			Jul 14, 2004
+		</meta>
+
+
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<generator class="native" />
+		</id>
+		<property name="fileName" type="string" unique="true">
+			<column name="FILE_NAME" unique="true" sql-type="varchar(255)"
+				not-null="true" />
+		</property>
+
+		<property name="xmlConfiguration" column="XML_CONFIGURATION"
+			type="com.flexnet.platform.services.persistence.StringClobType"
+			length="16384">
+			<meta attribute="property-type">java.lang.String</meta>
+		</property>
+
+
+	</class>
+
+</hibernate-mapping>

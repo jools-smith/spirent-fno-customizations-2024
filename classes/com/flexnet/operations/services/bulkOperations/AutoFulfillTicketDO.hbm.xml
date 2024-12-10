@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.operations.services.bulkOperations.AutoFulfillTicketDO" table="OPS_AUTO_FULFILL_TICKET">
+        <meta attribute="class-description">
+            This class represents the validation results for a Bulk Operation Auto-Fulfill feature.
+        </meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.AutoFulfillTicketData</meta>
+        <meta attribute="extends">com.flexnet.products.server.model.OperationsBaseDO</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+
+        <meta attribute="implement-equals">true</meta>
+
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native"/>
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+			</property>
+
+        <many-to-one name="bulkOpSpec_"
+                     class="com.flexnet.operations.services.bulkOperations.BulkOperationSpecDO">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="BULK_OP_SPEC_ID"/>
+        </many-to-one>
+
+        <property name="canAutoFulfill_" column="CAN_AUTO_FULFILL" type="boolean">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+
+        <property name="reason_" type="string" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="REASON" length="255"/>
+        </property>
+
+        <property name="reasonKey_" type="string" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="REASON_KEY" length="255"/>
+        </property>
+
+        <property name="excludedLineItems_" column="EXCLUDED_LINE_ITEMS" type="boolean">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+
+        <property name="lineItemsExcludedReason_" type="string" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="LINE_ITEMS_EXCLUDED_REASON" length="255"/>
+        </property>
+
+        <set name="lineItems_" table="OPS_EXCLUDED_LINE_ITEM" lazy="false" cascade="all">
+            <meta attribute="field-description">
+                The bulk operation's excluded line items.
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+
+            <key column="AUTO_FULFILL_TICKET_ID"/>
+            <composite-element class="com.flexnet.operations.services.bulkOperations.ExcludedLineItem">
+                <meta attribute="generated-class" inherit="false">
+                    com.flexnet.operations.entities.ExcludedLineItemsData
+                </meta>
+                <meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+                <meta attribute="class-description">
+                    This class represents the line items excluded from a Bulk Operation Auto-Fulfill.
+                </meta>
+                <many-to-one name="activatableItem" class="com.flexnet.operations.bizobjects.entitlements.ActivatableItemBO"
+                             column="ACTIVATABLE_ITEM_ID" index="OPS_IDX_AF_LI">
+                    <meta attribute="use-in-equals">true</meta>
+	            <meta attribute="scope-set">public</meta>
+	            <meta attribute="scope-get">public</meta>
+                </many-to-one>
+				<property name="tenantId_" type="string" length="255">
+					<meta attribute="scope-get">protected</meta>
+					<meta attribute="scope-set">protected</meta>
+					<column name="TENANT_ID" />
+				</property>              
+            </composite-element>
+        </set>
+
+        <property name="excludedFulfillments_" column="EXCLUDED_FULFILLMENTS" type="boolean">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+
+        <property name="fulfillmentsExcludedReason_" type="string" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="FULFILLMENTS_EXCLUDED_REASON" length="255"/>
+        </property>
+
+        <set name="fulfillments_" table="OPS_EXCLUDED_FULFILLMENT" lazy="false" cascade="all">
+            <meta attribute="field-description">
+                The bulk operation's excluded fulfillments.
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+
+            <key column="AUTO_FULFILL_TICKET_ID"/>
+            <composite-element class="com.flexnet.operations.services.bulkOperations.ExcludedFulfillment">
+                <meta attribute="generated-class" inherit="false">
+                    com.flexnet.operations.entities.ExcludedFulfillmentsData
+                </meta>
+                <meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+                <meta attribute="class-description">
+                    This class represents the fulfillments excluded from a Bulk Operation Auto-Fulfill.
+                </meta>               
+                <many-to-one name="fulfillment" class="com.flexnet.operations.bizobjects.ActivationInstance"
+                             column="ACTIVATION_INSTANCE_ID" index="OPS_IDX_AF_F">
+                    <meta attribute="use-in-equals">true</meta>
+                    <meta attribute="scope-set">public</meta>
+                </many-to-one>
+                <property name="tenantId_" type="string" not-null="false" length="255">
+                            <meta attribute="scope-set">protected</meta>
+                            <meta attribute="scope-get">protected</meta>
+                            <column name="TENANT_ID" not-null="false" />
+                 </property>
+            </composite-element>
+        </set>
+
+        <component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+            <property name="createdBy" type="java.lang.Long">
+                <column name="AUDIT_CREATEDBY"></column>
+            </property>
+            <property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="CREATED_ON"></column>
+            </property>
+            <property name="updatedBy" type="java.lang.Long">
+                <column name="AUDIT_UPDATEDBY"></column>
+            </property>
+            <property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="LAST_MODIFIED"></column>
+            </property>
+        </component>
+    </class>
+</hibernate-mapping>

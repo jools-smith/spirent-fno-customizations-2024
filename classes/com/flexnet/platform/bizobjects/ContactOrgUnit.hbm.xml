@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.platform.bizobjects.ContactOrgUnit" table="PLT_ORGUNIT_CONTACT">
+        <meta attribute="generated-class" inherit="false">com.flexnet.platform.bizobjects.ContactOrgUnitData</meta>    
+        <meta attribute="implement-equals">true</meta>  
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta> 
+        <meta attribute="implements">com.flexnet.operations.bizobjects.ITenantIdUpdateAware</meta>      
+        
+        <id name="id" type="java.lang.Long" column="ID">
+			<generator class="native" />
+		</id>   
+             
+         <many-to-one name="orgUnitId_" class="com.flexnet.platform.bizobjects.OrgUnit" column="ORG_ID" >
+           	<meta attribute="use-in-equals">true</meta>
+         </many-to-one>
+         
+         <many-to-one name="contactId_" class="com.flexnet.platform.bizobjects.Contact" column="CONTACTINFO_ID"> 
+          	<meta attribute="use-in-equals">true</meta>
+         </many-to-one>            
+   
+		<property name="tenantId_" type="string" not-null="false" length="255">
+        	<meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="TENANT_ID" not-null="false" />
+        </property>      
+
+    </class>
+</hibernate-mapping>

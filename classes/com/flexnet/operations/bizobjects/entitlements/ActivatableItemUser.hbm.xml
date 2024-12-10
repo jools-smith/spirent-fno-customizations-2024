@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.operations.bizobjects.entitlements.ActivatableItemUser" table="OPS_ACTIVATABLE_ITEM_USER" dynamic-update="true">
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.entitlements.ActivatableItemUserData</meta>
+        <meta attribute="implement-equals">true</meta>
+
+        <composite-id>
+            <key-many-to-one name="user" class="com.flexnet.platform.bizobjects.User" column="USER_ID" >
+                <meta attribute="use-in-equals">true</meta>
+            </key-many-to-one>
+            <key-many-to-one name="activationItem" class="com.flexnet.operations.bizobjects.entitlements.ActivatableItemBO" column="ACTIVATABLE_ITEM_ID" >
+                <meta attribute="use-in-equals">true</meta>
+            </key-many-to-one>
+        </composite-id>
+
+        <property name="tenantId_" type="string" not-null="false" length="255">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="TENANT_ID" not-null="false" />
+        </property>
+    </class>
+</hibernate-mapping>

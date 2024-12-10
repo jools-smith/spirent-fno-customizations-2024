@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping>
+
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.health.AccountHealthScoresHistory"
+		table="OPS_HEALTH_SCORES_HISTORY">
+		<meta attribute="class-description">
+			This class represents an Organization scores
+			snapshot.
+		</meta>
+
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.AccountHealthScoresHistoryData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-set">protected</meta>
+			<generator class="native" />
+		</id>
+
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+
+		<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+		</property>
+
+
+		<many-to-one name="belongsToOrg_" class="com.flexnet.platform.bizobjects.OrgUnit"  column="BELONGSTO_ORG_ID" not-null="true" fetch="join" index="OPS_IDX_HLT_BELONG_TO_ORG">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</many-to-one>
+		
+		<property name="consumptionScore" type="java.lang.Integer"
+			not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="CONSUMPTION_SCORE" />
+		</property>
+
+		<property name="renewalScore" type="java.lang.Integer" not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="RENEWAL_SCORE" />
+		</property>
+
+		<property name="healthScore" type="java.lang.Integer" not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="HEALTH_SCORE" />
+		</property>
+		
+		<property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType" column="CREATED_ON" not-null="true">
+			<meta attribute="scope-set">protected</meta>
+		   	<meta attribute="property-type">java.util.Date</meta>
+		</property>
+		
+		<property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType" column="LAST_MODIFIED" not-null="true" index="OPS_IDX_HLT_BELONG_TO_ORG">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		   	<meta attribute="property-type">java.util.Date</meta>
+		</property>
+		
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+<hibernate-mapping>
+	<meta attribute="generated-class">com.flexnet.platform.entities.ReplicationLogData</meta>
+	<class lazy="false" name="com.flexnet.platform.bizobjects.ReplicationLog" table="PLT_REPLICATION_LOG">
+		<meta attribute="class-description">
+			This entity stores replication messages logs
+		</meta>
+			
+		<composite-id>
+			<key-property name="entityId" type="string" length="255">
+				<column name="ENTITY_ID" not-null="true" length="255" index="OPS_IDX_REPL_ENTITY"/>
+			</key-property>
+			<key-property name="entityType" type="string" length="15">
+				<column name="TENANT_CONT_ID" not-null="true" length="15" index="OPS_IDX_REPL_ENTITY"/>
+			</key-property>
+			<key-property name="eventTime" type="java.lang.Long">
+				<column name="EVENT_TIME" not-null="true" />
+			</key-property>		
+		</composite-id>	
+		<property name="tenant" type="string" not-null="true" length="255">
+			<column name="TENANT_ID" not-null="true" length="255"/>
+		</property>
+		<property name="status" type="string" not-null="true" length="30">
+			<column name="STATUS" not-null="true" length="30"/>
+		</property>
+    	<property name="entNames" type="text" not-null="false">
+			<column name="ENT_NAMES" />
+		</property>
+    	<property name="errorMsg" type="text" not-null="false">
+			<column name="ERROR_MSG" />
+		</property>
+    </class>
+</hibernate-mapping>

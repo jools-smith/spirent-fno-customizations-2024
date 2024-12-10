@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.administer.EmailTemplateVersionBO" table="OPS_EMAIL_TEMPLATE_VERSION">
+			<meta attribute="class-description">
+				This class represents email template's versions. 
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.administer.EmailTemplateVersion</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<meta attribute="implement-equals" inherit="false">true</meta>			
+			
+			<id name="email_tpl_ver_id" type="java.lang.Long" column="email_tpl_ver_id" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<many-to-one name="email_tpl_id" column="email_tpl_id"
+				 class="com.flexnet.operations.bizobjects.administer.EmailTemplateBO" not-null="true">
+				 <meta attribute="field-description">             
+					The set of versions per email template;
+				 </meta>
+			</many-to-one>	
+						
+            <property name="ver_num" type="java.lang.Long" not-null="false">
+				<column name="ver_num"></column>
+			</property>
+			
+			<property name="active_date" type="com.flexnet.platform.services.persistence.GMTTimestampType" not-null="false">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="active_date"></column>
+			</property>
+						
+			<property name="archive_date" type="com.flexnet.platform.services.persistence.GMTTimestampType" not-null="false">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="archive_date"></column>
+			</property>
+			
+			<property name="tenant_id" type="string" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<column name="tenant_id" length="255"/>
+			</property>
+			
+			<property name="last_modified_date" type="com.flexnet.platform.services.persistence.GMTTimestampType" not-null="false">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="last_modified"></column>
+			</property>
+			
+		</class>
+	</hibernate-mapping>

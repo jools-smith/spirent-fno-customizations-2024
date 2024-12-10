@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sql xmlns="urn:com.macrovision:flexnet/operations/reporting">
+    <!-- START CHANGES BY SHALU  -->
+    <query> 
+        <name>getFlexnetCustomHostAttrs</name>
+        <comment>Get FLEXnet Custom Host Attributes</comment>
+        <querydata>
+	       <![CDATA[ SELECT DISTINCT LIC_ATTR.ID id,
+                               replace(replace(HOST_TYPE.NAME + '__' + METADATA.NAME,' ','_'),'/','_') name,
+                               METADATA.TYPE type,
+                               HOST_TYPE.NAME htype,
+                               METADATA.MAXLENGTH maxLength,
+                               LIC_ATTR.FOR_REPORTING forReporting,
+                               LIC_ATTR.LAST_MODIFIED lastModified
+                            FROM PLT_EXTPROPMETADATA METADATA,OPS_LIC_TECH_HOST_ATTRIBUTE LIC_ATTR,
+                              OPS_LICENSE_TECHNOLOGY LIC_TECH ,OPS_HOST_TYPES HOST_TYPE
+                            WHERE LIC_TECH.ID = LIC_ATTR.LICENSE_TECHNOLOGY_ID
+                                    AND  LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME
+                                    AND  HOST_TYPE.ID = LIC_ATTR.HOST_TYPE_ID 
+                                    AND LIC_ATTR.FOR_REPORTING = 1
+                                    AND LIC_TECH.ID = 100
+                                    AND LIC_TECH.STATUS ='bo.constants.states.deployed'
+                                    AND METADATA.CLASSNAME='com.flexnet.operations.bizobjects.HostEntityBO'
+                                    AND METADATA.TYPE NOT IN('LONGTEXT','MULTI_VALUED_TEXT')
+                                    AND (((LIC_ATTR.LAST_MODIFIED =? AND LIC_ATTR.ID > ?) OR LIC_ATTR.LAST_MODIFIED  > ?)
+                                    	AND LIC_ATTR.LAST_MODIFIED < ? )
+                                    ORDER BY LIC_ATTR.LAST_MODIFIED,LIC_ATTR.ID ]]>
+    	</querydata>
+    </query>
+    <query>
+        <name>getDeviceDimensionTableColumns</name>
+        <comment></comment>
+        <querydata>
+	        SELECT COLUMN_NAME columnName FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'DEVICE_DIMENSION'
+	    </querydata>
+    </query>
+    <!-- END CHANGES BY SHALU  -->
+	<query>
+        <name>getLineItemTableColumns</name>
+        <comment></comment>
+        <querydata> 
+	        SELECT COLUMN_NAME columnName FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'LINE_ITEM_DIMENSION'
+    	</querydata>
+    </query>
+    <query>
+        <name>getFulfillmentTableColumns</name>
+        <comment></comment>
+        <querydata>
+	        SELECT COLUMN_NAME columnName FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'FULFILLMENT_DIMENSION'
+	    </querydata>
+    </query>
+	 <query>
+		<name>insertLicenseModelCustomAttribute</name>
+		<comment>Insert License Model Time Custom Attribute</comment>
+		<querydata>
+			INSERT INTO LICENSE_MODEL_CUSTOM_ATTR(
+			${entity_id},TENANT_ID,[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+    <query>
+		<name>insertOrgCustomAttribute</name>
+		<comment>Insert Organization Custom Attribute</comment>
+		<querydata>
+			INSERT INTO ORG_UNIT_CUSTOM_ATTR(
+			ORG_ID,TENANT_ID,[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>insertUserCustomAttribute</name>
+		<comment>Insert User Custom Attribute</comment>
+		<querydata>
+			INSERT INTO USER_CUSTOM_ATTR(
+			USER_ID,TENANT_ID,[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>insertProductCustomAttribute</name>
+		<comment>Insert Product Custom Attribute</comment>
+		<querydata>
+			INSERT INTO PRODUCT_CUSTOM_ATTR(
+			PRODUCT_ID,TENANT_ID,[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>insertLineItemCustomAttribute</name>
+		<comment>Insert LineItemCustomAttribute</comment>
+		<querydata>
+			INSERT INTO [LINE_ITEM_CUSTOM_ATTR]
+([ACTIVATION_ID],[TENANT_ID],[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+     VALUES
+(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	
+	
+		
+	<query>
+		<name>insertMaintenanceLineItemCustomAttribute</name>
+		<comment>Insert MaintenanceLineItemCustomAttribute</comment>
+		<querydata>
+			INSERT INTO [MAINTENANCE_LI_CUSTOM_ATTR]
+([ACTIVATION_ID],[TENANT_ID],[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+     VALUES
+(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>insertEntCustomAttribute</name>
+		<comment>Insert Entitlement Custom Attrribute value</comment>
+		<querydata>
+			INSERT INTO ENTITLEMENT_CUSTOM_ATTR(
+			ENTITLEMENT_ID,TENANT_ID,[CA1_NAME],[CA1_VALUE],[CA2_NAME],[CA2_VALUE],[CA3_NAME],[CA3_VALUE],[CA4_NAME],[CA4_VALUE],[CA5_NAME],[CA5_VALUE],[CA6_NAME]
+,[CA6_VALUE],[CA7_NAME],[CA7_VALUE],[CA8_NAME],[CA8_VALUE],[CA9_NAME],[CA9_VALUE],[CA10_NAME],[CA10_VALUE],[CA11_NAME],[CA11_VALUE],[CA12_NAME],[CA12_VALUE]
+,[CA13_NAME],[CA13_VALUE],[CA14_NAME],[CA14_VALUE],[CA15_NAME],[CA15_VALUE],[CA16_NAME],[CA16_VALUE],[CA17_NAME],[CA17_VALUE],[CA18_NAME],[CA18_VALUE]
+,[CA19_NAME],[CA19_VALUE],[CA20_NAME],[CA20_VALUE],[CA21_NAME],[CA21_VALUE],[CA22_NAME],[CA22_VALUE],[CA23_NAME],[CA23_VALUE],[CA24_NAME],[CA24_VALUE]
+,[CA25_NAME],[CA25_VALUE],[CA26_NAME],[CA26_VALUE],[CA27_NAME],[CA27_VALUE],[CA28_NAME],[CA28_VALUE],[CA29_NAME],[CA29_VALUE],[CA30_NAME],[CA30_VALUE])
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+ <query>
+     <name>insertDeviceFact</name>
+     <comment>Insert Device Fact Details</comment>
+     <querydata>
+           INSERT INTO DEVICE_FACT(DEVICE_ID, STATUS, ORG_ID, USER_ID, CREATE_DATE_ID, EVENT_DATE_ID, EVENT_ID,  
+           			EVENT_TYPE, EVENT_DETAILS, LASTMODIFIED_DATE_ID,CONTACT_ID,TENANT_ID) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   </querydata>
+ </query>
+ 
+ <query>
+     <name>insertServedClientFeatureFact</name>
+     <comment>Insert Device Fact Details</comment>
+     <querydata>
+           INSERT INTO SERVED_CLIENT_FEATURE_FACT(DEVICE_ID, PARENT_ID, LASTMODIFIED_DATE_ID, LAST_SYNC_TIME_ID, EXPIRATION_ID
+           , FEATURE_NAME , FEATURE_COUNT, SERVED_STATUS, TENANT_ID)
+           VALUES(?,?,?,?,?,?,?,?,?)
+   </querydata>
+ </query>    
+ 
+   
+   <query>
+       <name>insertDevicePrebuiltFact</name>
+       <comment>Insert Device Prebuilt License Facts</comment>
+       <querydata>
+           INSERT INTO DEVICE_PREBUILT_FACT(DEVICE_ID, ORDERED_PROD_ID, ACTIVATABLE_PROD_ID, LICENSE_MODEL_ID, START_DATE_ID, 
+           			EXPIRATION_DATE_ID, FULFILL_DATE_ID, EVENT_ID, LASTMODIFIED_DATE_ID,TENANT_ID) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+	   </querydata>
+   </query>    
+
+   <query>
+       <name>insertDeviceAddonFact</name>
+       <comment>Insert Device Add-on Facts</comment>
+       <querydata>
+            INSERT INTO DEVICE_ADDON_FACT(DEVICE_ID, ORDERED_PROD_ID, ACTIVATABLE_PROD_ID, LICENSE_MODEL_ID, SKU_ID, ORG_ID,
+            	USER_ID, LINE_ITEM_ID, EVENT_DATE_ID, EVENT_ID, EVENT_TYPE, REQUESTED_COUNT_DELTA, EXTENDED_REQUESTED_COUNT, CONSUMED_COUNT_DELTA, 
+            	EXTENDED_CONSUMED_COUNT, LASTMODIFIED_DATE_ID,CONTACT_ID,TENANT_ID) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)
+		</querydata>
+    </query>
+
+    <query>
+        <name>insertEntitlementFact</name>
+        <comment>Insert Entitlement Fact Details</comment>
+        <querydata>
+	        INSERT INTO ENTITLEMENT_FACT(ORDERED_PROD_ID,ACTIVATABLE_PROD_ID,LICENSE_MODEL_ID,
+	                                     SKU_ID,LINE_ITEM_ID,STATE_ID,ACTION_ID,ORG_ID,RESELLER_ID,
+ 	                                     PARENT_PRODUCT_ID,CREATE_DATE_ID,LASTMODIFIED_DATE_ID,ORDERED_SEAT_COUNT,EXTENDED_SEAT_COUNT,TENANT_ID, ENTITLEMENT_ID,MAINTENANCELINEITEM_ID)
+                             VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+    </query>
+    <query>
+        <name>insertFulfillmentFact</name>
+        <comment>Insert Fulfillment Fact Details</comment>
+        <querydata>
+	        INSERT INTO FULFILLMENT_FACT(PRODUCT_ID,LICENSE_MODEL_ID,SKU_ID,
+	                                     LINE_ITEM_ID,ORG_ID,RESELLER_ID,PARENT_PRODUCT_ID,STATE_ID,
+ 	                                     ACTION_ID,ACTIVATION_DATE_ID,LASTMODIFIED_DATE_ID,FULFILLMENT_ID,FULFILL_COUNT,TENANT_ID)
+                             VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+    </query>
+    <!--  -->
+    <!--  -->
+    <!-- Bulk Operations Section -->
+    <!--  -->
+    <!--  -->
+    <query>
+        <name>updateEmailedWorkItemKey</name>
+        <comment>Bulk Operation Query to update work item</comment>
+        <querydata>
+            EXEC UpdateEmailedWorkItem ?, ?
+    	</querydata>
+    </query>
+    <query>
+        <name>updateEmailedFulfillItemKey</name>
+        <comment>Bulk Operation Query to update work item</comment>
+        <querydata>
+            EXEC UpdateEmailedFulfillItem ?, ?
+    	</querydata>
+    </query>
+    <query>
+        <name>entitlementLineItemUpgradeKey</name>
+        <comment>Bulk Operation Query to create an upgrade activatable item</comment>
+        <querydata>
+            EXEC UpgradeActivatableItem ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>entitlementLineItemRenewalKey</name>
+        <comment>Bulk Operation Query to create an upgrade activatable item</comment>
+        <querydata>
+            EXEC RenewActivatableItem ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>autoFulfillKey</name>
+        <comment>Bulk Operation Query to create an new activation instance</comment>
+        <querydata>
+            EXEC AutoFulfill ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>createLicenseKey</name>
+        <comment>Bulk Operation Query to create an license text record</comment>
+        <querydata>
+            EXEC CreateTextLicense ?,?,?,?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>createBinaryLicenseKey</name>
+        <comment>Bulk Operation Query to create an license text record</comment>
+        <querydata>
+            EXEC CreateBinaryLicense ?,?,?,?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>createHostLicenseKey</name>
+        <comment>Bulk Operation Query to create an license text record</comment>
+        <querydata>
+            EXEC CreateHostLicense ?,?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>createSupersedeSignKey</name>
+        <comment>Bulk Operation Query to create an Supersede Sign record</comment>
+        <querydata>
+            EXEC CreateSupersedeSign ?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>workItemInsertKey</name>
+        <comment>Bulk Operation Query to create a work item</comment>
+        <querydata>
+	         EXEC CreateWorkItem ?,?,?,?,?,?
+    	</querydata>
+    </query>    
+    <query>
+        <name>bulkOpSoldToInsertKey</name>
+        <comment>Bulk Operation Query to add soldTo Ids to a Spec Composition Table</comment>
+        <querydata>
+            EXEC AddBulkOpSoldTo ?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>bulkOpLineItemInsertKey</name>
+        <comment>Bulk Operation Query to add LineItem Ids to a Spec Composition Table</comment>
+        <querydata>
+            EXEC AddBulkOpLineItem ?,?,?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>deleteBulkOpKey</name>
+        <comment>Bulk Operation Query delete a Spec and related entity instances</comment>
+        <querydata>
+            EXEC  DeleteBulkOp ?,?
+    	</querydata>
+    </query>
+    <query>
+        <name>metadataInsertKey</name>
+        <comment>Bulk Operation Query to create an </comment>
+        <querydata>
+            EXEC CreateMetadata ?,?,?,?,?,?
+    	</querydata>
+    </query>
+
+</sql>

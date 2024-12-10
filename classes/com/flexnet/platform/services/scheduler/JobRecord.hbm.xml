@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+   "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+   "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false" name="com.flexnet.platform.services.scheduler.JobRecord"
+		table="PLT_QRTZ_JOB_HISTORY">
+		<meta attribute="class-description">
+			Each instance of this class represents one
+			execution of a job.
+		</meta>
+		
+		<id name="id" type="java.lang.Long" column="id" unsaved-value="null">
+			<generator class="native" />
+		</id>
+
+		<property name="jobName" column="job_name" type="string" />
+		<property name="jobGroup" column="job_group" type="string" />
+		<property name="triggerId" column="trigger_id" type="string" />
+		<property name="tenantId" column="tenant_id" type="string" />
+		<property name="status" column="status" type="string" />
+		<property name="artifactPath" column="artifact_path" type="string" />
+		<property name="startTime" column="start_time"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+		</property>
+		<property name="endTime" column="end_time"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+		</property>
+		<property name="fileSize" column="file_size" type="string"/>
+		<property name="checkSum" column="check_sum" type="string"/>
+	</class>
+</hibernate-mapping>

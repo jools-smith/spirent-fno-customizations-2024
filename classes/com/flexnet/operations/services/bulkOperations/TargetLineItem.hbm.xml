@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.operations.services.bulkOperations.TargetLineItem" table="OPS_BULK_OP_LINE_ITEM">
+        <meta attribute="class-description">
+            This class represents the Maintenance Item associated with an Entitlement order.
+        </meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.TargetLineItemData</meta>
+        <meta attribute="extends">com.flexnet.products.server.model.OperationsBaseDO</meta>
+
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native"/>
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+		<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+		</property>
+        <many-to-one name="specID_"
+                     class="com.flexnet.operations.services.bulkOperations.BulkOperationSpecDO"
+                     index="OPS_IDX_TGT_SPEC"  >
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="BULK_OP_SPEC_ID"/>
+        </many-to-one>
+
+        <many-to-one name="lineItem_"
+                     class="com.flexnet.operations.bizobjects.entitlements.ActivatableItemBO"
+                     index="OPS_IDX_TGT_LI">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">public</meta>
+            <column name="ACTIVATABLE_ITEM_ID"/>
+        </many-to-one>
+
+        <property name="seatCount_" column="SEAT_COUNT" type="int">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">public</meta>
+        </property>
+    </class>
+
+
+</hibernate-mapping>

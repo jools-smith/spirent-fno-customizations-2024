@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+<hibernate-mapping>
+	<class lazy="false" name="com.flexnet.operations.bizobjects.reporting.TransformEntity" table="OPS_REPORTING_TRAN_ENTITY">
+		<meta attribute="class-description">
+			This contains all reporting entities which are transformed from FNO database to 
+			reporting database.
+			@author Santosh kumar
+			Feb 24th, 2008
+		</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.reporting.TransformEntityData</meta>
+		<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+		<meta attribute="scope-class">public abstract</meta>
+		
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-set">protected</meta>
+			<generator class="native"/>
+		</id>
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+			</property>
+		
+		<property column="LASTUPDATED" type="com.flexnet.platform.services.persistence.GMTTimestampType" name="lastUpdated" not-null="true">
+		   	<meta attribute="property-type">java.util.Date</meta>
+		</property>
+		
+		<property name="name_" type="string" length="255" not-null="true" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="NAME" not-null="true" />
+		</property>
+		
+		<property name="insertCount" type="java.lang.Integer">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="INSERT_COUNT" />
+		</property>
+		
+		<property name="updateCount" type="java.lang.Integer">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="UPDATE_COUNT" />
+		</property>
+		
+		
+		<many-to-one name="process_" class="com.flexnet.operations.bizobjects.reporting.TransformationProcess">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="PROCESS_ID" not-null="true"/>
+		</many-to-one>
+	</class>
+</hibernate-mapping>

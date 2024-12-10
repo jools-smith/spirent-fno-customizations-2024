@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.administer.EmailToTemplateBO" table="OPS_EMAIL_TO_TEMPLATE">
+			<meta attribute="class-description">
+				This class represents email template's TO, CC, BCC email addresses. 
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.administer.EmailToTemplate</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<meta attribute="implement-equals" inherit="false">true</meta>			
+			
+			<id name="email_to_tpl_id" type="java.lang.Long" column="email_to_tpl_id" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<many-to-one name="email_tpl_id" column="email_tpl_id"
+				 class="com.flexnet.operations.bizobjects.administer.EmailTemplateBO" not-null="true">
+				 <meta attribute="field-description">             
+					The set of TO, CC, BCC email addresses per template;
+				 </meta>
+			</many-to-one>	
+			
+			<property name="rcpt_typ_cd" type="string" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<column name="rcpt_typ_cd" length="3"/>
+			</property>
+			
+			<property name="email_addr" type="string" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<column name="email_addr" length="254"/>
+			</property>
+			
+			<property name="tenant_id" type="string" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<column name="tenant_id" length="255"/>
+			</property>
+			
+		</class>
+	</hibernate-mapping>

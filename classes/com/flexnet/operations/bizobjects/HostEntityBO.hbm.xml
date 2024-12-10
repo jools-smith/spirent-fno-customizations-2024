@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.HostEntityBO" table="OPS_HOST_ENTITY">
+			<meta attribute="class-description">
+				This class represents the host entity.
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.HostEntityData</meta>
+			<meta attribute="extends" inherit="false">com.flexnet.products.bizobjects.OperationsBaseEntity</meta>			
+			<meta attribute="implement-equals">true</meta>
+			<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+			<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IExtendable</meta>			
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			<discriminator column="HOST_ENTITY_TYPE" type="string" length="64" not-null="true" force="true"/>
+									
+			<version column="HIB_VERSION" name="HibVersion">
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+			</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" unique-key="sTo_heT_h_own_mig_lt_ht" not-null="true"/> 
+			</property>		
+
+ 			<many-to-one name="unifiedHost_" class="com.flexnet.operations.unifiedhost.dao.entities.UnifiedHost"
+                    column="UHID">
+                <meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+        	</many-to-one>
+
+			<property name="hostId_" type="string">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="HOST_ID" unique-key="sTo_heT_h_own_mig_lt_ht" length="2000" not-null="true"></column>
+			</property>					
+
+			<property name="hostEntityType" type="string" insert="false" update="false">
+				<meta attribute="use-in-equals">true</meta>
+				<meta attribute="scope-set">protected</meta>
+				<column name="HOST_ENTITY_TYPE" unique-key="sTo_heT_h_own_mig_lt_ht" length="64"/>
+			</property>
+
+			<many-to-one name="soldTo" column="SOLD_TO_ORG_ID" unique-key="sTo_heT_h_own_mig_lt_ht"
+				class="com.flexnet.platform.bizobjects.OrgUnit" not-null="true" index="OPS_IDX_HOSTENTITY_ORG">
+				<meta attribute="use-in-equals">true</meta>				
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</many-to-one>
+
+			<many-to-one name="owner" column="OWNER" unique-key="sTo_heT_h_own_mig_lt_ht"
+				class="com.flexnet.platform.bizobjects.User" not-null="false" index="OPS_IDX_HOSTENTITY_OWNER">
+				<meta attribute="use-in-equals">true</meta>				
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</many-to-one>
+
+			<property name="migrationId" column="MIGRATION_ID" type="string" length="128" index="OPS_IDX_HOST_MIGRATIONID" unique-key="sTo_heT_h_own_mig_lt_ht">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>
+
+			<many-to-one name="extendedPropertySet" column="EXTENDED_PROPERTIES" not-null="false"
+	             class="com.flexnet.platform.bizobjects.ExtendedPropertySet"
+	             cascade="all"  index="FK_OPS_HOST_ENTITY_EXTPROP">
+	             <meta attribute="field-description">			             
+		             	The set of extended properties (host attributes) assigned to this host;
+	             </meta>
+	             <meta attribute="scope-set">public</meta>
+			</many-to-one>						
+
+			<many-to-one name="licenseTechnology_" unique-key="sTo_heT_h_own_mig_lt_ht" 
+				class="com.flexnet.products.bizobjects.LicenseTechnologyBO"> 
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+				<column name="LICENSE_TECHNOLOGY_ID" not-null="false"/>
+			</many-to-one>
+
+
+			<many-to-one name="hostType_" unique-key="sTo_heT_h_own_mig_lt_ht" 
+			    class="com.flexnet.products.bizobjects.HostTypeDO" >
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+				<column name="HOST_TYPE_ID" not-null="false"/>
+			</many-to-one>
+			
+			<set name="licenseText_" inverse="true" cascade="all" lazy="true">
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+				<key column="HOST_ENTITY_ID"/>
+				<one-to-many class="com.flexnet.operations.bizobjects.HostLicenseTextBO" />
+			</set>
+
+			<property name="status_" column="STATUS" type="string" length="32" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>
+			
+        	
+			<subclass name="com.flexnet.operations.bizobjects.ServerHostEntityBO" discriminator-value="bo.constants.hostentity.type.Server">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.ServerHostEntityData</meta>
+				<meta attribute="scope-set" inherit="false">protected</meta>
+				<meta attribute="scope-class">public abstract</meta>
+				
+				<many-to-one name="server1" column="SERVER_HOST1" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+
+				<many-to-one name="server2" column="SERVER_HOST2" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+
+				<many-to-one name="server3" column="SERVER_HOST3" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+
+			<property name="redundantServer_" column="IS_REDUNDANT_SERVER" type="boolean">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>																
+			</subclass>
+			
+			<subclass name="com.flexnet.operations.bizobjects.NodelockedHostEntityBO" discriminator-value="bo.constants.hostentity.type.NodeLocked">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.NodelockedHostEntityData</meta>
+				<meta attribute="scope-set" inherit="false">protected</meta>
+				<meta attribute="scope-class">public abstract</meta>
+
+				<many-to-one name="nodelockHost" column="NODELOCKED_HOST" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+			</subclass>
+
+            <subclass name="com.flexnet.operations.bizobjects.DeviceHostEntityBO" discriminator-value="bo.constants.hostentity.type.Device">
+                <meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.DeviceHostEntityData</meta>
+                <meta attribute="scope-set" inherit="false">protected</meta>
+				<meta attribute="scope-class">public abstract</meta>
+                
+                <property name="description" column="DESCRIPTION" type="string" length="2000" not-null="false">
+                    <meta attribute="field-description">
+                        Human readable description.
+                    </meta>
+                </property>
+            </subclass>
+			
+			<subclass name="com.flexnet.operations.bizobjects.CustomHostEntityBO" discriminator-value="bo.constants.hostentity.type.Custom">
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.CustomHostEntityData</meta>
+				<meta attribute="scope-set" inherit="false">protected</meta>
+				<meta attribute="scope-class">public abstract</meta>
+			</subclass>
+			
+			 <subclass name="com.flexnet.operations.bizobjects.TrustedHostEntityBO"  discriminator-value="bo.constants.hostentity.type.Trusted">
+
+				<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.TrustedHostEntityData</meta>
+				<meta attribute="scope-set" inherit="false">protected</meta>
+				<meta attribute="scope-class">public abstract</meta>
+				
+        		<join table="OPS_TRUSTED_HOST_ENTITY">
+        		
+        		<key column="ID"/>
+				<many-to-one name="machineIdentifier" column="MACHINE_IDENTIFIER" index="OPS_IDX_MACHINE_IDENT" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+				
+				<many-to-one name="umnType1" column="UMN_TYPE1" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+
+				<many-to-one name="umnType2" column="UMN_TYPE2" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+				
+				<property name="platformType" column="PLATFORM_TYPE" type="string" length="64" not-null="false">
+	     		</property>	
+	     		
+	     		<many-to-one name="umnType3" column="UMN_TYPE3" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+	     		
+	     		<many-to-one name="umnType5" column="UMN_TYPE5" class="com.flexnet.operations.bizobjects.HostUnit" not-null="false">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</many-to-one>
+				
+	     		<property name="virtualFamilyName" column="VIRTUAL_FAMILY_NAME" type="string" length="64" not-null="false">
+		    		<meta attribute="scope-set">protected</meta>
+	     		</property>	
+	     		
+	     		<property name="vmid" column="VMID" type="string" length="64" not-null="false">
+		    		<meta attribute="scope-set">protected</meta>
+	     		</property>	
+	     		
+	     		<property name="virtualName" column="VIRTUAL_NAME" type="string" length="64" not-null="false">
+		    		<meta attribute="scope-set">protected</meta>
+	     		</property>	
+	     			
+				<property name="operatingSystemInfo" column="OPERATING_SYSTEM_INFO" type="string" length="64" not-null="false">
+		    		<meta attribute="scope-set">protected</meta>
+	     		</property>
+
+                <property name="tenantId" type="string" not-null="false" length="255">
+                    <meta attribute="scope-get">public</meta>
+                    <meta attribute="scope-set">public</meta>
+                    <column name="TENANT_ID" not-null="false"/>
+                </property>
+
+        		</join>
+    		</subclass>
+		</class>
+	</hibernate-mapping>

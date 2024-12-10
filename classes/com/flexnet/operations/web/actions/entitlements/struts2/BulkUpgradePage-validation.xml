@@ -1,0 +1,178 @@
+<!DOCTYPE validators PUBLIC "-//Apache Struts//XWork Validator 1.0.2//EN"
+       "http://struts.apache.org/dtds/xwork-validator-1.0.2.dtd">
+       
+<validators>
+
+    <field name="lineItemDTO.versionDateDuration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItem.error.message.invalidValueForVersionDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItem.error.message.invalidValueForVersionDuration"/>
+        </field-validator>
+    </field>
+
+    <field name="lineItemDTO.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItem.error.message.invalidValueForExpDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItem.error.message.invalidValueForExpDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.rehostsPolicy.count">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRehostCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRehostCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.rehostsPolicy.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRehostDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRehostDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.returnsPolicy.count">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReturnCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReturnCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.returnsPolicy.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReturnDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReturnDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.repairsPolicy.count">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRepairCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRepairCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.repairsPolicy.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRepairDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForRepairDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.extraActivationsPolicy.count">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForExtraActivation"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForExtraActivation"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.count">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReinstallCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReinstallCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReinstallDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForReinstallDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.umn1ReinstallDetails.numOfReinstalls">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN1ReinstallCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN1ReinstallCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.umn1ReinstallDetails.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN1ReinstallDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN1ReinstallDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.umn2ReinstallDetails.numOfReinstalls">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN2ReinstallCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN2ReinstallCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.umn2ReinstallDetails.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN2ReinstallDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForUMN2ReinstallDuration"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.midReinstallDetails.numOfReinstalls">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForMIDReinstallCount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForMIDReinstallCount"/>
+        </field-validator>
+    </field>
+    <field name="lineItemDTO.reinstallPolicy.midReinstallDetails.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForMIDReinstallDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItemPolicies.error.message.invalidValueForMIDReinstallDuration"/>
+        </field-validator>
+    </field>
+
+</validators>

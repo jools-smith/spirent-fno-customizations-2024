@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.platform.bizobjects.FnpSupportedTimeZoneBO" table="PLT_FNP_SUPPORTED_TIMEZONES">
+			<meta attribute="class-description">
+				This class represents storing all FNP supported timezones 
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.platform.bizobjects.FnpSupportedTimeZoneData</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<property name="name" type="java.lang.String">
+				<meta attribute="scope-set">protected</meta>
+				<column name="NAME" length="255" not-null="true"/>
+			</property>
+			
+			<property name="fnp_value" type="java.lang.String">
+				<meta attribute="scope-set">protected</meta>
+				<column name="FNP_VALUE" length="255" not-null="true"/>
+			</property>
+			
+			<property name="description" type="java.lang.String">
+				<meta attribute="scope-set">protected</meta>
+				<column name="DESCRIPTION" length="255" not-null="true"/>
+			</property>	
+			
+		</class>
+	</hibernate-mapping>

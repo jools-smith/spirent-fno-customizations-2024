@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.sns.emails.BouncedEmailBO" table="OPS_BOUNCED_EMAIL_HISTORY">
+			<meta attribute="class-description">
+				This class represents storing Bounced email data 
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.sns.emails.BouncedEmail</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<property name="tenantId" type="java.lang.String">
+				<meta attribute="scope-set">protected</meta>
+				<column name="TENANT_ID" length="255" not-null="true"/>
+			</property>
+			
+			<property name="eventType" type="java.lang.String" length="100" column="NOTIFICATION_TYPE" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="bounceType" type="java.lang.String" length="100" column="BOUNCE_TYPE" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="complaintFeedbackType" type="java.lang.String" length="100" column="COMPLAINT_FEEDBACK_TYPE" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="recipientEmailAddress" type="java.lang.String" length="254" column="RECIPIENT_EMAIL_ADDRESS" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="timestamp" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LOGGED_TIMESTAMP" not-null="true"></column>
+			</property>
+			
+			<property name="feedbackId" type="java.lang.String" length="100" column="FEEDBACK_ID" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="fromEmailAddress" type="java.lang.String" length="254" column="SOURCE_EMAIL_ADDRESS" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="emailHistoryReference" type="java.lang.String" not-null="true" column="EMAIL_HISTORY_REFERENCE">
+				<meta attribute="scope-set">protected</meta>
+			</property>
+			
+			<property name="jsonClob" type="java.lang.String" not-null="true">
+				<column name="JSON_CLOB" length="5000" />
+			</property>
+			
+		</class>
+	</hibernate-mapping>

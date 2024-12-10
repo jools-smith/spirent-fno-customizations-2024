@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping>
+
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.health.FeatureUsageDetail"
+		table="OPS_HEALTH_FEATURE_USAGE">
+		<meta attribute="class-description">
+			This class represents an Feature Usage Event
+			entry.
+		</meta>
+
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.health.FeatureUsageDetailData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		<!-- <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta> 
+			<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta> -->
+		<meta attribute="implement-equals">true</meta>
+		<meta attribute="scope-field">private</meta>
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<generator class="native" />
+		</id>
+
+		<property name="tenantId" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TENANT_ID" not-null="true" />
+		</property>
+
+		<many-to-one name="account"
+			class="com.flexnet.platform.bizobjects.OrgUnit" column="ORG_ID"
+			not-null="true">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</many-to-one>
+
+		<many-to-one name="product"
+			class="com.flexnet.products.bizobjects.Orderable" column="PRODUCT_ID"
+			not-null="true">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</many-to-one>
+
+		<many-to-one name="feature"
+			class="com.flexnet.products.bizobjects.ProductFeature" column="FEATURE_ID">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</many-to-one>
+
+		<property name="activationId" type="string" not-null="true"
+			length="200">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="ACTIVATION_ID" not-null="true" />
+		</property>
+
+		<property name="totalVal" type="java.lang.Long">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TOTAL_VAL" />
+		</property>
+
+		<property name="consumptionVal" type="java.lang.Long">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="CONSUMPTION_VAL" />
+		</property>
+
+	</class>
+</hibernate-mapping>

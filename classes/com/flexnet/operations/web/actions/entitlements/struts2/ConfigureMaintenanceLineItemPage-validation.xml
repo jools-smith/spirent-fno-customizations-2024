@@ -1,0 +1,17 @@
+<!DOCTYPE validators PUBLIC "-//Apache Struts//XWork Validator 1.0.2//EN"
+       "http://struts.apache.org/dtds/xwork-validator-1.0.2.dtd">
+       
+<validators>
+
+    <field name="lineItemDTO.duration">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="configureLineItem.error.message.invalidValueForExpDuration"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">0</param>
+            <message key="configureLineItem.error.message.invalidValueForExpDuration"/>
+        </field-validator>
+    </field>
+
+</validators>

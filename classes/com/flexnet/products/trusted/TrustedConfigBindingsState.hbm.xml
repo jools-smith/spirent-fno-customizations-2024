@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.products.trusted.TrustedConfigBindingsState" 
+			   table="OPS_TC_BINDINGS_STATE">
+			<meta attribute="class-description">
+				This class represents the entity that keeps track of configured bindings
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.products.entities.TrustedConfigBindingsStateData</meta>
+			<meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+			<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+			<meta attribute="scope-field">private</meta>
+			<meta attribute="implement-equals">true</meta>
+			
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<version column="HIB_VERSION" name="HibVersion">
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+			</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+			</property>		
+
+			<property column="LAST_MODIFIED" type="com.flexnet.platform.services.persistence.GMTTimestampType" name="lastModified" not-null="true">
+				<meta attribute="property-type">java.util.Date</meta>
+		        </property>
+			
+			<property name="createdOn" column="CREATED_ON" type="com.flexnet.platform.services.persistence.GMTTimestampType" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="property-type">java.util.Date</meta>
+			</property>
+			
+			<many-to-one name="trustedConfigID" 
+						 class="com.flexnet.products.trusted.TrustedConfiguration" not-null="true">
+				<column name="TRUSTED_CONFIG_ID" not-null="true"/>
+			</many-to-one>
+
+			<property name="bindingType" column="BINDING_TYPE" type="string" length="10" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="platform" column="PLATFORM" type="string" length="10" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="msn" column="HID_MSN" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="harddisk" column="HID_HARDDISK" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="internet" column="HID_INTERNET" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>
+
+			<property name="ethernet" column="HID_ETHERNET" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="bios" column="HID_BIOS" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="display" column="HID_DISPLAY" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>
+
+			<property name="memory" column="HID_MEMORY" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="system" column="HID_SYSTEM" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+			<property name="cpu" column="HID_CPU" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+			
+			<property name="vmid" column="HID_VIMD" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+			</property>
+
+		</class>
+	</hibernate-mapping>
+
+
+

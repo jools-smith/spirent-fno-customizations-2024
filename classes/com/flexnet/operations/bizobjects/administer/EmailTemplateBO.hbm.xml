@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+    <hibernate-mapping>
+        <class lazy="false" name="com.flexnet.operations.bizobjects.administer.EmailTemplateBO" table="OPS_EMAIL_TEMPLATE">
+            <meta attribute="class-description">
+                This class represents email template definitions as saved by the users. 
+            </meta>
+            <meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.administer.EmailTemplate</meta>
+            <meta attribute="scope-class">public abstract</meta>
+            
+            <meta attribute="implement-equals" inherit="false">true</meta>          
+            
+            <id name="email_tpl_id" type="java.lang.Long" column="email_tpl_id" unsaved-value="null">
+                <meta attribute="scope-set">protected</meta>
+                <generator class="native"/>
+            </id>
+            
+            <many-to-one name="email_tpl_ver_id" column="email_tpl_ver_id" 
+                 class="com.flexnet.operations.bizobjects.administer.EmailTemplateVersionBO">
+                 <meta attribute="field-description">             
+                    The active version of the template;
+                 </meta>
+            </many-to-one>                  
+            
+            <property name="tenant_id" type="string" not-null="true">
+                <meta attribute="scope-set">protected</meta>
+                <column name="tenant_id" length="255"/>
+            </property>
+            
+            <many-to-one name="email_event_id" column="email_event_id"
+                 class="com.flexnet.operations.bizobjects.administer.EmailEventBO" not-null="true">
+                 <meta attribute="field-description">             
+                    The set of email templates per email event;
+                 </meta>
+            </many-to-one>              
+
+            
+            <property name="from_email_addr" type="string" not-null="true">
+                <meta attribute="scope-set">protected</meta>
+                <column name="from_email_addr" length="254"/>
+            </property>
+            
+            <property name="reply_to_email_addr" type="string" not-null="true">
+                <meta attribute="scope-set">protected</meta>
+                <column name="reply_to_email_addr" length="254"/>
+            </property>
+            
+            <property name="snd_ind" column="snd_ind" type="boolean" not-null="true">
+                <meta attribute="scope-set">public</meta>
+                <meta attribute="scope-get">public</meta>
+            </property>
+            
+            <property name="dflt_ind" column="dflt_ind" type="boolean" not-null="true">
+                <meta attribute="scope-set">public</meta>
+                <meta attribute="scope-get">public</meta>
+            </property>
+            
+            <property name="view_content_in_history" column="view_content_in_history" type="boolean" not-null="true">
+                <meta attribute="scope-set">public</meta>
+                <meta attribute="scope-get">public</meta>
+            </property>
+            
+            <property name="var_nm" type="string" not-null="true">
+                <meta attribute="scope-set">protected</meta>
+                <column name="var_nm" length="25"/>
+            </property>
+
+            <property name="attach_entl_cert" type="boolean" not-null="true">
+                <meta attribute="scope-set">public</meta>
+                <meta attribute="scope-get">public</meta>
+                <column name="attach_entitlement_certificate" default="0"/>
+            </property>
+            
+        </class>
+    </hibernate-mapping>

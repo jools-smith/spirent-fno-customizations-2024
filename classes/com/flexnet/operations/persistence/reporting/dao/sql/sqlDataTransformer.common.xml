@@ -1,0 +1,3439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Query Keys should be unique in this file. Note : Query keys are crucial 
+	in transformation logic.Query keys are formed by using entity name with some 
+	logical pattern. Keys Pattern: refer ReportEntityENC.java for $entity_name$ 
+	1. To select list of entities from FNO database : query key should be "get$entity_name$s" 
+	2. To insert data in reporting database: query key should be "insert$entity_name$" 
+	3. To update data in reporting database:query key should be "update$entity_name$" 
+	4. To select entity By id from Reporting database: query key should be "get$entity_name$ById" -->
+<sql xmlns="urn:com.macrovision:flexnet/operations/reporting">
+
+	<query>
+		<name>getFlexnetCustomHostAttrVals</name>
+		<comment>Get custom Attributes Values</comment>
+		<querydata>
+	       <![CDATA[ SELECT DEVICE.ID id, 
+	                  METADATA.NAME name,
+	                  METADATA.TYPE type,
+	                  HOST_TYPE.NAME htype,
+	                  SUBSTRING( EXTPROP.TEXTVALUE, 1, 255 ) textValue,
+	                  EXTPROP.NUMBERVALUE numberValue,
+	                  EXTPROP.DATEVALUE dateValue,
+	                  EXTPROP.BOOLEANVALUE booleanValue,
+	                  EXTPROP.ID custAttrID,
+                      EXTPROP.LASTUPDATED lastModified
+	        FROM PLT_EXTPROPMETADATA METADATA,PLT_EXTPROP EXTPROP,
+                     OPS_HOST_ENTITY HOST,
+                     OPS_HOST_TYPES HOST_TYPE,
+                     OPS_LIC_TECH_HOST_ATTRIBUTE LIC_ATTR ,
+                     EMB_DEVICE DEVICE
+	       WHERE EXTPROP.BELONGSTOSET_ID= HOST.EXTENDED_PROPERTIES
+                   AND HOST.HOST_TYPE_ID = HOST_TYPE.ID
+		   AND METADATA.ID = EXTPROP.METADATA_ID
+		   AND LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME
+		   AND DEVICE.HOST = HOST.ID
+	   	   AND LIC_ATTR.FOR_REPORTING = 1
+                   AND LIC_ATTR.LICENSE_TECHNOLOGY_ID = 100
+		   AND HOST.HOST_ENTITY_TYPE = 'bo.constants.hostentity.type.Device'
+                   AND HOST.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                   AND METADATA.TYPE NOT IN('LONGTEXT','MULTI_VALUED_TEXT')
+                   AND (((EXTPROP.LASTUPDATED  = ?  AND HOST.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                   		AND EXTPROP.LASTUPDATED  < ?)
+                   ORDER BY EXTPROP.LASTUPDATED, HOST.ID  ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>addFlexnetCustomHostAttr</name>
+		<comment>Add custom Host Attributes</comment>
+		<querydata>
+			ALTER TABLE DEVICE_DIMENSION ADD ${cust_attr_cols}
+    	</querydata>
+	</query>
+	<query>
+		<name>updateFlexnetCustomHostAttrVal</name>
+		<comment>Update Flexnet custom host Atributes</comment>
+		<querydata>
+			UPDATE DEVICE_DIMENSION SET
+			${update_cols}
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+	<name>getTenantId</name>
+	<comment>get TenantId</comment>
+		<querydata>
+             <![CDATA[select id from RPT_TENANT WHERE TENANT_ID=? ]]>
+		</querydata> 
+	</query>
+	<query>
+		<name>getDeviceFacts</name>
+		<comment>Get Device Fact</comment>
+		<querydata>
+          <![CDATA[
+		    SELECT   HOST.ID  AS id, HOST.STATUS AS status,
+      		HOST.ENTERPRISE_ID AS soldToOrgUnitId,
+      		 (CASE WHEN HOST.PARENT_ID IS NOT NULL THEN (SELECT ENTERPRISE_ID FROM LFS_HOST WHERE ID=HOST.PARENT_ID and host.class='SERVED_CLIENT' )
+      		  ELSE
+       		  HOST.ENTERPRISE_ID
+      		  END) AS soldToOrgUnitId,
+    		HOST.DEVICE_USER_USER_ID AS deviceUserId, 
+    		HOST.CREATE_DATE AS created, HOST_HISTORY.CREATE_DATE AS eventDate,
+    		HOST_HISTORY.ID AS eventId,
+    		HOST_HISTORY.EVENT_TYPE AS eventType,HOST_HISTORY.EVENT_DETAILS AS eventDetails, 
+    		HOST_HISTORY.LAST_MODIFIED_DATE AS lastModified,
+    		TENANT.NAME AS tenantId 
+    		FROM LFS_HOST         HOST
+    		JOIN LFS_HOST_HISTORY HOST_HISTORY ON HOST.ID = HOST_HISTORY.HOST_ID
+    		JOIN LFS_TENANT  TENANT       ON HOST.TENANT_ID = TENANT.ID
+    		JOIN OPS_TENANT              FNO_TENANT ON TENANT.NAME = FNO_TENANT.TENANT_ID
+      		AND COALESCE( HOST.ENTERPRISE_ID, 'XX' ) NOT IN (SELECT ENTERPRISE_ID FROM LFS_ENTERPRISE WHERE ACCOUNT_ID = 'PORTAL_ORG_UNIT')
+        	AND ( 
+            ((   HOST_HISTORY.CREATE_DATE = ? AND HOST.ID > ? )
+                 OR HOST_HISTORY.CREATE_DATE > ?
+            ) 
+            AND HOST_HISTORY.CREATE_DATE < ?
+            ) 
+      		ORDER BY HOST_HISTORY.CREATE_DATE
+       		]]>
+		</querydata>
+	</query>
+	<!-- As per FNO-37562 removing enterprise filter for served clients-->
+	<query>
+		<name>getServedClientFeatureFacts</name>
+		<comment>Get Served Client Fact</comment>
+		<querydata>
+          <![CDATA[
+		   SELECT  
+		   SYNC_HISTORY.ID AS id,
+      	   HOST.ID  AS deviceId, 
+           SYNC_HISTORY.UPDATE_TIME AS lastSyncTime, 
+           CONC_FEATURE.EXPIRATION AS expiration,
+           CONC_FEATURE.count AS  concFeatureCount,
+           METERED_FEATURE.count As meteredFeatureCount,
+           SYNC_HISTORY.SERVER_ID AS parentId, 
+           SYNC_HISTORY.SERVED_STATUS AS servedStatus,
+           CONC_FEATURE.NAME AS concFeatureName,
+      	   METERED_FEATURE.NAME AS meteredFeatureName,
+    	   SYNC_HISTORY.LAST_MODIFIED_DATE AS lastModified,
+           TENANT.NAME AS tenantId 
+           FROM LFS_HOST  HOST
+           JOIN LFS_TENANT  TENANT   ON HOST.TENANT_ID = TENANT.ID
+           	JOIN OPS_TENANT   FNO_TENANT ON TENANT.NAME = FNO_TENANT.TENANT_ID
+    	   JOIN LFS_SYNC_HISTORY SYNC_HISTORY ON SYNC_HISTORY.CLIENT_ID = HOST.ID
+    	   LEFT JOIN LFS_SYNC_CONCURRENT_FEATURE CONC_FEATURE ON CONC_FEATURE.SYNC_HISTORY_ID=SYNC_HISTORY.ID 
+    	   LEFT JOIN LFS_SYNC_METERED_FEATURE  METERED_FEATURE ON METERED_FEATURE.SYNC_HISTORY_ID = SYNC_HISTORY.ID
+      	   WHERE HOST.CLASS IN('SERVED_CLIENT')
+       	   AND ( 
+             ( 
+                 (SYNC_HISTORY.LAST_MODIFIED_DATE = ? AND SYNC_HISTORY.ID > ? )
+                  OR SYNC_HISTORY.LAST_MODIFIED_DATE > ? 
+             ) 
+             AND SYNC_HISTORY.LAST_MODIFIED_DATE < ?
+            ) 
+      	   ORDER BY SYNC_HISTORY.ID,SYNC_HISTORY.LAST_MODIFIED_DATE
+       		]]>
+		</querydata>
+	</query>
+	<query>
+	<name>isUserExist</name>
+	<comment>Is User Exist</comment>
+		<querydata>
+             <![CDATA[SELECT COUNT(*) FROM PLT_USER WHERE ACTIVE = 1 AND CONTACTINFO_ID=? ]]>
+		</querydata> 
+	</query>
+	<query>
+	<name>getUserId</name>
+	<comment>get UserId</comment>
+		<querydata>
+             <![CDATA[SELECT ID, USERID, CONTACTINFO_ID FROM PLT_USER WHERE ACTIVE = 1 AND CONTACTINFO_ID=? ]]>
+		</querydata> 
+	</query>
+	<query>
+	<name>getEmailAddress</name>
+	<comment>get EmailAddress</comment>
+		<querydata>
+             <![CDATA[SELECT EMAIL from PLT_CONTACT WHERE ID=? ]]>
+		</querydata> 
+	</query>
+	<query>
+		<name>getDevices</name>
+		<comment>Get Device</comment>
+		<querydata>
+             <![CDATA[SELECT 
+       HOST.ID                   AS id,
+       HOST.IDENTIFIER           AS hostId,
+       HOST.ALIAS                AS alias,
+       HOST.CLASS			 	 AS type,
+       HOST.DESCRIPTION          AS description,
+       HOST.STATUS               AS status,
+       HOST.MACHINE_TYPE         AS machineType,
+       HOST.VM_NAME              AS vmName,
+       HOSTTYPE.NAME             AS hostType,
+       HOST.IDENTIFIER_TYPE      AS hostIdType,
+       PUBLISHER.NAME            AS publisher,
+       PUBSIGN.IDENTITY_NAME     AS pubId,
+       HOST.LAST_MODIFIED_DATE   AS lastModified,
+       TENANT.NAME 			 AS tenantId,
+       HOST.BACKUP_IDENTIFIER    AS backupServer,
+       HOST.DEVICE_USER_STRING   AS userString,
+	   HOST.DEVICE_USER_USER_ID  AS deviceUserID
+FROM LFS_HOST                HOST
+JOIN LFS_TENANT              TENANT     ON HOST.TENANT_ID = TENANT.ID
+JOIN OPS_TENANT              FNO_TENANT ON TENANT.NAME = FNO_TENANT.TENANT_ID
+JOIN LFS_PUBLISHER           PUBLISHER  ON HOST.PUBLISHER_ID = PUBLISHER.ID 
+                                       AND HOST.TENANT_ID = PUBLISHER.TENANT_ID
+JOIN LFS_PUBLISHER_SIGNATURE PUBSIGN    ON HOST.PUBLISHER_SIGNATURE_ID = PUBSIGN.ID
+                                       AND HOST.TENANT_ID = PUBSIGN.TENANT_ID 
+JOIN LFS_HOST_TYPE           HOSTTYPE   ON HOST.HOST_TYPE_ID = HOSTTYPE.ID 
+                                       AND HOST.TENANT_ID = HOSTTYPE.TENANT_ID
+WHERE (
+         (
+             (    HOST.LAST_MODIFIED_DATE = ?  AND HOST.ID > ? )
+               OR HOST.LAST_MODIFIED_DATE > ?
+         ) 
+         AND HOST.LAST_MODIFIED_DATE < ?
+         
+         OR ( HOST.CREATE_DATE >= ?  AND  HOST.CREATE_DATE < ? ))
+      
+ORDER BY HOST.LAST_MODIFIED_DATE, HOST.ID]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>insertDevice</name>
+		<comment>Insert Device</comment>
+		<querydata>
+			INSERT INTO DEVICE_DIMENSION(ID, DEVICE_NAME, BACKUP_DEVICE_NAME,
+			DEVICE_ALIAS, DEVICE_TYPE, DESCRIPTION, STATUS, MACHINE_TYPE,
+			VM_NAME, HOST_TYPE, HOST_ID_TYPE, PUBLISHER, PUBLISHER_IDENTITY, TENANT_ID, USER_STRING) VALUES(?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?)
+			
+		</querydata>
+	</query>
+	
+	<query>
+		<name>updateDevice</name>
+		<comment>Update Device</comment>
+		<querydata>
+			UPDATE DEVICE_DIMENSION SET
+			DEVICE_NAME =?,
+			BACKUP_DEVICE_NAME =?,
+			DEVICE_ALIAS =?,
+			DEVICE_TYPE =?,
+			DESCRIPTION =?,
+			STATUS =?,
+			MACHINE_TYPE =?,
+			VM_NAME =?,
+			HOST_TYPE =?,
+			HOST_ID_TYPE =?,
+			PUBLISHER =?,
+			PUBLISHER_IDENTITY =?,
+			USER_STRING =?
+			WHERE ID =?
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getDeviceById</name>
+		<comment>Select Devices</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM DEVICE_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	
+	<query>
+		<name>getDevicePrebuiltFacts</name>
+		<comment>Get Device Prebuilt License Facts</comment>
+		<querydata>
+          <![CDATA[SELECT	host.id	AS id,
+          Host.base_product_id                    AS prebuiltproductid,
+          hosthistory.create_date                 AS prebuiltFulfillDate,
+          hosthistory.id                          AS eventId,
+          hosthistory.last_modified_date          AS lastModified,
+          TENANT.NAME						  AS tenantId
+		FROM      lfs_host HOST
+		JOIN      lfs_host_history hosthistory
+		ON        host.id = hosthistory.host_id
+		JOIN      lfs_tenant TENANT		ON        host.tenant_id = tenant.id
+		JOIN OPS_TENANT              FNO_TENANT ON TENANT.NAME = FNO_TENANT.TENANT_ID
+		WHERE     hosthistory.event_type = 'BUFFER_LICENSE_GENERATED'
+		AND       host.status != 'RETURNED'
+		AND       host.class != 'SERVEDCLIENT'
+		AND       ( ( (
+                                        hosthistory.create_date = ?
+                              AND       host.id > ? )
+                    OR        hosthistory.create_date > ? )
+          AND       hosthistory.create_date < ?)]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getBaseProductQuery</name>
+		<comment>Base Product for Device Prebuilt License Facts</comment>
+		<querydata>
+          <![CDATA[SELECT baseproduct.id               AS baseproduct_id,
+                        prodorderable.id             AS prebuiltProductId,
+                        prodorderable.orderable_type AS orderableType,
+                        entlprod.licensemodel_id     AS licenseModelId,
+                        entlprod.valid_after         AS validAfter,
+                        entlprod.valid_until         AS validUntil
+                 FROM   emb_base_product BASEPRODUCT
+                 JOIN   prod_orderable PRODORDERABLE
+                 ON     baseproduct.orderable_id = prodorderable.id
+                 JOIN   ops_entitlement_product ENTLPROD
+                 ON     baseproduct.entitlementproduct_id = entlprod.id
+                 WHERE baseproduct.id = ?]]>
+		</querydata>
+	</query>
+
+	<query>
+		<name>getRelatedPrebuiltProducts</name>
+		<comment>Get Related products for a given product or suite.</comment>
+		<querydata>
+			SELECT LPORDERABLE_ID relatedProdId FROM PROD_UNIFORM_SUITE_TO_PRODUCT
+			WHERE ORDERABLE_ID = ?
+    	</querydata>
+	</query>
+
+	<query>
+		<name>getDeviceAddonFacts</name>
+		<comment>Get Device Add-on Facts</comment>
+		<querydata>
+          <![CDATA[SELECT  
+	       HOSTHISTORY.ID                    AS id,
+	       HOSTHISTORY.FULFILLMENT_DETAILS   AS fulfillmentDetails,
+	       HOSTHISTORY.CREATE_DATE           AS lastModified,
+	       HOSTHISTORY.HOST_ID               AS devId,
+	       HOSTHISTORY.ENTERPRISE_ID         AS orgUnitId,
+	       HOST.ENTERPRISE_ID                AS hostOrgUnitId,
+		   HOST.DEVICE_USER_USER_ID AS deviceUserId,
+		   HOSTHISTORY.EVENT_TYPE            AS eventType,
+	       TENANT.NAME					 AS tenantId
+	FROM LFS_HOST_HISTORY   HOSTHISTORY
+	JOIN LFS_HOST           HOST   ON HOSTHISTORY.HOST_ID = HOST.ID
+	JOIN LFS_TENANT         TENANT ON HOST.TENANT_ID = TENANT.ID
+	JOIN OPS_TENANT              FNO_TENANT ON TENANT.NAME = FNO_TENANT.TENANT_ID
+    WHERE COALESCE( HOST.ENTERPRISE_ID, 'XX' ) NOT IN (SELECT ENTERPRISE_ID FROM LFS_ENTERPRISE WHERE ACCOUNT_ID = 'PORTAL_ORG_UNIT')   AND HOST.STATUS != 'RETURNED'         
+	  AND HOST.CLASS != 'SERVED_CLIENT'
+	  AND HOSTHISTORY.FULFILLMENT_DETAILS IS NOT NULL
+	  AND (
+	       (
+	          (   HOSTHISTORY.CREATE_DATE = ? AND HOST.ID > ?)
+	           OR HOSTHISTORY.CREATE_DATE > ?
+	       ) 
+	       AND HOSTHISTORY.CREATE_DATE < ?
+	    )
+      	ORDER BY lastModified, HOST.ID, HOSTHISTORY.ID]]>
+		</querydata>
+	</query>
+
+	<query>
+		<name>getRelatedProductsForLineItem</name>
+		<comment>For a given addOn (where one of the license models ='embedded'), get the products and/or suite.</comment>
+		<querydata>
+	    	 <![CDATA[select productOrderable.id productId, product.sku skuId, productOrderable.ORDERABLE_TYPE orderableType, 
+							ACTIVATABLE.ID activationId, licModel.ID licModelId, entOrderable.orderable_quantity ordQty
+						from OPS_ACTIVATABLE_ITEM ACTIVATABLE, OPS_ENTITLEMENT_PRODUCT product, OPS_ENTITLED_ORDERABLE entOrderable,
+							PROD_ORDERABLE productOrderable, PROD_LICENSE_MODEL licModel
+						where ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = product.ID
+							and ACTIVATABLE.ENTITLED_ORDERABLES = entOrderable.ENTITLED_ORDERABLE_SET_ID
+							and entOrderable.ORDERABLE_ID = productOrderable.ID
+							and (product.LICENSEMODEL_ID = licModel.ID or 
+								product.ALT_LICENSEMODEL1_ID = licModel.ID or product.ALT_LICENSEMODEL2_ID = licModel.ID)
+							and licModel.MODEL_TYPE = 'EMBEDDED'
+							and ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+							and ACTIVATABLE.ACTIVATION_ID = ?]]>
+		</querydata>
+	</query>
+
+	<query>
+		<name>getProducts</name>
+		<comment>Get Products</comment>
+		<querydata>
+	       <![CDATA[SELECT ORDERABLE.ID id,
+       				ORDERABLE.ORDERABLE_TYPE type,
+       				ORDERABLE.NAME name,
+				    ORDERABLE.VERSION version,
+				    ORDERABLE.DESCRIPTION description,
+				    ORDERABLE.LAST_MODIFIED lastModified,				    
+				    ORDERABLE.START_DATE startDate,
+				    ORDERABLE.END_DATE endDate,
+				    ORDERABLE.STATUS productStatus,
+				    ORDERABLE.LICENSE_TECHNOLOGY_ID licenseTechnologyId,
+				    ORDERABLE.PACKAGE_NAME packageName,
+				    ORDERABLE.PACKAGE_VERSION packageVersion,
+				    ORDERABLE.USED_ON_DEVICE usedOnDevice,
+				    ORDERABLE.USAGEMODELID usageModelId,
+					PRODCAT.NAME productCategoryName,
+				    ORDERABLE.TENANT_ID tenantId
+				    FROM PROD_ORDERABLE ORDERABLE, OPS_PRODUCT_CATEGORY PRODCAT
+			 WHERE ORDERABLE.STATUS <> 'bo.constants.states.draft' 
+			     AND (((ORDERABLE.LAST_MODIFIED = ? AND ORDERABLE.ID > ?) OR ORDERABLE.LAST_MODIFIED > ?) 
+			   		AND  ORDERABLE.LAST_MODIFIED < ?)
+					AND PRODCAT.ID = ORDERABLE.PRODUCT_CATEGORY_ID					
+			   ORDER BY ORDERABLE.LAST_MODIFIED,ORDERABLE.ID]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertProduct</name>
+		<comment>Insert Product</comment>
+		<querydata>
+			INSERT INTO
+			PRODUCT_DIMENSION(ID,NAME,TYPE,VERSION,DESCRIPTION,NAME_VERSION,START_DATE,END_DATE,LICENSE_TECHNOLOGY_ID,PACKAGE_NAME,PACKAGE_VERSION,USED_ON_DEVICE,USAGE_MODEL_ID,PRODUCT_LINE,PRODUCT_STATUS,TENANT_ID)
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>updateProduct</name>
+		<comment>Update Product</comment>
+		<querydata>
+			UPDATE PRODUCT_DIMENSION SET
+			NAME = ?,
+			TYPE =?,
+			VERSION =?,
+			DESCRIPTION=?,
+			NAME_VERSION=?,
+			START_DATE=?,
+			END_DATE=?,
+			LICENSE_TECHNOLOGY_ID=?,
+			PACKAGE_NAME=?,
+			PACKAGE_VERSION=?,
+			USED_ON_DEVICE=?,
+			USAGE_MODEL_ID=?,
+			PRODUCT_LINE=?,
+			PRODUCT_STATUS=?
+			WHERE ID = ? 
+    </querydata>
+	</query>
+	<query>
+		<name>getProductById</name>
+		<comment>Select Products</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM PRODUCT_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getOrgUnits</name>
+		<comment>Get OrgUnits</comment>
+		<querydata>
+	       <![CDATA[SELECT ORGUNIT.ID id,
+       				ORGUNIT.NAME name,
+       				ORGUNIT.DISPLAYNAME displayName,
+       				ORGUNIT.DESCRIPTION description,
+       				ORGUNIT.ADDR_ADDR1 address1,
+       				ORGUNIT.ADDR_ADDR2 address2,
+       				ORGUNIT.ADDR_CITY city,
+       				ORGUNIT.ADDR_STATE state,
+       				ORGUNIT.ADDR_COUNTRY country,
+       				ORGUNIT.ADDR_ZIPCODE zipCode,
+       				ORGUNIT.ADDR_REGION region,
+				    ORGUNIT.LASTUPDATED lastModified,
+				    ORGUNIT.TENANT_ID tenantId,
+				    ORGUNIT.AUDIT_CREATEDON createDate,
+					ORGUNITTYPE.NAME account
+				    FROM PLT_ORGUNIT ORGUNIT 
+					LEFT JOIN  PLT_ORGUNIT_ORGUNITTYPE ORGUNITS on ORGUNIT.id = ORGUNITS.ORGUNIT_ID
+					JOIN PLT_ORGUNITTYPE ORGUNITTYPE ON ORGUNITTYPE.ID=ORGUNITS.ORGUNITTYPE_ID			    
+				   WHERE (ORGUNIT.name NOT IN('PORTAL_ORG_UNIT') AND ORGUNITTYPE.NAME NOT IN('HOME'))
+			 AND (((ORGUNIT.LASTUPDATED = ? AND ORGUNIT.ID > ?) OR ORGUNIT.LASTUPDATED > ? ) 
+			 	AND ORGUNIT.LASTUPDATED < ? )
+			 ORDER BY ORGUNIT.LASTUPDATED,ORGUNIT.ID]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertOrgUnit</name>
+		<comment>Insert OrgUnit</comment>
+		<querydata>
+			INSERT INTO
+			ORG_UNIT_DIMENSION(ID,NAME,DISPLAY_NAME,DESCRIPTION,ADDR_ADDR1,ADDR_ADDR2,CITY,COUNTRY,REGION,TENANT_ID,CREATEDATE,LASTUPDATED,ACCOUNT_TYPE)
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>updateOrgUnit</name>
+		<comment>Update OrgUnit</comment>
+		<querydata>
+			UPDATE ORG_UNIT_DIMENSION SET
+			NAME = ?,
+			DISPLAY_NAME=? ,
+			DESCRIPTION =?,
+			ADDR_ADDR1 =?,
+			ADDR_ADDR2 =?,
+			CITY=?,
+			COUNTRY=?,
+			REGION=?,
+			CREATEDATE=?,
+			LASTUPDATED=?,
+			ACCOUNT_TYPE=?
+			WHERE ID = ? 
+    </querydata>
+	</query>
+	<query>
+		<name>getOrgUnitById</name>
+		<comment>Select OrgUnit</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM ORG_UNIT_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getTenants</name>
+		<comment>Get Tenant Data</comment>
+		<querydata>
+          <![CDATA[select id,tenant_id as tenantId from OPS_TENANT order by id]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertTenant</name>
+		<comment>Insert Tenant</comment>
+		<querydata>
+			INSERT INTO
+			RPT_TENANT(ID,TENANT_ID)
+			VALUES(?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>updateTenant</name>
+		<comment>Update Tenant</comment>
+		<querydata>
+			UPDATE RPT_TENANT
+			SET TENANT_ID=?
+			WHERE ID = ? 
+    </querydata>
+	</query>
+	<query>
+		<name>getTenantById</name>
+		<comment>Select Tenant</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM RPT_TENANT WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getSelectiveTenants</name>
+		<comment>Get Selective Tenants
+		</comment>
+		<querydata>
+        	<![CDATA[ SELECT ID,TENANT_ID as tenantId from OPS_TENANT where TENANT_ID NOT IN (${ids}) order By ID ]]>
+		</querydata>
+	</query>
+	 <query>
+		<name>getReportingLoadedTenants</name>
+		<comment>Get Tenants Loaded in Reporting DB
+		</comment>
+		<querydata>
+        	<![CDATA[ SELECT ID,TENANT_ID as tenantId from RPT_TENANT order By ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getPartNumbers</name>
+		<comment>Get PartNumbers</comment>
+		<querydata>
+	       <![CDATA[SELECT SKU.ID id,
+       				SKU.SKU name,
+				    SKU.DESCRIPTION description,
+				    SKU.LAST_MODIFIED lastModified,
+				    SKU.TENANT_ID tenantId
+				    FROM PROD_SKU SKU 
+			 WHERE (((SKU.LAST_MODIFIED = ? AND SKU.ID > ?) OR SKU.LAST_MODIFIED > ?) AND SKU.LAST_MODIFIED < ?)
+			 ORDER BY SKU.LAST_MODIFIED,SKU.ID]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertPartNumber</name>
+		<comment>Insert Part Numnbr</comment>
+		<querydata>
+			INSERT INTO PART_NUMBER_DIMENSION(ID,NAME,DESCRIPTION,TENANT_ID)
+			VALUES(?,?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>updatePartNumber</name>
+		<comment>Update Part Number</comment>
+		<querydata>
+			UPDATE PART_NUMBER_DIMENSION SET
+			NAME = ?,
+			DESCRIPTION=?
+			WHERE ID = ? 
+    </querydata>
+	</query>
+	<query>
+		<name>getPartNumberById</name>
+		<comment>Select Part Number by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM PART_NUMBER_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getLicenseModels</name>
+		<comment>Get License Models</comment>
+		<querydata>
+	       <![CDATA[SELECT LICMODEL.ID id,
+       				LICMODEL.NAME name,
+       				LICMODEL.MODEL_TYPE type,
+				    LICMODEL.DESCRIPTION description,
+				    LICTECH.NAME licTechName,
+				    LICMODEL.LAST_MODIFIED lastModified,
+				    LICMODEL.TENANT_ID tenantId
+				    FROM PROD_LICENSE_MODEL LICMODEL,OPS_LICENSE_TECHNOLOGY LICTECH 
+			 WHERE  LICMODEL.LICENSE_TECHNOLOGY_ID=LICTECH.ID 
+			        AND LICMODEL.STATUS <> 'bo.constants.states.draft' 
+			        AND (((LICMODEL.LAST_MODIFIED = ?  AND LICMODEL.ID > ?) OR LICMODEL.LAST_MODIFIED > ?) 
+			        	AND  LICMODEL.LAST_MODIFIED < ?) 
+			        ORDER BY LICMODEL.LAST_MODIFIED,LICMODEL.ID]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getEntitlements</name>
+		<comment>Get Entitlements</comment>
+		<querydata>
+	       <![CDATA[SELECT ENTORDER.ID id,
+       				ENTORDER.ENTITLEMENT_ID entitlementId,
+       				ENTORDER.LAST_MODIFIED lastModified,
+       				ENTORDER.TENANT_ID tenantId,
+       				ENTORDER.SHIP_TO_EMAIL shipToEmail,
+       				ENTORDER.SHIP_TO_ADDRESS shipToAddress,
+       				ENTORDER.COMMENTS comments
+				    FROM OPS_ENTITLEMENT_ORDER  ENTORDER
+			 		WHERE ENTORDER.STATUS not in('bo.constants.states.test','bo.constants.states.draft')
+			 	AND (((ENTORDER.LAST_MODIFIED = ? AND ENTORDER.ID > ?) OR ENTORDER.LAST_MODIFIED > ? ) 
+			 	AND ENTORDER.LAST_MODIFIED < ? )
+			 ORDER BY ENTORDER.LAST_MODIFIED,ENTORDER.ID]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>insertEntitlement</name>
+		<comment>Insert Entitlement</comment>
+		<querydata>
+	       INSERT INTO
+			ENTITLEMENT_DIMENSION(ID,ENTITLEMENT_ID,TENANT_ID,SHIP_TO_EMAIL,SHIP_TO_ADDRESS,COMMENTS)
+			VALUES(?,?,?,?,?,?)
+		</querydata>
+	</query>
+	
+		<query>
+		<name>updateEntitlement</name>
+		<comment>Update Entitlement</comment>
+		<querydata>
+			UPDATE ENTITLEMENT_DIMENSION
+			SET SHIP_TO_EMAIL = ?,
+			SHIP_TO_ADDRESS = ?,
+			COMMENTS = ?
+			WHERE ID = ?
+			
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>insertLicenseModel</name>
+		<comment>Insert License Model</comment>
+		<querydata>
+			INSERT INTO
+			LICENSE_MODEL_DIMENSION(ID,NAME,TYPE,DESCRIPTION,LICENSE_TECHNOLOGY,TENANT_ID)
+			VALUES(?,?,?,?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>updateLicenseModel</name>
+		<comment>Update License Model</comment>
+		<querydata>
+			UPDATE LICENSE_MODEL_DIMENSION SET
+			NAME = ?,
+			TYPE =?,
+			DESCRIPTION=?,
+			LICENSE_TECHNOLOGY=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>getLicenseModelById</name>
+		<comment>Select License Technology by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM LICENSE_MODEL_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getEntitlementCustomAttrs</name>
+		<comment>Get Line Item Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ SELECT DISTINCT LIC_ATTR.ID id,
+	                       METADATA.NAME name,
+	                       METADATA.TYPE type,
+	                       METADATA.MAXLENGTH maxLength,
+	                       LIC_ATTR.FOR_REPORTING forReporting,
+	                       LIC_ATTR.LAST_MODIFIED lastModified
+	                    FROM PLT_EXTPROPMETADATA METADATA,OPS_LIC_TECHNOLOGY_ATTRIBUTE LIC_ATTR,
+	                      OPS_LICENSE_TECHNOLOGY LIC_TECH
+		            WHERE LIC_TECH.ID = LIC_ATTR.LICENSE_TECHNOLOGY_ID
+			            AND  LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME
+			           	AND LIC_ATTR.FOR_REPORTING = 1
+ 		           	    AND LIC_TECH.STATUS ='bo.constants.states.deployed' 
+			            AND METADATA.CLASSNAME='com.flexnet.operations.bizobjects.entitlements.EntitlementProductBO' 
+			            AND METADATA.TYPE NOT IN('LONGTEXT','MULTI_VALUED_TEXT')
+			            AND (((LIC_ATTR.LAST_MODIFIED =? AND LIC_ATTR.ID > ?) OR LIC_ATTR.LAST_MODIFIED  > ?) 
+			            	AND LIC_ATTR.LAST_MODIFIED  < ?)
+			            ORDER BY LIC_ATTR.LAST_MODIFIED,LIC_ATTR.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getOrgCustomAttributes</name>
+		<comment>Get Organization Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ select DISTINCT ORGUNIT.ID id,
+                                       METADATA.NAME name,
+                                      (
+                                      CASE WHEN TYPE='TEXT' THEN TEXTVALUE 
+									WHEN TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+									WHEN TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+									WHEN TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+									WHEN TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+									END) AS value,
+                                       --LIC_ATTR.FOR_REPORTING forReporting,
+                                        ORGUNIT.TENANT_ID tenantId,
+                                       EXTPROP.LASTUPDATED lastModified,
+									   METADATA.REPORTING_ORDER,TYPE
+                                       FROM 
+                                       PLT_ORGUNIT ORGUNIT 
+                                       JOIN PLT_EXTPROP EXTPROP
+                                       ON EXTPROP.BELONGSTOSET_ID=ORGUNIT.EXTENDEDPROPERTYSET_ID
+                                       JOIN PLT_EXTPROPMETADATA METADATA 
+                                       ON  EXTPROP.METADATA_ID=METADATA.ID
+                                       LEFT JOIN PLT_EXTPROP_MULTIVALUE MULTIVALUE
+                                       ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                                       WHERE  METADATA.CLASSNAME='com.flexnet.platform.bizobjects.OrgUnit' 
+                                       AND METADATA.TYPE NOT IN('LONGTEXT')
+                                       AND METADATA.STATUS <> '0'
+									   AND METADATA.FOR_REPORTING=1
+                                       AND (((EXTPROP.LASTUPDATED =? AND ORGUNIT.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                                       AND EXTPROP.LASTUPDATED  < ?)
+                                       ORDER BY ORGUNIT.ID,METADATA.REPORTING_ORDER,EXTPROP.LASTUPDATED  ]]>
+		</querydata>
+	</query>
+	 <query>
+		<name>updateLicenseModelCustomAttribute</name>
+		<comment>Update License Model Custom Attribute</comment>
+		<querydata>
+			UPDATE LICENSE_MODEL_CUSTOM_ATTR 
+			SET  
+			TENANT_ID=?,CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+			CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+			CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+			CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+			CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+			CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+			CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+			CA28_NAME = ?,CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+			WHERE 
+			${entity_id}=?
+    	</querydata>
+	</query>
+	<query>
+		<name>getLicenseModelTimeCustomAttributes</name>
+		<comment>Get License Model Time Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ SELECT LIC_MODEL.ID id, 
+     				 METADATA.NAME name,
+      				(CASE WHEN METADATA.TYPE='TEXT' THEN TEXTVALUE 
+               		WHEN METADATA.TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+                 	 WHEN METADATA.TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+                  	WHEN METADATA.TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+                  	WHEN METADATA.TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+                 	 END) AS value,
+                        LIC_ATTR.REPORTING_ORDER,METADATA.TYPE,
+                        EXTPROP.LASTUPDATED lastModified,
+                        LIC_ATTR.TENANT_ID tenantId
+                    FROM 
+                      PLT_EXTPROPMETADATA METADATA
+                      join
+                      OPS_LIC_TECHNOLOGY_ATTRIBUTE LIC_ATTR on LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME AND METADATA.TENANT_ID = LIC_ATTR.TENANT_ID
+                      join
+                      PLT_EXTPROP EXTPROP on METADATA.ID = EXTPROP.METADATA_ID
+                     join
+                       PROD_LICENSE_MODEL LIC_MODEL on EXTPROP.BELONGSTOSET_ID = LIC_MODEL.PROPERTIES
+                        LEFT join
+                        PLT_EXTPROP_MULTIVALUE MULTIVALUE  ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                  WHERE 
+                   	LIC_ATTR.FOR_REPORTING = 1
+                    AND LIC_MODEL.STATUS <> 'bo.constants.states.draft'
+                    AND METADATA.CLASSNAME ='com.flexnet.products.bizobjects.LicenseModelBO'
+                    AND METADATA.TYPE NOT IN('LONGTEXT')
+                    AND (((EXTPROP.LASTUPDATED =? AND LIC_MODEL.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                    AND EXTPROP.LASTUPDATED  < ?)
+                    ORDER BY 
+                    LIC_MODEL.ID,LIC_ATTR.REPORTING_ORDER,EXTPROP.LASTUPDATED]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getLineItemTimeCustomAttributes</name>
+		<comment>Get Line Item Time Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ SELECT ACTIVATABLE.ID id,     
+      METADATA.NAME name,
+      (CASE WHEN METADATA.TYPE='TEXT' THEN TEXTVALUE 
+               WHEN METADATA.TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+                  WHEN METADATA.TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+                  WHEN METADATA.TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+                  WHEN METADATA.TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+                  END) AS value,
+                         LIC_ATTR.REPORTING_ORDER,METADATA.TYPE,
+                        EXTPROP.LASTUPDATED lastModified,
+                        LIC_ATTR.TENANT_ID tenantId
+                     FROM 
+                      PLT_EXTPROPMETADATA METADATA
+                      join
+                      OPS_LIC_TECHNOLOGY_ATTRIBUTE LIC_ATTR on LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME AND METADATA.TENANT_ID = LIC_ATTR.TENANT_ID 
+                      join
+                      PLT_EXTPROP EXTPROP on METADATA.ID = EXTPROP.METADATA_ID
+                     join
+                      OPS_ENTITLEMENT_PRODUCT PRODUCT on  EXTPROP.BELONGSTOSET_ID=PRODUCT.EXTENDED_PROPERTIES
+                      join 
+                      OPS_ACTIVATABLE_ITEM ACTIVATABLE on PRODUCT.ID = ACTIVATABLE.ENTITLEMENT_PRODUCT_ID
+					  join
+					  OPS_ENTITLEMENT_ORDER ENTITLEMENT on ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID
+                  	LEFT join
+              		PLT_EXTPROP_MULTIVALUE MULTIVALUE  ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                  	WHERE 
+                  	   LIC_ATTR.FOR_REPORTING = 1
+                       AND METADATA.CLASSNAME ='com.flexnet.operations.bizobjects.entitlements.EntitlementProductBO'
+                       AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+					   AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0
+					   AND ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID IS NULL
+                  	   AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                   	   AND METADATA.TYPE NOT IN('LONGTEXT')
+                       AND (((EXTPROP.LASTUPDATED =? AND ACTIVATABLE.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                       AND EXTPROP.LASTUPDATED  < ?)
+                       ORDER BY 
+                       ACTIVATABLE.ID,LIC_ATTR.REPORTING_ORDER,EXTPROP.LASTUPDATED]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getLicenseModelCustomAttributeById</name>
+		<comment>Get License Model Custom Attributes by ID</comment>
+		<querydata>
+			SELECT ${entity_id},CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+			,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+			,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+			,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+			,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+			,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+			,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM LICENSE_MODEL_CUSTOM_ATTR WHERE  ${entity_id}=?
+    	</querydata>
+	</query>
+	<query>
+		<name>getOrgCustomAttributeById</name>
+		<comment>Select Organization custom Attr Value by ID</comment>
+		<querydata>
+			SELECT ORG_ID,CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+			,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+			,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+			,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+			,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+			,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+			,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM ORG_UNIT_CUSTOM_ATTR WHERE  ORG_ID=?	
+    	</querydata>
+	</query>
+	<query>
+		<name>updateOrgCustomAttribute</name>
+		<comment>Update Organization Custom Attrribute value</comment>
+		<querydata>
+			UPDATE ORG_UNIT_CUSTOM_ATTR SET
+			TENANT_ID=?,
+			CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+			CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+			CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+			CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+			CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+			CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+			CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+			CA28_NAME = ?, 
+			CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+ 			WHERE 
+ 			ORG_ID=?	
+    	</querydata>
+	</query>
+	<query>
+		<name>addLineItemCustomAttr</name>
+		<comment>Add custom Attributes</comment>
+		<querydata>
+			ALTER TABLE LINE_ITEM_DIMENSION ADD ${cust_attr_cols}
+    </querydata>
+	</query>
+	<query>
+		<name>getFulfillmentCustomAttrs</name>
+		<comment>Get Line Item Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ SELECT DISTINCT LIC_ATTR.ID id,
+	                       METADATA.NAME name,
+	                       METADATA.TYPE type,
+	                       METADATA.MAXLENGTH maxLength,
+	                       LIC_ATTR.FOR_REPORTING forReporting,
+	                       LIC_ATTR.LAST_MODIFIED lastModified
+	                  FROM 
+	                  	  PLT_EXTPROPMETADATA METADATA,OPS_LIC_TECHNOLOGY_ATTRIBUTE LIC_ATTR,
+	                      OPS_LICENSE_TECHNOLOGY LIC_TECH
+		            WHERE 
+		            	 LIC_TECH.ID = LIC_ATTR.LICENSE_TECHNOLOGY_ID
+		                AND LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME
+		   	           	AND LIC_ATTR.FOR_REPORTING = 1
+		   	           	AND LIC_TECH.STATUS ='bo.constants.states.deployed' 
+			            AND METADATA.CLASSNAME='com.flexnet.operations.bizobjects.ActivationInstance' 
+			            AND METADATA.TYPE NOT IN('LONGTEXT','MULTI_VALUED_TEXT')
+			            AND ((( LIC_ATTR.LAST_MODIFIED = ? AND LIC_ATTR.ID > ?) OR LIC_ATTR.LAST_MODIFIED  > ?) 
+			            AND LIC_ATTR.LAST_MODIFIED < ?) 
+			            ORDER BY LIC_ATTR.LAST_MODIFIED,LIC_ATTR.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>addFulfillmentCustomAttr</name>
+		<comment>Add custom Attributes</comment>
+		<querydata>
+			ALTER TABLE FULFILLMENT_DIMENSION ADD ${cust_attr_cols}
+    </querydata>
+	</query>
+	<query>
+		<name>getLineItemCustomAttrVals</name>
+		<comment>Get custom Attributes Values</comment>
+		<querydata>
+	       <![CDATA[ SELECT ACTIVATABLE.ID id,
+	                  METADATA.NAME name,
+	                  METADATA.TYPE type,
+	                  SUBSTRING( EXTPROP.TEXTVALUE, 1, 255 ) textValue,
+	                  EXTPROP.NUMBERVALUE numberValue,
+	                  EXTPROP.DATEVALUE dateValue,
+	                  EXTPROP.BOOLEANVALUE booleanValue,
+	                  EXTPROP.ID custAttrID,
+                      EXTPROP.LASTUPDATED lastModified
+			    	FROM 
+			    	 PLT_EXTPROPMETADATA METADATA,PLT_EXTPROP EXTPROP,OPS_ACTIVATABLE_ITEM ACTIVATABLE,
+                     OPS_ENTITLEMENT_PRODUCT PRODUCT,OPS_LIC_TECHNOLOGY_ATTRIBUTE LIC_ATTR 
+			 	  WHERE 
+			 	  	EXTPROP.BELONGSTOSET_ID=PRODUCT.EXTENDED_PROPERTIES
+                   AND PRODUCT.ID = ACTIVATABLE.ENTITLEMENT_PRODUCT_ID 
+				   AND METADATA.ID = EXTPROP.METADATA_ID
+				   AND LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME
+	   	           AND LIC_ATTR.FOR_REPORTING = 1
+				   AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                   AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                   AND METADATA.TYPE NOT IN('LONGTEXT','MULTI_VALUED_TEXT')
+                   AND (((EXTPROP.LASTUPDATED  = ?  AND ACTIVATABLE.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                   	AND EXTPROP.LASTUPDATED  < ?)
+                   ORDER BY 
+                   EXTPROP.LASTUPDATED,ACTIVATABLE.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>updateLineItemCustomAttrVal</name>
+		<comment>Update Line Item custom Attributes</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DIMENSION SET
+			${update_cols}
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getLineItemCustomAttributes</name>
+		<comment>Get LineItemCustomAttribute</comment>
+		<querydata>
+	       <![CDATA[  select DISTINCT ACTIVATABLE.ID id,
+                                       METADATA.NAME name,
+                                      (
+                                      CASE WHEN TYPE='TEXT' THEN TEXTVALUE 
+									WHEN TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+									WHEN TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+									WHEN TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+									WHEN TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+									WHEN TYPE='LONGTEXT' THEN CAST(LONGTEXTVALUE AS VARCHAR(4000))
+									END) AS value,
+                                       --LIC_ATTR.FOR_REPORTING forReporting,
+                                        ACTIVATABLE.TENANT_ID tenantId,
+                                       EXTPROP.LASTUPDATED lastModified,
+									   METADATA.REPORTING_ORDER,TYPE
+                                       FROM 
+                                       OPS_ACTIVATABLE_ITEM ACTIVATABLE 
+                                       JOIN PLT_EXTPROP EXTPROP
+                                       ON EXTPROP.BELONGSTOSET_ID=ACTIVATABLE.EXTENDEDPROPERTYSET_ID
+                                       JOIN PLT_EXTPROPMETADATA METADATA 
+                                       ON  EXTPROP.METADATA_ID=METADATA.ID
+                                      LEFT JOIN PLT_EXTPROP_MULTIVALUE MULTIVALUE
+                                       ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                                       WHERE  METADATA.CLASSNAME='com.flexnet.operations.bizobjects.entitlements.ActivatableItemBO' 
+                                       AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                                      -- AND METADATA.TYPE NOT IN('LONGTEXT')
+                                       AND METADATA.STATUS <> '0'
+									   AND METADATA.FOR_REPORTING=1
+                                       AND (((EXTPROP.LASTUPDATED =? AND ACTIVATABLE.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                                       AND EXTPROP.LASTUPDATED  < ?)
+                                       ORDER BY ACTIVATABLE.ID,METADATA.REPORTING_ORDER,EXTPROP.LASTUPDATED ]]>
+		</querydata>
+	</query>
+	
+		<query>
+		<name>getMaintenanceLineItemCustomAttributes</name>
+		<comment>Get MaintenanceLineItemCustomAttribute</comment>
+		<querydata>
+	       <![CDATA[  select DISTINCT ACTIVATABLE.ID id,
+                                       METADATA.NAME name,
+                                      (
+                                      CASE WHEN TYPE='TEXT' THEN TEXTVALUE 
+									WHEN TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+									WHEN TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+									WHEN TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+									WHEN TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+									END) AS value,
+                                       --LIC_ATTR.FOR_REPORTING forReporting,
+                                        ACTIVATABLE.TENANT_ID tenantId,
+                                       EXTPROP.LASTUPDATED lastModified,
+									   METADATA.REPORTING_ORDER,TYPE
+                                       FROM 
+                                       OPS_MAINTENANCE_ITEM ACTIVATABLE 
+                                       JOIN PLT_EXTPROP EXTPROP
+                                       ON EXTPROP.BELONGSTOSET_ID=ACTIVATABLE.EXTENDEDPROPERTYSET_ID
+                                       JOIN PLT_EXTPROPMETADATA METADATA 
+                                       ON  EXTPROP.METADATA_ID=METADATA.ID
+                                      LEFT JOIN PLT_EXTPROP_MULTIVALUE MULTIVALUE
+                                       ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                                       WHERE  METADATA.CLASSNAME='com.flexnet.operations.bizobjects.MaintenanceItemDO' 
+                                       AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                                       AND METADATA.TYPE NOT IN('LONGTEXT')
+                                       AND METADATA.STATUS <> '0'
+									   AND METADATA.FOR_REPORTING=1
+                                       AND (((EXTPROP.LASTUPDATED =? AND ACTIVATABLE.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                                       AND EXTPROP.LASTUPDATED  < ?)
+                                       ORDER BY ACTIVATABLE.ID,METADATA.REPORTING_ORDER,EXTPROP.LASTUPDATED ]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getLineItemCustomAttributeById</name>
+		<comment>Select CA by ID</comment>
+		<querydata>
+			SELECT ACTIVATION_ID,CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+			,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+			,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+			,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+			,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+			,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+			,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM LINE_ITEM_CUSTOM_ATTR WHERE  ACTIVATION_ID=?
+    	</querydata>
+	</query>
+	
+		<query>
+		<name>getMaintenanceLineItemCustomAttributeById</name>
+		<comment>Select CA by ID</comment>
+		<querydata>
+			SELECT ACTIVATION_ID,CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+			,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+			,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+			,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+			,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+			,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+			,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM MAINTENANCE_LI_CUSTOM_ATTR WHERE  ACTIVATION_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>updateLineItemCustomAttribute</name>
+		<comment>Update LineItemCustomAttribute</comment>
+		<querydata>
+			UPDATE LINE_ITEM_CUSTOM_ATTR SET
+			TENANT_ID=?,
+			CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+			CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+			CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+			CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+			CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+			CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+			CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+			CA28_NAME = ?, CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+ 			WHERE ACTIVATION_ID=?
+			
+					
+    	</querydata>
+	</query>
+	
+	
+		<query>
+		<name>updateMaintenanceLineItemCustomAttribute</name>
+		<comment>Update MaintenanceLineItemCustomAttribute</comment>
+		<querydata>
+			UPDATE MAINTENANCE_LI_CUSTOM_ATTR SET
+			TENANT_ID=?,
+			CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+			CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+			CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+			CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+			CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+			CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+			CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+			CA28_NAME = ?, CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+ 			WHERE ACTIVATION_ID=?
+			
+					
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getFulfillmentTimeCustomAttributes</name>
+		<comment>Get custom Attributes Values</comment>
+		<querydata>
+	       <![CDATA[ SELECT FULFILLMENT.ID id,     
+     				 METADATA.NAME name,
+      				(CASE WHEN METADATA.TYPE='TEXT' THEN TEXTVALUE 
+               	  WHEN METADATA.TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+                  WHEN METADATA.TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+                  WHEN METADATA.TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+                  WHEN METADATA.TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+                  END) AS value,
+                  LIC_ATTR.REPORTING_ORDER,
+                  METADATA.TYPE,
+                  EXTPROP.LASTUPDATED lastModified,
+                  LIC_ATTR.TENANT_ID tenantId
+                  FROM 
+                      PLT_EXTPROPMETADATA METADATA
+                      join
+                      OPS_LIC_TECHNOLOGY_ATTRIBUTE LIC_ATTR on LIC_ATTR.ATTRIBUTE_NAME = METADATA.NAME
+                      join
+                      PLT_EXTPROP EXTPROP on METADATA.ID = EXTPROP.METADATA_ID
+                       join
+                       OPS_ACTIVATION_INSTANCE FULFILLMENT ON EXTPROP.BELONGSTOSET_ID=FULFILLMENT.EXTENDED_PROPERTIES 
+                        LEFT join
+                        PLT_EXTPROP_MULTIVALUE MULTIVALUE  ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                  WHERE 
+                       LIC_ATTR.FOR_REPORTING = 1
+                       AND METADATA.CLASSNAME ='com.flexnet.operations.bizobjects.ActivationInstance'
+                       AND METADATA.TYPE NOT IN('LONGTEXT')
+                        AND FULFILLMENT.STATUS <> 'bo.constants.states.onhold'
+                        AND (((EXTPROP.LASTUPDATED =? AND FULFILLMENT.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                        AND EXTPROP.LASTUPDATED  < ?)
+                       ORDER BY 
+                       FULFILLMENT.ID,LIC_ATTR.REPORTING_ORDER,EXTPROP.LASTUPDATED]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>updateFulfillmentCustomAttrVal</name>
+		<comment>Update Fulfillment custom Atributes</comment>
+		<querydata>
+			UPDATE FULFILLMENT_DIMENSION SET
+			${update_cols}
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>getLineItems</name>
+		<comment>Get Line Item Details</comment>
+		<querydata>
+	       <![CDATA[ SELECT ACTIVATABLE.ID id,
+	                        ACTIVATABLE.ACTIVATION_ID activationId,
+	                        ENTITLEMENT.ENTITLEMENT_ID entitlementId,
+	                        ACTIVATABLE.STATUS status,
+	                        ACTIVATABLE.SUPPORT_ACTION supportAction,
+	                        ACTIVATABLE.ORDER_ID orderId,
+	                        ACTIVATABLE.ORDER_LINE_NUMBER orderLineNumber,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+	                        ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID parentBulkEntId,
+	                        ENTITLEMENT.COMMENTS entDescription,
+	                        PRODUCT.DESCRIPTION  description,
+	                        PRODUCT.EXTENDED_PROPERTIES extendedProp,
+                            PRODUCT.IS_PERMANENT isPermanent,
+	                        PRODUCT.VALID_AFTER validAfter,
+	                        PRODUCT.VALID_UNTIL validUntil,
+	                        PRODUCT.VERSION_DATE versionDate,
+	                        ACTIVATABLE.LAST_MODIFIED lastModified,
+	                        ACTIVATABLE.TENANT_ID tenantId,
+							PRODUCT.START_DATE_OPTIONS startDateOptions,
+							PRODUCT.DURATION duration,
+							PRODUCT.DURATION_UNITS durationUnits
+	                  FROM OPS_ACTIVATABLE_ITEM ACTIVATABLE,OPS_ENTITLEMENT_ORDER ENTITLEMENT ,
+                              OPS_ENTITLEMENT_PRODUCT PRODUCT 
+	                  WHERE ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+                            AND ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                            AND ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID IS NULL
+                            AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0
+                            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                            AND (((ACTIVATABLE.LAST_MODIFIED  = ?  AND ACTIVATABLE.ID > ?) 
+                            	OR ACTIVATABLE.LAST_MODIFIED  > ? OR PRODUCT.LAST_MODIFIED  > ? OR ENTITLEMENT.LAST_MODIFIED  > ?)
+                            	 AND ACTIVATABLE.LAST_MODIFIED < ?)
+                            ORDER BY ACTIVATABLE.LAST_MODIFIED,ACTIVATABLE.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getBulkLineItems</name>
+		<comment>Get Line Item Details</comment>
+		<querydata>
+	       <![CDATA[ SELECT ACTIVATABLE.ID id,
+	                        ACTIVATABLE.ACTIVATION_ID activationId,
+	                        ENTITLEMENT.ENTITLEMENT_ID entitlementId,
+	                        ACTIVATABLE.STATUS status,
+	                        ACTIVATABLE.SUPPORT_ACTION supportAction,
+	                        ACTIVATABLE.ORDER_ID orderId,
+	                        ACTIVATABLE.ORDER_LINE_NUMBER orderLineNumber,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+	                        PARENT_ENTITLEMENT.ENTITLEMENT_ID parentBulkEntId,
+	                        ENTITLEMENT.COMMENTS entDescription,
+	                        PRODUCT.DESCRIPTION  description,
+	                        PRODUCT.EXTENDED_PROPERTIES extendedProp,
+                            PRODUCT.IS_PERMANENT isPermanent,
+	                        PRODUCT.VALID_AFTER validAfter,
+	                        PRODUCT.VALID_UNTIL validUntil,
+	                        PRODUCT.VERSION_DATE versionDate,
+	                        ACTIVATABLE.LAST_MODIFIED lastModified,
+	                        ACTIVATABLE.TENANT_ID tenantId,
+							PRODUCT.START_DATE_OPTIONS startDateOptions,
+							PRODUCT.DURATION duration,
+							PRODUCT.DURATION_UNITS durationUnits
+	                  FROM OPS_ACTIVATABLE_ITEM ACTIVATABLE,OPS_ENTITLEMENT_ORDER ENTITLEMENT ,
+                             OPS_ENTITLEMENT_PRODUCT PRODUCT,OPS_ENTITLEMENT_ORDER PARENT_ENTITLEMENT
+	                  WHERE ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+                            AND ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                            AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0
+                            AND PARENT_ENTITLEMENT.ID =  ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID
+                            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                            AND (((ACTIVATABLE.LAST_MODIFIED  = ?  AND ACTIVATABLE.ID > ?) OR ACTIVATABLE.LAST_MODIFIED  > ?) 
+                            	AND ACTIVATABLE.LAST_MODIFIED  < ?) 
+                            ORDER BY  ACTIVATABLE.LAST_MODIFIED,ACTIVATABLE.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getMaintenanceLineItemDates</name>
+		<comment>Get Maintenance Line Item Dates Details</comment>
+		<querydata>
+	       <![CDATA[ SELECT OPS_HISTORY.ID id,
+	       					OPS_HISTORY.OBJECT_ID maintId,
+					        OPS_HISTORY.CHILD_OBJECT_ID parentLineItem,
+				            MAINTENANCE.IS_PERMANENT isPermanent,
+				            MAINTENANCE.VALID_AFTER validAfter,
+				            MAINTENANCE.VALID_UNTIL validUntil,
+				            OPS_HISTORY.EVENT event,
+				            OPS_HISTORY.LAST_MODIFIED lastModified,
+				            MAINTENANCE.TENANT_ID tenantId
+				      FROM   OPS_MAINTENANCE_ITEM MAINTENANCE, 
+				             OPS_STATE_CHANGE_HISTORY OPS_HISTORY RIGHT OUTER JOIN OPS_ACTIVATABLE_ITEM ACTIVATABLE on
+				             ACTIVATABLE.ID = OPS_HISTORY.CHILD_OBJECT_ID
+				      WHERE OPS_HISTORY.OBJECT_ID = MAINTENANCE.ID
+				            AND OPS_HISTORY.OBJECT_CLASS = 'com.flexnet.operations.bizobjects.MaintenanceItemDO'
+				            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+				            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                            AND (((OPS_HISTORY.LAST_MODIFIED  = ?  AND OPS_HISTORY.ID > ?) OR OPS_HISTORY.LAST_MODIFIED  > ?)
+                            	AND  OPS_HISTORY.LAST_MODIFIED  < ?)  
+                            ORDER BY OPS_HISTORY.LAST_MODIFIED,OPS_HISTORY.ID ]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>insertAssociatedMaintenanceLineItem</name>
+		<comment>Insert Associated Maintenance Line Item</comment>
+		<querydata>
+			INSERT INTO MAINTENANCE_LI_RELATION(
+			MAINTENANCE_LINE_ITEM_ID,LINE_ITEM_ID)
+			VALUES(?,?)
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getMaintenanceLineItems</name>
+		<comment>Get Maintenance Line Item Details</comment>
+		<querydata>
+	       <![CDATA[ select 
+	                        MAINTENANCE.ID id,
+	                        MAINTENANCE.ACTIVATION_ID activationId,
+	                        ENTITLEMENT.ENTITLEMENT_ID entitlementId,
+	                        MAINTENANCE.STATUS status,
+	                        MAINTENANCE.ORDER_ID orderId,
+	                        MAINTENANCE.ORDER_LINE_NUMBER orderLineNumber,
+							MAINTENANCE.LAST_MODIFIED lastModified,
+							MAINTENANCE.TENANT_ID tenantId,
+							MAINTENANCE.VALID_AFTER startDate,
+							MAINTENANCE.VALID_UNTIL endDate,
+							ODERABLE.NAME maintenanceProduct,
+							PROD_SKU.SKU maintPartNumber
+							from
+							 OPS_MAINTENANCE_ITEM MAINTENANCE join 
+							 OPS_ENTITLEMENT_ORDER ENTITLEMENT 
+							 on MAINTENANCE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID
+							 left join PROD_ORDERABLE ODERABLE on 
+							 MAINTENANCE.ORDERABLE_ID=ODERABLE.ID
+							 left join	PROD_SKU PROD_SKU
+							on MAINTENANCE.SKU = PROD_SKU.ID  where 
+							MAINTENANCE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+							AND (((MAINTENANCE.LAST_MODIFIED  = ?  AND MAINTENANCE.ID > ?) 
+							OR MAINTENANCE.LAST_MODIFIED  > ?)
+							AND MAINTENANCE.LAST_MODIFIED < ?)
+							ORDER BY MAINTENANCE.LAST_MODIFIED,MAINTENANCE.ID  ]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getMaintenanceLineItemById</name>
+		<comment>Select Maintenance Line Item by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM MAINTENANCE_LI_DIMENSION WHERE ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getAssociatedMaintenanceLineItemById</name>
+		<comment>Select Associated Maintenance Line Item by ID</comment>
+		<querydata>
+			SELECT COUNT(MAINTENANCE_LINE_ITEM_ID) FROM MAINTENANCE_LI_RELATION WHERE MAINTENANCE_LINE_ITEM_ID=? AND LINE_ITEM_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getAssociatedMaintenanceLineItems</name>
+		<comment>Get Maintenance Line Item Dates Details</comment>
+		<querydata>
+	       <![CDATA[SELECT ASSOCIATED_ITEM.MAINTENANCE_ITEM_ID id, ASSOCIATED_ITEM.ACTIVATEABLE_ITEM_ID parentLineItem, MAINT_ITEM.TENANT_ID tenantId,
+	        MAINT_ITEM.LAST_MODIFIED lastModified
+					FROM OPS_MAINTENANCE_TO_ACTIVATABLE ASSOCIATED_ITEM , OPS_MAINTENANCE_ITEM MAINT_ITEM
+					WHERE MAINT_ITEM.ID = ASSOCIATED_ITEM.MAINTENANCE_ITEM_ID
+					AND MAINT_ITEM.STATUS  NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                    AND (((MAINT_ITEM.LAST_MODIFIED  = ?  AND MAINT_ITEM.ID > ?) OR MAINT_ITEM.LAST_MODIFIED  > ?)
+                    	AND  MAINT_ITEM.LAST_MODIFIED  < ?)  
+                    ORDER BY MAINT_ITEM.LAST_MODIFIED,MAINT_ITEM.ID ]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>insertMaintenanceLineItem</name>
+		<comment>Insert Maintenance Line Item</comment>
+		<querydata>
+			INSERT INTO MAINTENANCE_LI_DIMENSION(
+			ID,ACTIVATION_ID, ENTITLEMENT_ID, ORDER_ID, ORDER_LINE_NUMBER, STATE, TENANT_ID, START_DATE, END_DATE, MAINTENANCE_PRODUCT, MAINT_PART_NUMBER)
+			VALUES(?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>updateMaintenanceLineItem</name>
+		<comment>Update Maintenance Line Item</comment>
+		<querydata>
+			UPDATE MAINTENANCE_LI_DIMENSION
+			SET ACTIVATION_ID = ?,
+			ENTITLEMENT_ID= ?,
+			STATE= ?,
+			ORDER_ID= ?,
+			ORDER_LINE_NUMBER = ?,
+			START_DATE = ?,
+			END_DATE = ?,
+			MAINTENANCE_PRODUCT = ?,
+			MAINT_PART_NUMBER = ?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getLineItemById</name>
+		<comment>Select Line Item by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM LINE_ITEM_DIMENSION WHERE ID=?
+    	</querydata>
+	</query>
+	<query>
+		<name>getLineItemIDFromLineItemDates</name>
+		<comment>Select Line Item ID from line item dates table</comment>
+		<querydata>
+			SELECT LINE_ITEM_ID lineItemId FROM LINE_ITEM_DATES WHERE LINE_ITEM_ID=?
+		</querydata>
+	</query>
+	<query>
+		<name>getUserOrgRelationById</name>
+		<comment>Select Line Item user by ID</comment>
+		<querydata>
+			SELECT COUNT(USER_ID) FROM USER_ORG_RELATION WHERE USER_ID=? AND
+			ORG_ID =?
+    	</querydata>
+	</query>
+	<query>
+		<name>getUserOrgRelations</name>
+		<comment>Get User Org Relation</comment>
+		<querydata>
+				 <![CDATA[ SELECT 
+				DISTINCT USER_ORG.USER_ID id,USER_ORG.ORG_ID orgId,LASTUPDATED lastModified,USER_ORG.EXPIRY_DATE expirydate
+				FROM PLT_USER_ORGUNIT_ROLE USER_ORG
+				WHERE ORG_ID NOT IN(SELECT ID FROM PLT_ORGUNIT WHERE name = 'PORTAL_ORG_UNIT' ) AND ID IN (Select max(ID) FROM PLT_USER_ORGUNIT_ROLE group by USER_ID,ORG_ID) AND
+				((USER_ORG.LASTUPDATED  = ?  AND USER_ORG.USER_ID > ?) OR USER_ORG.LASTUPDATED  > ?)	
+				 AND  USER_ORG.LASTUPDATED  < ?  
+				 ORDER BY USER_ORG.USER_ID,USER_ORG.ORG_ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertUserOrgRelation</name>
+		<comment>Insert User Org Relation</comment>
+		<querydata>
+			INSERT INTO USER_ORG_RELATION(
+			USER_ID,ORG_ID,EXPIRY_DATE)
+			VALUES(?,?,?)
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>updateUserOrgRelation</name>
+		<comment>Update User Org Relation</comment>
+		<querydata>
+			UPDATE USER_ORG_RELATION
+			SET EXPIRY_DATE = ?
+			WHERE USER_ID = ?
+			AND ORG_ID = ?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>insertLineItem</name>
+		<comment>Insert Line Item</comment>
+		<querydata>
+			INSERT INTO LINE_ITEM_DIMENSION(
+			ID,ENTITLEMENT_ID,ACTIVATION_ID,ORDER_ID,ORDER_LINE_NUMBER,
+			PARENT_BULK_ENTITLEMENT_ID,STATE,ORDER_TYPE,DESCRIPTION,ENT_DESCRIPTION, TENANT_ID)
+			VALUES(?,?,?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItem</name>
+		<comment>Update Line Item</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DIMENSION
+			SET ENTITLEMENT_ID = ?,
+			ACTIVATION_ID= ?,
+			ORDER_ID= ?,
+			ORDER_LINE_NUMBER= ?,
+			PARENT_BULK_ENTITLEMENT_ID = ?,
+			STATE= ?,
+			ORDER_TYPE= ?,
+			DESCRIPTION= ?,
+			ENT_DESCRIPTION= ?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItemUpgraded</name>
+		<comment>Update Line Item</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DIMENSION SET
+			ISUPGRADED=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItemRENEWED</name>
+		<comment>Update Line Item</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DIMENSION SET
+			ISRENEWED=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItemUPSOLD</name>
+		<comment>Update Line Item</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DIMENSION SET
+			ISUPSOLD=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItemMaintenance</name>
+		<comment>Update Line Item</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DIMENSION SET
+			ISMAINTENANCE=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>insertLineItemDates</name>
+		<comment>Insert Line Item Dates</comment>
+		<querydata>
+			INSERT INTO LINE_ITEM_DATES( LINE_ITEM_ID,
+			VERSION_DATE_ID,EXPIRATION_DATE_ID,START_DATE_ID,
+			START_DATE_OPTION, DURATION, DURATION_UNITS)
+			VALUES(?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItemDates</name>
+		<comment>Update Line Item Dates</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DATES
+			SET VERSION_DATE_ID = ?,
+			EXPIRATION_DATE_ID = ?,
+			START_DATE_ID = ?,
+			START_DATE_OPTION = ?,
+			DURATION = ?,
+			DURATION_UNITS = ?
+			WHERE LINE_ITEM_ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>insertLineItemMaintenanceDates</name>
+		<comment>Insert Line Item Dates</comment>
+		<querydata>
+			INSERT INTO LINE_ITEM_DATES( LINE_ITEM_ID,
+			MAINT_START_DATE_ID,MAINT_END_DATE_ID)
+			VALUES(?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>updateLineItemMaintenanceDates</name>
+		<comment>Update Line Item Maintenance Dates</comment>
+		<querydata>
+			UPDATE LINE_ITEM_DATES
+			SET MAINT_START_DATE_ID = ?,
+			MAINT_END_DATE_ID = ?
+			WHERE LINE_ITEM_ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>getLineItemOwners</name>
+		<comment>Select Line Item Users</comment>
+		<querydata>
+	         <![CDATA[SELECT * FROM ( SELECT ACTITEM.ID id,
+				                 ENTUSER.USER_ID userID,
+				                 ENT.LAST_MODIFIED lastModified
+							FROM OPS_ACTIVATABLE_ITEM ACTITEM, 
+								 OPS_ENTITLEMENT_ORDER ENT, 
+								 OPS_ENTITLEMENT_USER ENTUSER,
+                                 OPS_ENTITLEMENT_PRODUCT PRODUCT 
+					 		WHERE ACTITEM.PARENT_ENTITLEMENT_ID = ENT.ID
+								 AND ENT.ID = ENTUSER.ENTITLEMENT_ID
+                                 AND ACTITEM.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                                 AND ACTITEM.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                                 AND ACTITEM.IS_BULK_LINE_ITEM = 0
+                                 AND ACTITEM.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                      UNION
+  				      SELECT ACTITEM.ID id, 
+					   	     ACTUSER.USER_ID userID,
+							 ACTITEM.LAST_MODIFIED lastModified
+					       FROM OPS_ACTIVATABLE_ITEM ACTITEM,
+							     OPS_ACTIVATABLE_ITEM_USER ACTUSER,
+                                OPS_ENTITLEMENT_PRODUCT PRODUCT 
+						    WHERE ACTITEM.ID = ACTUSER.ACTIVATABLE_ITEM_ID
+                                  AND ACTITEM.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                                  AND ACTITEM.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                                  AND ACTITEM.IS_BULK_LINE_ITEM = 0
+                                  AND ACTITEM.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+						 ) a WHERE (((a.lastModified = ? AND a.id > ?) OR a.lastModified > ?) AND a.lastModified < ?)
+					 ORDER BY a.lastModified, a.id]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getLineItemOwnerById</name>
+		<comment>Select Line Item user by ID</comment>
+		<querydata>
+			SELECT COUNT(LINE_ITEM_ID) FROM LINE_ITEM_USERS WHERE LINE_ITEM_ID=? AND
+			USER_ID =?
+    	</querydata>
+	</query>
+	<query>
+		<name>insertLineItemOwner</name>
+		<comment>Insert Line Item User</comment>
+		<querydata>
+			INSERT INTO LINE_ITEM_USERS( LINE_ITEM_ID, USER_ID)
+			VALUES(?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>getFulfillments</name>
+		<comment>Get Fulfillments Details</comment>
+		<querydata>
+	       <![CDATA[ SELECT FULFILLMENT.ID id,
+	                        FULFILLMENT.FULFILLMENT_ID fulfillmentId,
+	                        FULFILLMENT.STATUS status,
+	                        FULFILLMENT.ACTIVATION_TYPE activationType,
+	                        FULFILLMENT.LIFECYCLE_STATUS lifeCycleAction,
+	                        FULFILLMENT.FULFILLMENT_SOURCE fulfillmentSource,
+	                        FULFILLMENT.FULFILLMENT_TYPE fulfillmentType,
+	                        FULFILLMENT.EXTENDED_PROPERTIES extendedProp,
+	                        FULFILLMENT.START_DATE startDate,
+	                        FULFILLMENT.EXPIRATION_DATE expirationDate,
+	                        HOSTENTITY.HOST_ID hostId,
+	                        TRUSTEDHOSTENTITY.PLATFORM_TYPE platformType,
+	                        FULFILLMENT.LAST_MODIFIED lastModified,
+	                        FULFILLMENT.TENANT_ID tenantId 
+	                   FROM OPS_ACTIVATION_INSTANCE FULFILLMENT LEFT OUTER JOIN OPS_HOST_ENTITY HOSTENTITY ON  FULFILLMENT.HOST_ENTITY = HOSTENTITY.ID
+	                   LEFT OUTER JOIN OPS_TRUSTED_HOST_ENTITY TRUSTEDHOSTENTITY ON HOSTENTITY.ID = TRUSTEDHOSTENTITY.ID  
+                       WHERE FULFILLMENT.STATUS <> 'bo.constants.states.onhold'
+                            AND (((FULFILLMENT.LAST_MODIFIED = ?  AND FULFILLMENT.ID > ?) OR FULFILLMENT.LAST_MODIFIED  > ?) 
+                            	AND FULFILLMENT.LAST_MODIFIED < ?)
+                            ORDER BY FULFILLMENT.LAST_MODIFIED,FULFILLMENT.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getFulfillmentById</name>
+		<comment>Select Fulfillment by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM FULFILLMENT_DIMENSION WHERE ID=?
+    	</querydata>
+	</query>
+	<query>
+		<name>insertFulfillment</name>
+		<comment>Insert Fulfillment</comment>
+		<querydata>
+			INSERT INTO
+			FULFILLMENT_DIMENSION(ID,FULFILLMENT_ID,STATUS,ACTIVATION_TYPE,LIFECYCLE_STATUS,PLATFORM_TYPE,FULFILLMENT_SOURCE,HOST_ID,TENANT_ID)
+			VALUES(?,?,?,?,?,?,?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>updateFulfillment</name>
+		<comment>Update Fulfifllment</comment>
+		<querydata>
+			UPDATE FULFILLMENT_DIMENSION
+			SET FULFILLMENT_ID =?,
+			STATUS =?,
+			ACTIVATION_TYPE =?,
+			LIFECYCLE_STATUS =?,
+			PLATFORM_TYPE=?,
+			FULFILLMENT_SOURCE=?,
+			HOST_ID=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>insertFulfillmentDates</name>
+		<comment>Insert Fulfillment Dates</comment>
+		<querydata>
+			INSERT INTO FULFILLMENT_DATES( FULFILLMENT_ID,
+			EXPIRATION_DATE_ID,START_DATE_ID)
+			VALUES(?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>updateFulfillmentDates</name>
+		<comment>Update Fulfillment Dates</comment>
+		<querydata>
+			UPDATE FULFILLMENT_DATES
+			SET EXPIRATION_DATE_ID = ?,
+			START_DATE_ID = ?
+			WHERE FULFILLMENT_ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>getFulfillIDFromFulfillDates</name>
+		<comment>Select Fulfillment ID from Fulfillment dates table</comment>
+		<querydata>
+			SELECT FULFILLMENT_ID fulfillmentId FROM FULFILLMENT_DATES WHERE
+			FULFILLMENT_ID=?
+    	</querydata>
+	</query>
+	<query>
+		<name>getUsers</name>
+		<comment>Get FNO Users</comment>
+		<querydata>
+	       <![CDATA[SELECT USERS.ID id,
+	                       USERS.USERID userId,
+	                       CONTACT.FIRSTNAME firstName,
+	                       CONTACT.LASTNAME lastName,
+	                       CONTACT.STREETADDRESS streetAddress,
+						   CONTACT.CITY city,
+						   CONTACT.COUNTRY country,
+						   CONTACT.EMAIL email,
+						   CONTACT.PHONE phone,
+    					   USERS.LASTUPDATED lastModified,
+    					   USERS.ACTIVE status,
+    					   USERS.TENANT_ID tenantId,
+    					   USERS.RENEWAL_SUBSCRIPTION renewalSubscription,
+    					   USERS.SHAREDLOGIN sharedLogin,
+						   USERS.SYSTEMADMIN systemAdmin,
+						   USERS.LASTAUTHENTICATED lastAuthenticated,
+						   USERS.CREATEDATE createDate
+					 FROM PLT_USER USERS,PLT_CONTACT CONTACT 
+					 WHERE USERS.CONTACTINFO_ID = CONTACT.ID 
+					       AND (((USERS.LASTUPDATED = ? AND USERS.ID > ?) OR USERS.LASTUPDATED > ?) 
+					       	AND USERS.LASTUPDATED < ?)
+					       ORDER BY USERS.LASTUPDATED,USERS.ID ]]>
+		</querydata>
+	</query>
+		<query>
+		<name>getContacts</name>
+		<comment>Get FNO Contacts</comment>
+		<querydata>
+	       <![CDATA[Select ID id, FIRSTNAME firstname, LASTNAME lastName,  PHONE phone, EMAIL email, DISPLAYNAME displayName, STREETADDRESS streetAddress, CITY city, COUNTRY country, LASTUPDATED lastModified, TENANT_ID tenantId
+						FROM PLT_CONTACT 
+						WHERE (((LASTUPDATED = ? AND ID > ?) OR LASTUPDATED > ?) AND LASTUPDATED < ?)
+						ORDER BY LASTUPDATED, ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertUser</name>
+		<comment>Insert Users</comment>
+		<querydata>
+			INSERT INTO
+			USER_DIMENSION(ID,USER_ID,FIRSTNAME,LASTNAME,EMAIL,PHONE,STREET_ADDRESS,CITY,COUNTRY,STATUS,TENANT_ID,RENEWAL_SUBSCRIPTION,SHAREDLOGIN,SYSTEMADMIN,LASTUPDATED,LASTAUTHENTICATED,CREATEDATE)
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    </querydata>
+	</query>
+		<query>
+		<name>insertContact</name>
+		<comment>Insert Contacts</comment>
+		<querydata>
+			INSERT INTO
+			CONTACT_DIMENSION(ID,FIRSTNAME,LASTNAME,PHONE,EMAIL,DISPLAYNAME,STREET_ADDRESS,CITY,COUNTRY,TENANT_ID)
+			VALUES(?,?,?,?,?,?,?,?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>updateUser</name>
+		<comment>Update Users</comment>
+		<querydata>
+			UPDATE USER_DIMENSION SET
+			USER_ID = ?,
+			FIRSTNAME =?,
+			LASTNAME=?,
+			EMAIL=?,
+			PHONE=?,
+			STREET_ADDRESS=?,
+			CITY=?,
+			COUNTRY=?,
+			STATUS=?,
+			RENEWAL_SUBSCRIPTION=?,
+			SHAREDLOGIN = ?,
+			SYSTEMADMIN = ?,
+			LASTAUTHENTICATED=?,
+			CREATEDATE=?,
+			LASTUPDATED=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>updateContact</name>
+		<comment>Update Contacts</comment>
+		<querydata>
+			UPDATE CONTACT_DIMENSION SET
+			FIRSTNAME =?,
+			LASTNAME=?,
+			PHONE=?,
+			EMAIL=?,
+			DISPLAYNAME=?,
+			STREET_ADDRESS=?,
+			CITY=?,
+			COUNTRY=?
+			WHERE ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>getUserById</name>
+		<comment>Select User by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM USER_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getContactById</name>
+		<comment>Select Contact by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM CONTACT_DIMENSION WHERE ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>getEntitlementFacts</name>
+		<comment>Get Entitlement Fact Details for simple line item.	</comment>
+		<querydata>
+	       <![CDATA[ SELECT OPS_HISTORY.ID id, 
+       OPS_HISTORY.OLD_DATA oldData, 
+       OPS_HISTORY.NEW_DATA newData, 
+       OPS_HISTORY.EVENT event, 
+       OPS_HISTORY.CURRENT_COUNT currentCount, 
+       ACTIVATABLE.ID lineItemId, 
+       ENTORDER.ORDERABLE_ID productId, 
+       ENTORDER.ORDERABLE_QUANTITY ordQuantity, 
+       ACTIVATABLE.SEAT_COUNT seatCount, 
+       ACTIVATABLE.STATUS status, 
+       ACTIVATABLE.SUPPORT_ACTION supportAction, 
+       ACTIVATABLE.PARENT_LINE_ITEM parentLineItem, 
+       PRODUCT.SKU sku, 
+       PRODUCT.LICENSEMODEL_ID licenseModelId, 
+       ACTIVATABLE.CREATED_ON createDate, 
+       PARTNERTIER.ORG_UNIT_ID orgId, 
+       ORDERABLE.ORDERABLE_TYPE orderableType, 
+       OPS_HISTORY.LAST_MODIFIED lastModified, 
+       TENANT.ID tenantId, 
+       ENTITLEMENT.ID entitlementId, 
+       MAINTENANCE.ID maintenanceLineItemId 
+FROM OPS_ACTIVATABLE_ITEM ACTIVATABLE
+JOIN OPS_ENTITLEMENT_PRODUCT PRODUCT ON ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID 
+JOIN OPS_ENTITLEMENT_ORDER ENTITLEMENT ON ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+JOIN OPS_ENTITLED_ORDERABLE ENTORDER ON ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID 
+JOIN OPS_ENT_PARTNER_TIER PARTNERTIER ON PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET 
+JOIN OPS_PARTNER_TIER_NAME TIERNAME ON PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID 
+JOIN PROD_ORDERABLE ORDERABLE ON ORDERABLE.ID = ENTORDER.ORDERABLE_ID 
+JOIN OPS_TENANT TENANT ON TENANT.TENANT_ID = ACTIVATABLE.TENANT_ID LEFT 
+JOIN OPS_MAINTENANCE_ITEM MAINTENANCE ON MAINTENANCE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID AND MAINTENANCE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+
+JOIN OPS_STATE_CHANGE_HISTORY OPS_HISTORY ON OPS_HISTORY.OBJECT_ID = ENTITLEMENT.id
+AND ( ACTIVATABLE.ID = OPS_HISTORY.CHILD_OBJECT_ID OR
+        ( OPS_HISTORY.CHILD_OBJECT_ID IS NULL  AND MESSAGE LIKE concat('%', concat(ACTIVATABLE.ACTIVATION_ID, '%')) )
+)
+
+WHERE TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+  AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item' 
+  AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0 
+  AND ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID IS NULL 
+  AND OPS_HISTORY.EVENT IN ('bo.constants.history.event.state_change','bo.constants.history.event.seatcount_change') 
+  AND ENTITLEMENT.STATUS<>'bo.constants.states.test' 
+  AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold') 
+  AND (((OPS_HISTORY.LAST_MODIFIED = ? AND OPS_HISTORY.ID > ?) OR OPS_HISTORY.LAST_MODIFIED >?) AND OPS_HISTORY.LAST_MODIFIED < ?) 
+
+ORDER BY OPS_HISTORY.LAST_MODIFIED,OPS_HISTORY.ID]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getBulkEntitlementFacts</name>
+		<comment>Get Entitlement Fact Details for bulk line items</comment>
+		<querydata>
+	       <![CDATA[ SELECT OPS_HISTORY.ID id,
+	                        OPS_HISTORY.OLD_DATA oldData,
+	                        OPS_HISTORY.NEW_DATA newData,
+	                        OPS_HISTORY.EVENT event,
+	                        OPS_HISTORY.CURRENT_COUNT currentCount,
+	                        ACTIVATABLE.ID lineItemId,
+	       					ENTORDER.ORDERABLE_ID productId,
+	       					ENTORDER.ORDERABLE_QUANTITY ordQuantity,
+	       					ACTIVATABLE.SEAT_COUNT seatCount,
+	       				    ACTIVATABLE.STATUS status,
+	                        ACTIVATABLE.SUPPORT_ACTION supportAction,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+	                        PRODUCT.SKU sku,
+	                        PRODUCT.LICENSEMODEL_ID licenseModelId,
+	                        ACTIVATABLE.CREATED_ON createDate,
+	                        PARTNERTIER.ORG_UNIT_ID orgId,
+	                        ORDERABLE.ORDERABLE_TYPE orderableType,
+	                        ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID parentBulkEntId,
+                            PARENT_PARTNERTIER.ORG_UNIT_ID resellerId,
+	                        OPS_HISTORY.LAST_MODIFIED lastModified,
+	                        TENANT.ID tenantId,
+	                        ENTITLEMENT.ID entitlementId,
+							MAINTENANCE.ID maintenanceLineItemId
+	                  FROM 
+							OPS_STATE_CHANGE_HISTORY OPS_HISTORY
+						JOIN
+						  OPS_ACTIVATABLE_ITEM ACTIVATABLE ON OPS_HISTORY.CHILD_OBJECT_ID = ACTIVATABLE.ID
+						JOIN  
+	                       OPS_ENTITLEMENT_PRODUCT PRODUCT ON ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+						JOIN  
+	                       OPS_ENTITLEMENT_ORDER ENTITLEMENT ON ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+						JOIN  
+                           OPS_ENTITLEMENT_ORDER PARENT_ENTITLEMENT ON PARENT_ENTITLEMENT.ID =  ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID
+						 JOIN 
+                           OPS_ENTITLED_ORDERABLE ENTORDER ON ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID
+                         JOIN 
+						   OPS_ENT_PARTNER_TIER PARTNERTIER ON PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+						 JOIN  
+                           OPS_PARTNER_TIER_NAME TIERNAME ON PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+						 JOIN  
+                           OPS_ENT_PARTNER_TIER PARENT_PARTNERTIER ON PARENT_PARTNERTIER.CHANNEL_PARTNER_SET_ID = PARENT_ENTITLEMENT.CHANNEL_PARTNER_SET
+						 JOIN  
+                           OPS_PARTNER_TIER_NAME PARENT_TIERNAME ON PARENT_PARTNERTIER.PARTNER_TIER_ID = PARENT_TIERNAME.ID
+                         JOIN  
+						   PROD_ORDERABLE ORDERABLE ON ORDERABLE.ID = ENTORDER.ORDERABLE_ID
+						 JOIN  
+                           OPS_TENANT TENANT ON TENANT.TENANT_ID=ACTIVATABLE.TENANT_ID
+						 LEFT JOIN 
+						   OPS_MAINTENANCE_ITEM MAINTENANCE  ON MAINTENANCE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID  
+						   AND  MAINTENANCE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+	                  WHERE  
+	                         TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+                            AND PARENT_TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+                            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                            AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0
+                            AND OPS_HISTORY.EVENT IN ('bo.constants.history.event.state_change','bo.constants.history.event.seatcount_change')
+                            AND ENTITLEMENT.STATUS<>'bo.constants.states.test'
+                            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+                            AND PARTNERTIER.ORG_UNIT_ID NOT IN(SELECT ID FROM PLT_ORGUNIT WHERE name = 'PORTAL_ORG_UNIT') 
+                            AND (((OPS_HISTORY.LAST_MODIFIED = ? AND OPS_HISTORY.ID > ?) OR OPS_HISTORY.LAST_MODIFIED > ?) 
+                            AND OPS_HISTORY.LAST_MODIFIED < ?)
+                            ORDER BY OPS_HISTORY.LAST_MODIFIED,OPS_HISTORY.ID]]>
+		</querydata>
+	</query>
+
+	<query>
+		<name>getRelatedProducts</name>
+		<comment>Get Related product details for a given product or suite.
+		</comment>
+		<querydata>
+			SELECT LPORDERABLE_ID relatedProdId, LICENSED_PRODUCT_COUNT prodCount FROM
+			PROD_UNIFORM_SUITE_TO_PRODUCT WHERE ORDERABLE_ID = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>getParentProductID</name>
+		<comment>Get Parent Line Item Details.</comment>
+		<querydata>
+			SELECT ENTORDER.ORDERABLE_ID parentOrdId,
+			ACTIVATABLE.ID lineItemId,
+			PRODUCT.SKU sku,
+			PRODUCT.LICENSEMODEL_ID licenseModelId,
+			ACTIVATABLE.CREATED_ON createDate,
+			PARTNERTIER.ORG_UNIT_ID orgId,
+			ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID parentBulkEntId,
+			TENANT.ID tenantId,
+			ENTITLEMENT.ID entitlementId,
+			MAINTENANCE.ID maintenanceLineItemId
+			FROM 
+			  OPS_ACTIVATABLE_ITEM ACTIVATABLE 
+			JOIN
+			  OPS_ENTITLEMENT_PRODUCT PRODUCT ON ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+			JOIN
+			  OPS_ENTITLEMENT_ORDER ENTITLEMENT ON ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID
+			JOIN
+			  OPS_ENTITLED_ORDERABLE ENTORDER ON ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID
+			JOIN
+			 OPS_ENT_PARTNER_TIER PARTNERTIER ON PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+			JOIN
+			 OPS_PARTNER_TIER_NAME TIERNAME ON PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+			JOIN
+			 OPS_TENANT TENANT ON TENANT.TENANT_ID = ACTIVATABLE.TENANT_ID
+			LEFT JOIN 
+			  OPS_MAINTENANCE_ITEM MAINTENANCE  ON MAINTENANCE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID  
+			  AND  MAINTENANCE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold') 
+			WHERE 
+			 TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+			AND ACTIVATABLE.ID = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>getResellerID</name>
+		<comment>Get Reseller Id for bulk entitlement.</comment>
+		<querydata>
+			SELECT PARTNERTIER.ORG_UNIT_ID resellerId
+			FROM OPS_ENTITLEMENT_ORDER ENTITLEMENT,
+			OPS_ENT_PARTNER_TIER PARTNERTIER,
+			OPS_PARTNER_TIER_NAME TIERNAME
+			WHERE
+			PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+			AND PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+			AND TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+			AND ENTITLEMENT.ID=?
+    	</querydata>
+	</query>
+	<query>
+		<name>getTransferredLineItems</name>
+		<comment>Get Transferred Line Item history.</comment>
+		<querydata>
+  		      <![CDATA[ SELECT  OPS_HISTORY.ID id, 
+		      		        ACTIVATABLE.ID lineItemId,
+		      		        OPS_HISTORY.EVENT event,
+	       			        ENTORDER.ORDERABLE_ID productId,
+	       			        ENTORDER.ORDERABLE_QUANTITY ordQuantity,
+	       					ACTIVATABLE.SEAT_COUNT seatCount,
+	       				    ACTIVATABLE.STATUS status,
+	                        ACTIVATABLE.SUPPORT_ACTION supportAction,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+	                        PRODUCT.SKU sku,
+	                        PRODUCT.LICENSEMODEL_ID licenseModelId,
+	                        ACTIVATABLE.CREATED_ON createDate,
+	                        PARTNERTIER.ORG_UNIT_ID orgId,
+	                        ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID parentBulkEntId,                        
+                            OPS_HISTORY.LAST_MODIFIED lastModified,
+                            TENANT.ID tenantId,
+                            ENTITLEMENT.ID entitlementId,
+                            MAINTENANCE.ID maintenanceLineItemId
+					 FROM 
+						 OPS_STATE_CHANGE_HISTORY OPS_HISTORY
+					JOIN
+						OPS_ACTIVATABLE_ITEM ACTIVATABLE ON OPS_HISTORY.OBJECT_ID = ACTIVATABLE.PARENT_ENTITLEMENT_ID
+					JOIN					
+        				 OPS_ENTITLEMENT_ORDER ENTITLEMENT ON ACTIVATABLE.PARENT_ENTITLEMENT_ID=ENTITLEMENT.ID
+					JOIN	 
+					      OPS_ENTITLEMENT_PRODUCT PRODUCT  ON ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+					JOIN 
+						 OPS_ENTITLED_ORDERABLE ENTORDER ON ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID	
+					JOIN 		
+						 OPS_ENT_PARTNER_TIER PARTNERTIER ON PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+					JOIN 
+						 OPS_PARTNER_TIER_NAME TIERNAME ON 	PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+					JOIN 
+						PROD_ORDERABLE ORDERABLE ON ENTORDER.ORDERABLE_ID = ORDERABLE.ID
+					JOIN 
+					    OPS_TENANT TENANT ON TENANT.TENANT_ID = ACTIVATABLE.TENANT_ID
+					LEFT JOIN 
+						   OPS_MAINTENANCE_ITEM MAINTENANCE  ON MAINTENANCE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID  
+						   AND  MAINTENANCE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')    
+					WHERE 
+							TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+							AND OPS_HISTORY.EVENT ='bo.constants.history.event.transfer'
+							AND ACTIVATABLE.STATUS = 'bo.constants.states.obsolete'
+							AND ORDERABLE.ORDERABLE_TYPE <> 'bo.constants.orderable.type.maintenance'  
+	                        AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+	                        AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0
+	                        AND (((OPS_HISTORY.LAST_MODIFIED = ? AND OPS_HISTORY.ID > ?) OR OPS_HISTORY.LAST_MODIFIED >?) 
+	                        AND OPS_HISTORY.LAST_MODIFIED < ?) 
+	                        ORDER BY OPS_HISTORY.LAST_MODIFIED,OPS_HISTORY.ID  ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getFulfillmentFacts</name>
+		<comment>Get Fulfillment Fact Details</comment>
+		<querydata>
+	       <![CDATA[SELECT  
+	       					FULFILL_HISTORY.ID id,
+	                        FULFILL_HISTORY.FULFILLMENT_ID fulfillmentId,  
+	                        FULFILL_HISTORY.ENTITLEMENT_LINE_ITEM_ID lineItemId,
+	                        FULFILL_HISTORY.COUNT count,
+	                        FULFILL_HISTORY.ACTION action,
+	                        FULFILLMENT.ACTIVATION_DATE activationDate,
+	                        FULFILLMENT.STATUS status,
+	                        FULFILLMENT.LIFECYCLE_STATUS lifeCycleStatus,
+	                        FULFILLMENT.LAST_MODIFIED ffLastModified,
+	                        FULFILLMENT.ACTIVATION_COUNT fulfillmentCount,
+	                        FULFILLMENT.FULFILLMENT_TYPE fulfillmentType,
+	       					ENTORDER.ORDERABLE_ID productId,
+	                        PRODUCT.SKU sku,
+	                        PRODUCT.LICENSEMODEL_ID licenseModelId,
+	                        PRODUCT.ALT_LICENSEMODEL1_ID altLicenseModel1ID,
+	                        PRODUCT.ALT_LICENSEMODEL2_ID altLicenseModel2ID,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+                            ACTIVATABLE.CANCELLED_COUNT cancelCount,
+	                        PARTNERTIER.ORG_UNIT_ID orgId,
+	                        FULFILL_HISTORY.CREATED_ON lastModified,
+	                        TENANT.ID tenantId
+	                  FROM OPS_FULFILLMENT_HISTORY FULFILL_HISTORY,
+	                       OPS_ACTIVATION_INSTANCE FULFILLMENT,
+                           OPS_ACTIVATABLE_ITEM ACTIVATABLE,
+	                       OPS_ENTITLEMENT_PRODUCT PRODUCT,
+	                       OPS_ENTITLEMENT_ORDER ENTITLEMENT,
+	                       OPS_ENTITLED_ORDERABLE ENTORDER,
+                           OPS_ENT_PARTNER_TIER PARTNERTIER,
+                           OPS_PARTNER_TIER_NAME TIERNAME,
+                           OPS_TENANT TENANT                                
+	                  WHERE FULFILL_HISTORY.FULFILLMENT_ID = FULFILLMENT.ID
+	                        AND FULFILL_HISTORY.ENTITLEMENT_LINE_ITEM_ID = ACTIVATABLE.ID
+	                    	AND ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+                            AND ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                            AND ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID
+	                        AND PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+	                        AND PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+	                        AND TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+                            AND ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID IS NULL
+                            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                            AND ENTITLEMENT.STATUS<>'bo.constants.states.test'
+                            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.onhold')
+                            AND FULFILLMENT.STATUS <> 'bo.constants.states.onhold'
+                            AND FULFILL_HISTORY.ACTION NOT IN ('bo.constants.fulfillmentAction.activatedOnHold','bo.constants.fulfillmentAction.deleted')
+                            AND TENANT.TENANT_ID = FULFILLMENT.TENANT_ID
+                            AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0  
+                            AND (((FULFILL_HISTORY.CREATED_ON = ? AND FULFILL_HISTORY.ID > ?) OR FULFILL_HISTORY.CREATED_ON >?) 
+                            	AND FULFILL_HISTORY.CREATED_ON < ?) 
+                            ORDER BY FULFILL_HISTORY.CREATED_ON,FULFILL_HISTORY.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getAllLicenseModelsForLineItem</name>
+		<comment>Get all license models including alternate license models
+		</comment>
+		<querydata>
+        	<![CDATA[ SELECT ID id,MODEL_TYPE modelType FROM PROD_LICENSE_MODEL WHERE ID IN (${ids}) ]]>
+		</querydata>
+	</query>
+
+	<query>
+		<name>getBulkFulfillmentFacts</name>
+		<comment>Get Fulfillment Fact Details</comment>
+		<querydata>
+	       <![CDATA[SELECT  FULFILL_HISTORY.ID id,
+	                        FULFILL_HISTORY.FULFILLMENT_ID fulfillmentId,  
+	                        FULFILL_HISTORY.ENTITLEMENT_LINE_ITEM_ID lineItemId,
+	                        FULFILL_HISTORY.COUNT count,
+	                        FULFILL_HISTORY.ACTION action,
+	                        FULFILLMENT.ACTIVATION_DATE activationDate,
+	                        FULFILLMENT.STATUS status,
+	                        FULFILLMENT.LIFECYCLE_STATUS lifeCycleStatus,
+	                        FULFILLMENT.LAST_MODIFIED ffLastModified,
+	                        FULFILLMENT.ACTIVATION_COUNT fulfillmentCount,
+	                        FULFILLMENT.FULFILLMENT_TYPE fulfillmentType,
+	       					ENTORDER.ORDERABLE_ID productId,
+	                        PRODUCT.SKU sku,
+	                        PRODUCT.LICENSEMODEL_ID licenseModelId,
+	                        PRODUCT.ALT_LICENSEMODEL1_ID altLicenseModel1ID,
+	                        PRODUCT.ALT_LICENSEMODEL2_ID altLicenseModel2ID,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+                            ACTIVATABLE.CANCELLED_COUNT cancelCount,
+	                        PARTNERTIER.ORG_UNIT_ID orgId,
+	                        ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID parentBulkEntId,	
+	                        PARENT_PARTNERTIER.ORG_UNIT_ID resellerId,
+	                        FULFILL_HISTORY.CREATED_ON lastModified,
+	                        TENANT.ID  tenantId
+	                  FROM OPS_FULFILLMENT_HISTORY FULFILL_HISTORY,
+	                       OPS_ACTIVATION_INSTANCE FULFILLMENT,
+                           OPS_ACTIVATABLE_ITEM ACTIVATABLE,
+	                       OPS_ENTITLEMENT_PRODUCT PRODUCT,
+	                       OPS_ENTITLEMENT_ORDER ENTITLEMENT,
+	                       OPS_ENTITLEMENT_ORDER PARENT_ENTITLEMENT,
+	                       OPS_ENTITLED_ORDERABLE ENTORDER,
+                           OPS_ENT_PARTNER_TIER PARTNERTIER,
+                           OPS_PARTNER_TIER_NAME TIERNAME,
+                           OPS_ENT_PARTNER_TIER PARENT_PARTNERTIER,
+                           OPS_PARTNER_TIER_NAME PARENT_TIERNAME,
+                           OPS_TENANT TENANT                                  
+	                  WHERE FULFILL_HISTORY.FULFILLMENT_ID = FULFILLMENT.ID
+	                        AND FULFILL_HISTORY.ENTITLEMENT_LINE_ITEM_ID = ACTIVATABLE.ID
+	                    	AND ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+	                    	AND ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID
+                            AND PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+                            AND PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+                            AND TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+                            AND PARENT_ENTITLEMENT.ID =  ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID
+                            AND PARENT_PARTNERTIER.CHANNEL_PARTNER_SET_ID = PARENT_ENTITLEMENT.CHANNEL_PARTNER_SET
+                            AND PARENT_PARTNERTIER.PARTNER_TIER_ID = PARENT_TIERNAME.ID
+                            AND PARENT_TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+                            AND ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.onhold')
+                            AND FULFILLMENT.STATUS <> 'bo.constants.states.onhold'
+                            AND FULFILL_HISTORY.ACTION NOT IN ('bo.constants.fulfillmentAction.activatedOnHold','bo.constants.fulfillmentAction.deleted')
+                            AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0  
+                            AND ACTIVATABLE.TENANT_ID=TENANT.TENANT_ID
+                            AND (((FULFILL_HISTORY.CREATED_ON = ? AND FULFILL_HISTORY.ID > ?) OR FULFILL_HISTORY.CREATED_ON >?) 
+                            	AND FULFILL_HISTORY.CREATED_ON < ?) 
+                            ORDER BY FULFILL_HISTORY.CREATED_ON,FULFILL_HISTORY.ID ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getTransferredFulfillmentFacts</name>
+		<comment>Get Fulfillment Fact Details</comment>
+		<querydata>
+	       <![CDATA[SELECT  FULFILLMENT.ID id,
+	                        FULFILLMENT.FULFILLMENT_ID fulfillmentId,  
+	                        FULFILLMENT.ENTITLEMENT_LINEITEM lineItemId,
+	                        FULFILLMENT.ACTIVATION_COUNT count,
+	                        FULFILLMENT.LIFECYCLE_STATUS action,
+	                        FULFILLMENT.ACTIVATION_DATE activationDate,
+	                        FULFILLMENT.STATUS status,
+	                        FULFILLMENT.LAST_MODIFIED ffLastModified,
+                            FULFILLMENT.ACTIVATION_COUNT fulfillmentCount,
+                            FULFILLMENT.FULFILLMENT_TYPE fulfillmentType,
+			       			ENTORDER.ORDERABLE_ID productId,
+	                        PRODUCT.SKU sku,
+	                        PRODUCT.LICENSEMODEL_ID licenseModelId,
+	                        PRODUCT.ALT_LICENSEMODEL1_ID altLicenseModel1ID,
+	                        PRODUCT.ALT_LICENSEMODEL2_ID altLicenseModel2ID,
+                            ACTIVATABLE.PARENT_LINE_ITEM parentLineItem,
+                            ACTIVATABLE.CANCELLED_COUNT cancelCount,
+	                        PARTNERTIER.ORG_UNIT_ID orgId,
+	                        ENTITLEMENT.PARENT_BULK_ENTITLEMENT_ID parentBulkEntId,	
+	                        FULFILLMENT.LAST_MODIFIED lastModified,
+	                        TENANT.ID tenantId
+	                  FROM  OPS_ACTIVATION_INSTANCE FULFILLMENT,
+                            OPS_ACTIVATABLE_ITEM ACTIVATABLE,
+	                        OPS_ENTITLEMENT_PRODUCT PRODUCT,
+	                        OPS_ENTITLEMENT_ORDER ENTITLEMENT,
+	                        OPS_ENTITLED_ORDERABLE ENTORDER,
+                            OPS_ENT_PARTNER_TIER PARTNERTIER,
+                            OPS_PARTNER_TIER_NAME TIERNAME,
+                            OPS_TENANT TENANT                                  
+	                  WHERE FULFILLMENT.ENTITLEMENT_LINEITEM = ACTIVATABLE.ID
+	    	                AND ACTIVATABLE.PARENT_ENTITLEMENT_ID = ENTITLEMENT.ID 
+                            AND ACTIVATABLE.ENTITLEMENT_PRODUCT_ID = PRODUCT.ID
+                            AND ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID
+	                        AND PARTNERTIER.CHANNEL_PARTNER_SET_ID = ENTITLEMENT.CHANNEL_PARTNER_SET
+	                        AND PARTNERTIER.PARTNER_TIER_ID = TIERNAME.ID
+	                        AND TIERNAME.NAME = 'bo.constants.partnertiernames.endcustomer'
+                            AND ACTIVATABLE.ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                            AND ACTIVATABLE.STATUS NOT IN('bo.constants.states.test','bo.constants.states.onhold')
+                            AND FULFILLMENT.STATUS <> 'bo.constants.states.onhold'
+                            AND FULFILLMENT.LIFECYCLE_STATUS = 'bo.constants.lifecycle.status.transfer'
+                            AND ACTIVATABLE.IS_BULK_LINE_ITEM = 0
+                            AND TENANT.TENANT_ID = ACTIVATABLE.TENANT_ID
+                            AND (((FULFILLMENT.LAST_MODIFIED = ? AND FULFILLMENT.ID > ?) OR FULFILLMENT.LAST_MODIFIED >?) 
+                            	AND FULFILLMENT.LAST_MODIFIED < ?) 
+                            ORDER BY FULFILLMENT.LAST_MODIFIED, FULFILLMENT.ID]]>
+		</querydata>
+	</query>
+	<query>
+		<name>getFulfillParentProductID</name>
+		<comment>Get Parent Line Item Details.</comment>
+		<querydata>
+			SELECT ENTORDER.ORDERABLE_ID parentOrdId
+			FROM OPS_ACTIVATABLE_ITEM ACTIVATABLE,
+			OPS_ENTITLED_ORDERABLE ENTORDER
+			WHERE ACTIVATABLE.ENTITLED_ORDERABLES = ENTORDER.ENTITLED_ORDERABLE_SET_ID
+			AND ACTIVATABLE.ID = ? 
+    	</querydata>
+	</query>
+	<query>
+		<name>getTimeId</name>
+		<comment>Select Time by ID</comment>
+		<querydata>
+			SELECT ID id FROM TIME_DIMENSION WHERE DATEVAL =?
+    	</querydata>
+	</query>
+	<query>
+		<name>selectOpsEntyStatus</name>
+		<comment>Select ops entity Status</comment>
+		<querydata>
+			SELECT ID, NAME, LAST_ENTITY_UPDATED, LAST_ENTITY_ID FROM
+			OPS_REPORTING_ENTY_STATUS WHERE NAME = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>insertOpsEntyStatus</name>
+		<comment>insert ops entity Status</comment>
+		<querydata>
+			INSERT INTO OPS_REPORTING_ENTY_STATUS( ID, NAME, LAST_ENTITY_UPDATED,
+			LAST_ENTITY_ID)
+			VALUES (?,?,?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>updateOpsEntyStatus</name>
+		<comment>Update ops entity Status</comment>
+		<querydata>
+			UPDATE OPS_REPORTING_ENTY_STATUS
+			SET
+			LAST_ENTITY_UPDATED = ?,
+			LAST_ENTITY_ID = ?
+			WHERE ID = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>deleteOpsEntyStatus</name>
+		<comment>delete ops entity Status</comment>
+		<querydata>
+			DELETE FROM OPS_REPORTING_ENTY_STATUS WHERE ID = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>orgUnitSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the org units among the work
+			items for a batch</comment>
+		<querydata>
+			SELECT DISTINCT SOLD_TO_ORG_ID
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workBatchSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT ID
+			FROM OPS_WORK_BATCH
+			WHERE BULK_OP_SPEC_ID = ? AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemSelectAllKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT ID, FROM_ACTIVATABLE_ITEM_ID, TO_ACTIVATABLE_ITEM_ID,
+			PARENT_ENTITLEMENT_ID, SOLD_TO_ORG_ID, SEAT_COUNT, PRODUCT_IDS,
+			PRODUCT_IDS_COUNTS
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemCountAllKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT COUNT(*)
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemMaxLastModifiedKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT MAX(LAST_MODIFIED)
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemSelectProcessedKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT ID, FROM_ACTIVATABLE_ITEM_ID, TO_ACTIVATABLE_ITEM_ID,
+			PARENT_ENTITLEMENT_ID, SOLD_TO_ORG_ID, SEAT_COUNT,PRODUCT_IDS,
+			PRODUCT_IDS_COUNTS
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID= :tenantId AND TO_ACTIVATABLE_ITEM_ID IS NOT NULL
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemUnfulfilledKey</name>
+		<comment>Bulk Operation Query to retrieve fulfillment tuples for a
+			processed workitems.
+			Excludes Trusted Storage Fulfillments. Drives main loop of AutoFulfill.
+			Order is important, if changed activationInstanceSelectKey must be changed
+			also.
+        </comment>
+		<querydata>
+			SELECT WI.ID,
+			WI.FROM_ACTIVATABLE_ITEM_ID,
+			WI.TO_ACTIVATABLE_ITEM_ID,
+			WI.PARENT_ENTITLEMENT_ID,
+			WI.SOLD_TO_ORG_ID,
+			WI.PARENT_SEAT_COUNT,
+			WI.PRNT_EXTRA_ACTVTN_USED,
+			WI.PRNT_ALLOW_PARTIAL_FLFLMNT,
+			WI.NUM_OPERATIONS,
+			WI.WHEN_SET,
+			ORD.PRODUCT_IDS,
+			ORD.PRODUCT_IDS_COUNTS,
+			F.ID AS ACTIVATION_INSTANCE_ID,
+			LI.ACTIVATION_ID,
+			F.ACTIVATION_COUNT,
+			LI.SEAT_COUNT,
+			LI.FULFILLED_AMOUNT
+			FROM OPS_WORK_ITEM WI,
+			OPS_ACTIVATION_INSTANCE F,
+			OPS_ACTIVATABLE_ITEM LI,
+			OPS_ENTORDERABLE_SET ORD
+			WHERE WI.WORK_BATCH_ID = ? AND
+			WI.TO_ACTIVATABLE_ITEM_ID IS NOT NULL AND
+			WI.FULFILLED IS NULL AND
+			F.ENTITLEMENT_LINEITEM = WI.FROM_ACTIVATABLE_ITEM_ID AND
+			F.STATUS = 'bo.constants.states.active' AND
+			F.LIFECYCLE_STATUS IS NULL AND
+			F.TRUSTED_ACTIVATION_COUNT = 0 AND
+			LI.ID = WI.TO_ACTIVATABLE_ITEM_ID AND
+			ORD.ID = LI.ENTITLED_ORDERABLES AND 
+			WI.TENANT_ID = :tenantId 
+			ORDER BY WI.TO_ACTIVATABLE_ITEM_ID,
+			(CASE WHEN F.EXPIRATION_DATE IS NULL THEN 1 ELSE 0 END),
+			F.EXPIRATION_DATE,
+			F.ID ASC
+        </querydata>
+	</query>
+	<query>
+		<name>noFulfillmentForLineItemKey</name>
+		<comment>Bulk Operation Query to update work item that has no
+			fulfillment</comment>
+		<querydata>
+			UPDATE OPS_WORK_ITEM
+			SET FULFILLED = 0
+			WHERE ID = ? AND FULFILLED IS NULL AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemUnmailedKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT WI.ID, WI.TO_ACTIVATABLE_ITEM_ID, ENT.SHIP_TO_EMAIL,
+			LI.ACTIVATION_ID
+			FROM OPS_WORK_ITEM WI, OPS_ENTITLEMENT_ORDER ENT, OPS_ACTIVATABLE_ITEM LI
+			WHERE WI.WORK_BATCH_ID = ?
+			AND WI.TO_ACTIVATABLE_ITEM_ID IS NOT NULL
+			AND WI.PARENT_ENTITLEMENT_ID = ENT.ID
+			AND (WI.EMAIL_SENT IS NULL
+			OR WI.EMAIL_SENT = 0) AND
+			LI.ID = WI.TO_ACTIVATABLE_ITEM_ID AND 
+			WI.TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>fulfillItemEmailKey</name>
+		<comment>Bulk Operation Query to retrieve the fulfill items for a
+			batch</comment>
+		<querydata>
+			SELECT FI.ID, FI.TO_ACTIVATION_INSTANCE_ID, FI.WORK_ITEM_ID,
+			F.FULFILLMENT_ID
+			FROM OPS_FULFILL_ITEM FI, OPS_WORK_ITEM WI, OPS_ACTIVATION_INSTANCE F
+			WHERE WI.WORK_BATCH_ID = ?
+			AND FI.TENANT_ID = :tenantId 
+			AND FI.WORK_ITEM_ID = WI.ID
+			AND (FI.EMAIL_SENT IS NULL
+			OR FI.EMAIL_SENT = 0) AND
+			FI.TO_ACTIVATION_INSTANCE_ID = F.ID
+    	</querydata>
+	</query>
+	<query>
+		<name>activationInstanceSelectKey</name>
+		<comment>Bulk Operation Query Autofulfill Query.
+			Order is important, MUST be same as workItemUnfulfilledKey.
+        </comment>
+		<querydata>
+			SELECT AI.ID, AI.FULFILLMENT_TYPE, AI.FULFILLMENT_ID,
+			AI.ACTIVATION_DATE, AI.STATUS,
+			AI.LIFECYCLE_STATUS, AI.START_DATE, AI.EXPIRATION_DATE,
+			AI.ACTIVATION_COUNT, AI.ACTIVE_COUNT, AI.OVERDRAFT_COUNT,
+			AI.ACTIVATION_DURATION, AI.DURATION_UNITS, AI.EXTENDED_PROPERTIES,
+			AI.ENTITLEMENT_LINEITEM, AI.PARENT_FULFILLMENT,
+			AI.LICENSEMODEL_ID, AI.HOST_ENTITY, AI.SHIP_TO_EMAIL,
+			AI.SHIP_TO_ADDRESS, AI.FULFILLMENT_SOURCE, AI.vendor_daemon_name,
+			AI.MIGRATION_ID, AI.ACTIVATION_TYPE,
+			HE.HOST_ENTITY_TYPE, HE.HOST_ID, AI.TIME_ZONE_VALUE
+			FROM OPS_ACTIVATION_INSTANCE AI
+			LEFT OUTER JOIN OPS_HOST_ENTITY HE ON AI.HOST_ENTITY = HE.ID
+			WHERE AI.ID IN ( ? )
+			AND AI.TENANT_ID = :tenantId 
+			ORDER BY AI.ENTITLEMENT_LINEITEM,
+			(CASE WHEN AI.EXPIRATION_DATE IS NULL THEN 1 ELSE 0 END),
+			AI.EXPIRATION_DATE,
+			AI.ID ASC
+        </querydata>
+	</query>
+	<query>
+		<name>hostLicenseTextKey</name>
+		<comment>Bulk Operation Query to retrieve the license texts for a Host
+		</comment>
+		<querydata>
+			SELECT HT.LICENSE_TEXT
+			FROM OPS_ACTIVATION_INSTANCE AI,
+			OPS_HOST_LICENSE_TEXT HT
+			WHERE AI.ID = ? AND 
+			AI.TENANT_ID = :tenantId 
+			AI.HOST_ENTITY = HT.HOST_ENTITY_ID
+        </querydata>
+	</query>
+	<query>
+		<name>fulfillmentLicenseTextKey</name>
+		<comment>Bulk Operation Query to retrieve the license texts for a
+			Fulfillment</comment>
+		<querydata>
+			SELECT LT.LICENSE_TEXT
+			FROM OPS_ACTIVATION_INSTANCE AI,
+			OPS_FULFILLMENT_LICENSE_TEXT LT
+			WHERE AI.ID = ? AND 
+			AI.TENANT_ID = :tenantId 
+			AI.ID = LT.ACTIVATION_INST_ID
+        </querydata>
+	</query>
+	<query>
+		<name>workItemCountProcessedKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT COUNT(*)
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TO_ACTIVATABLE_ITEM_ID IS NOT NULL AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemSelectUnprocessedKey</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch
+		</comment>
+		<querydata>
+			SELECT ID, FROM_ACTIVATABLE_ITEM_ID,
+			PARENT_ENTITLEMENT_ID, SOLD_TO_ORG_ID, SEAT_COUNT, PRODUCT_IDS, PRODUCT_IDS_COUNTS
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId AND TO_ACTIVATABLE_ITEM_ID IS NULL
+    	</querydata>
+	</query>
+
+	<query>
+		<name>workItemSelectUnprocessedKeyWithPerformanceFix</name>
+		<comment>Bulk Operation Query to retrieve the work items for a batch with performance fix
+		</comment>
+		<querydata>
+			SELECT TOP batchSize ID, FROM_ACTIVATABLE_ITEM_ID,
+			PARENT_ENTITLEMENT_ID, SOLD_TO_ORG_ID, SEAT_COUNT, PRODUCT_IDS, PRODUCT_IDS_COUNTS
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId AND TO_ACTIVATABLE_ITEM_ID IS NULL
+		</querydata>
+	</query>
+
+	<query>
+		<name>workItemProductSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the PRODUCTS for a batch
+		</comment>
+		<querydata>
+			SELECT DISTINCT PRODUCT_IDS_COUNTS
+			FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TO_ACTIVATABLE_ITEM_ID IS NULL AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>workItemDeleteKey</name>
+		<comment>Bulk Operation Query to Delete work items for a batch
+		</comment>
+		<querydata>
+			DELETE FROM OPS_WORK_ITEM
+			WHERE WORK_BATCH_ID = ? AND TENANT_ID = :tenantId
+    	</querydata>
+	</query>
+	<query>
+		<name>entitlementSelectKey</name>
+		<comment>Bulk Operation Query </comment>
+		<querydata>
+			SELECT DISTINCT ID, DEFAULT_OBJECT, STATUS,
+			ENTITLEMENT_ID, SHIP_TO_EMAIL, SHIP_TO_ADDRESS,
+			SEAT_COUNT, SHORT_CODE_ASR_ID
+			FROM OPS_ENTITLEMENT_ORDER
+			WHERE ID IN ( ? ) AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>channelPartnerSelectKey</name>
+		<comment>Bulk Operation Query </comment>
+		<querydata>
+			SELECT PARTNER_TIER_NAME.NAME NAME,ENT_ORDER.ID ID,
+			ENT_PARTNER_TIER.ORG_UNIT_ID ORGUNITID
+			FROM
+			OPS_ENTITLEMENT_ORDER ENT_ORDER
+			LEFT JOIN
+			OPS_CHANNEL_PARTNER_SET CHNL_PRTNER_SET
+			ON ENT_ORDER.CHANNEL_PARTNER_SET=CHNL_PRTNER_SET.ID
+			LEFT JOIN
+			OPS_ENT_PARTNER_TIER ENT_PARTNER_TIER
+			ON CHNL_PRTNER_SET.id = ENT_PARTNER_TIER.CHANNEL_PARTNER_SET_ID
+			LEFT JOIN
+			OPS_PARTNER_TIER_NAME PARTNER_TIER_NAME
+			ON ENT_PARTNER_TIER.PARTNER_TIER_ID = PARTNER_TIER_NAME.ID
+			WHERE
+			ENT_ORDER.ID IN ( ? ) AND ENT_ORDER.TENANT_ID = :tenantId
+			ORDER BY ENT_ORDER.ID ,ENT_PARTNER_TIER.LAST_MODIFIED ASC
+		</querydata>
+	</query>
+	<query>
+		<name>entitlementLineItemSelectKey</name>
+		<comment>Bulk Operation Query </comment>
+		<querydata>
+			SELECT LI.ID, LI.ACTIVATABLE_ITEM_TYPE, LI.STATUS, LI.IS_ACTIVATABLE,
+			LI.IS_BULK_LINE_ITEM, LI.ENTITLEMENT_PRODUCT_ID,
+			LI.ENTITLEMENT_POLICIES_ID, LI.PARENT_ENTITLEMENT_ID,
+			LI.PARENT_LINE_ITEM, LI.TRANSFERRED_FROM_LINE_ITEM,
+			LI.SUPPORT_ACTION, LI.ENTITLED_ORDERABLES,
+			LI.ORDER_ID, LI.ORDER_LINE_NUMBER, LI.FULFILLED_AMOUNT,
+			LI.AVAILABLE_REALLOCATION_COUNT, LI.REALLOCATED_COUNT,
+			LI.CANCELLED_COUNT, LI.OVERDRAFT_FULFILLED,
+			LI.EXTRA_ACTIVATIONS_USED, LI.SEAT_COUNT,
+			LI.ENTITLEMENT_PRODUCT_ID
+			FROM OPS_ACTIVATABLE_ITEM LI
+			WHERE LI.ID IN ( ? ) AND LI.TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpSoldToSelectKey</name>
+		<comment>Bulk Operation Query to find soldTo Ids to a Spec Composition
+			Table</comment>
+		<querydata>
+			SELECT ORG_UNIT_ID
+			FROM OPS_BULK_OP_SOLD_TO
+			WHERE BULK_OP_SPEC_ID = ? AND ORG_UNIT_ID IN ( % ) AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpSoldToRemoveKey</name>
+		<comment>Bulk Operation Query to find soldTo Ids to a Spec Composition
+			Table</comment>
+		<querydata>
+			DELETE OPS_BULK_OP_SOLD_TO
+			WHERE BULK_OP_SPEC_ID = ? AND ORG_UNIT_ID IN ( % ) AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpSoldToClearKey</name>
+		<comment>Bulk Operation Query to find soldTo Ids to a Spec Composition
+			Table</comment>
+		<querydata>
+			DELETE OPS_BULK_OP_SOLD_TO
+			WHERE BULK_OP_SPEC_ID = ? AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpSoldToSelectAllKey</name>
+		<comment>Bulk Operation Query to find LineItem Ids to a Spec
+			Composition Table</comment>
+		<querydata>
+			SELECT ORG_UNIT_ID
+			FROM OPS_BULK_OP_SOLD_TO
+			WHERE BULK_OP_SPEC_ID = ? AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpsForLineItemSelectKey</name>
+		<comment>Bulk Operation Query to find Bulk Op Spec for a LineItem Id
+			in the Composition Table</comment>
+		<querydata>
+			SELECT SPEC.NAME
+			FROM OPS_BULK_OP_LINE_ITEM ITEM, OPS_BULK_OP_SPEC SPEC
+			WHERE ITEM.ACTIVATABLE_ITEM_ID = ? AND SPEC.ID = ITEM.BULK_OP_SPEC_ID AND SPEC.TENANT_ID = :tenantId 
+			UNION
+			SELECT SPEC.NAME
+			FROM OPS_WORK_ITEM ITEM, OPS_BULK_OP_SPEC SPEC
+			WHERE ITEM.TO_ACTIVATABLE_ITEM_ID = ? AND SPEC.WORK_BATCH_ID =
+			ITEM.WORK_BATCH_ID AND SPEC.TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpLineItemSelectKey</name>
+		<comment>Bulk Operation Query to find LineItem Ids to a Spec
+			Composition Table</comment>
+		<querydata>
+			SELECT ACTIVATABLE_ITEM_ID, SEAT_COUNT
+			FROM OPS_BULK_OP_LINE_ITEM
+			WHERE BULK_OP_SPEC_ID = ? AND ACTIVATABLE_ITEM_ID IN ( % ) AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpLineItemSelectAllKey</name>
+		<comment>Bulk Operation Query to find LineItem Ids to a Spec
+			Composition Table</comment>
+		<querydata>
+			SELECT ACTIVATABLE_ITEM_ID, SEAT_COUNT
+			FROM OPS_BULK_OP_LINE_ITEM
+			WHERE BULK_OP_SPEC_ID = ?  AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpLineItemRemoveKey</name>
+		<comment>Bulk Operation Query to find LineItem Ids to a Spec
+			Composition Table</comment>
+		<querydata>
+			DELETE OPS_BULK_OP_LINE_ITEM
+			WHERE BULK_OP_SPEC_ID = ? AND ACTIVATABLE_ITEM_ID IN ( % )  AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>bulkOpLineItemClearKey</name>
+		<comment>Bulk Operation Query to find LineItem Ids to a Spec
+			Composition Table</comment>
+		<querydata>
+			DELETE OPS_BULK_OP_LINE_ITEM
+			WHERE BULK_OP_SPEC_ID = ?  AND TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>nodeLockedHostsSelectKey</name>
+		<comment>Bulk Operation Query to find a Fulfillment's Node Locked
+			Hosts</comment>
+		<querydata>
+			SELECT ACTIVATION_INSTANCE_ID, NODELOCKED_HOST_UNIT
+			FROM OPS_ACT_NL_HOST_UNITS
+			WHERE ACTIVATION_INSTANCE_ID = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>supersedeSignSetSelectKey</name>
+		<comment>Bulk Operation Query to find a Fulfillment's Node Locked
+			Hosts</comment>
+		<querydata>
+			SELECT SIGN
+			FROM OPS_SUPERSEDE_SIGN
+			WHERE ACTIVATION_INSTANCE_ID = ?
+    	</querydata>
+	</query>
+	<query>
+		<name>fulfillItemProductSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the PRODUCTS for a batch
+		</comment>
+		<querydata>
+			SELECT DISTINCT ORD.PRODUCT_IDS_COUNTS
+			FROM OPS_WORK_ITEM WI,
+			OPS_ACTIVATABLE_ITEM ITEM,
+			OPS_ENTORDERABLE_SET ORD
+			WHERE WI.WORK_BATCH_ID = ?
+			AND ITEM.ID = WI.TO_ACTIVATABLE_ITEM_ID
+			AND ORD.ID = ITEM.ENTITLED_ORDERABLES 
+			AND WI.TENANT_ID = :tenantId 
+    	</querydata>
+	</query>
+	<query>
+		<name>lineItemConstraintSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the PRODUCTS for a batch
+		</comment>
+		<querydata>
+			SELECT DISTINCT MDL.MODEL_TYPE
+			FROM OPS_WORK_ITEM WI,
+			OPS_ACTIVATABLE_ITEM LI,
+			OPS_ENTITLED_ORDERABLE EO,
+			PROD_ORDERABLE_MODEL OM,
+			PROD_LICENSE_MODEL MDL
+			WHERE WI.WORK_BATCH_ID = ? AND
+			WI.FROM_ACTIVATABLE_ITEM_ID = LI.ID AND
+			EO.ENTITLED_ORDERABLE_SET_ID = LI.ENTITLED_ORDERABLES AND
+			EO.ORDERABLE_ID = OM.LPORDERABLE_ID AND
+			OM.LICMODEL_ID = MDL.ID AND
+			MDL.MODEL_TYPE IN ('FLOATING_CERTIFICATE', 'NODE_LOCKED', 'CUSTOM_LICENSE_MODEL')
+			AND WI.TENANT_ID = :tenantId 
+		</querydata>
+	</query>
+	<query>
+		<name>fulfillConstraintSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the PRODUCTS for a batch
+		</comment>
+		<querydata>
+			SELECT DISTINCT MDL.MODEL_TYPE
+			FROM OPS_WORK_ITEM WI,
+			OPS_ACTIVATION_INSTANCE AI,
+			PROD_LICENSE_MODEL MDL
+			WHERE WI.WORK_BATCH_ID = ? AND
+			WI.FROM_ACTIVATABLE_ITEM_ID = AI.ENTITLEMENT_LINEITEM AND
+			AI.LICENSEMODEL_ID = MDL.ID AND
+			MDL.MODEL_TYPE IN ('FLOATING_CERTIFICATE', 'NODE_LOCKED', 'CUSTOM_LICENSE_MODEL') 
+			AND WI.TENANT_ID = :tenantId 
+		</querydata>
+	</query>
+	<query>
+		<name>fulfillMetadataSelectKey</name>
+		<comment>Bulk Operation Query to retrieve the </comment>
+		<querydata>
+			SELECT MDL.ID
+			FROM PLT_EXTPROPMETADATA MDL, PLT_EXTPROPMETADATA BOS
+			WHERE BOS.CLASSNAME =
+			'com.flexnet.operations.services.bulkOperations.BulkOperationSpecDO'
+			AND
+			MDL.CLASSNAME = ? AND
+			MDL.CLASSNAME != BOS.CLASSNAME AND
+			MDL.NAME = ? AND
+			MDL.NAME = BOS.NAME AND
+			MDL.SUBGROUPNAME = ? AND
+			MDL.SUBGROUPNAME = BOS.SUBGROUPNAME AND 
+			MDL.TENANT_ID = :tenantId
+        </querydata>
+	</query>
+	
+	<query>
+		<name>getEntCustomAttributes</name>
+		<comment>Get Entitlement Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ select DISTINCT ENTORDER.ID id,
+                                       METADATA.NAME name,
+                                      (
+                                      CASE WHEN TYPE='TEXT' THEN TEXTVALUE 
+									WHEN TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+									WHEN TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+									WHEN TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+									WHEN TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+									END) AS value,
+                                       --LIC_ATTR.FOR_REPORTING forReporting,
+                                        ENTORDER.TENANT_ID tenantId,
+                                       EXTPROP.LASTUPDATED lastModified,
+									   METADATA.REPORTING_ORDER,TYPE
+                                       FROM 
+                                       OPS_ENTITLEMENT_ORDER ENTORDER 
+                                       JOIN PLT_EXTPROP EXTPROP
+                                       ON EXTPROP.BELONGSTOSET_ID=ENTORDER.EXTENDEDPROPERTYSET_ID
+                                       JOIN PLT_EXTPROPMETADATA METADATA 
+                                       ON  EXTPROP.METADATA_ID=METADATA.ID
+                                      LEFT JOIN PLT_EXTPROP_MULTIVALUE MULTIVALUE
+                                       ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                                       WHERE  METADATA.CLASSNAME='com.flexnet.operations.bizobjects.entitlements.EntitlementBO' 
+                                       AND METADATA.TYPE NOT IN('LONGTEXT')
+                                       AND METADATA.STATUS <> '0'
+									   AND METADATA.FOR_REPORTING=1
+									   AND ENTORDER.STATUS not in('bo.constants.states.test','bo.constants.states.draft')
+									   AND METADATA.SUBGROUPNAME='customattribute'
+                                       AND (((EXTPROP.LASTUPDATED =? AND ENTORDER.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                                       AND EXTPROP.LASTUPDATED  < ?)
+                                       ORDER BY ENTORDER.ID,METADATA.REPORTING_ORDER,EXTPROP.LASTUPDATED ]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getUserCustomAttributes</name>
+		<comment>Get User Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ select DISTINCT USER1.ID id,
+                                       METADATA.NAME name,
+                                      (
+                                      CASE WHEN TYPE='TEXT' THEN TEXTVALUE 
+									WHEN TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+									WHEN TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+									WHEN TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+									WHEN TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+									END) AS value,
+                                       --LIC_ATTR.FOR_REPORTING forReporting,
+                                        USER1.TENANT_ID tenantId,
+                                       EXTPROP.LASTUPDATED lastModified,
+									   METADATA.REPORTING_ORDER,TYPE
+                                       FROM 
+                                       PLT_USER USER1 
+                                       JOIN PLT_EXTPROP EXTPROP
+                                       ON EXTPROP.BELONGSTOSET_ID=USER1.EXTENDEDPROPERTYSET_ID
+                                       JOIN PLT_EXTPROPMETADATA METADATA 
+                                       ON  EXTPROP.METADATA_ID=METADATA.ID
+                                      LEFT JOIN PLT_EXTPROP_MULTIVALUE MULTIVALUE
+                                       ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                                       WHERE  METADATA.CLASSNAME='com.flexnet.platform.bizobjects.User' 
+                                       AND METADATA.TYPE NOT IN('LONGTEXT')
+                                       AND METADATA.STATUS <> '0'
+									   AND METADATA.FOR_REPORTING=1
+									   AND METADATA.SUBGROUPNAME='customattribute'
+                                       AND (((EXTPROP.LASTUPDATED =? AND USER1.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                                       AND EXTPROP.LASTUPDATED  < ?)
+                                       ORDER BY USER1.ID,METADATA.REPORTING_ORDER,EXTPROP.LASTUPDATED ]]>
+		</querydata>
+	</query>
+	
+	
+	<query>
+		<name>getEntCustomAttributeById</name>
+		<comment>Select Entitlement custom Attr Value by ID</comment>
+		<querydata>
+			 SELECT ENTITLEMENT_ID,CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM ENTITLEMENT_CUSTOM_ATTR WHERE  ENTITLEMENT_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getEntitlementById</name>
+		<comment>Select Entitlement by ID</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM ENTITLEMENT_DIMENSION WHERE ID=? 
+    	</querydata>
+	</query>
+	
+	
+	<query>
+		<name>getUserCustomAttributeById</name>
+		<comment>Select User custom Attr Value by ID</comment>
+		<querydata>
+			 SELECT USER_ID,CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM USER_CUSTOM_ATTR WHERE  USER_ID=?
+    	</querydata>
+	</query>
+	
+	
+	<query>
+		<name>updateEntCustomAttribute</name>
+		<comment>Update Entitlement Custom Attrribute value</comment>
+		<querydata>
+			UPDATE ENTITLEMENT_CUSTOM_ATTR SET
+			TENANT_ID=?,
+CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+CA28_NAME = ?, 
+CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+ WHERE ENTITLEMENT_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>updateUserCustomAttribute</name>
+		<comment>Update User Custom Attrribute value</comment>
+		<querydata>
+			UPDATE USER_CUSTOM_ATTR SET
+			TENANT_ID=?,
+CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+CA28_NAME = ?, 
+CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+ WHERE USER_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getProductCustomAttributes</name>
+		<comment>Get Product Custom Attributes</comment>
+		<querydata>
+	       <![CDATA[ select DISTINCT PRODUCT.ID id,
+                                       METADATA.NAME name,
+                                      (
+                                      CASE WHEN TYPE='TEXT' THEN TEXTVALUE 
+									WHEN TYPE='NUMBER' THEN CAST(NUMBERVALUE AS VARCHAR(255)) 
+									WHEN TYPE='BOOLEAN' THEN cast(BOOLEANVALUE AS VARCHAR(255)) 
+									WHEN TYPE='DATE' THEN CAST(DATEVALUE AS VARCHAR(255))
+									WHEN TYPE='MULTI_VALUED_TEXT' THEN CAST(MULTIVALUE.MULTITEXTVALUE AS VARCHAR(255))
+									END) AS value,
+                                       --LIC_ATTR.FOR_REPORTING forReporting,
+                                        PRODUCT.TENANT_ID tenantId,
+                                       EXTPROP.LASTUPDATED lastModified,
+									   METADATA.REPORTING_ORDER,TYPE
+                                       FROM 
+                                       PROD_ORDERABLE PRODUCT 
+                                       JOIN PLT_EXTPROP EXTPROP
+                                       ON EXTPROP.BELONGSTOSET_ID=PRODUCT.EXTENDED_PROPERTIES
+                                       JOIN PLT_EXTPROPMETADATA METADATA 
+                                       ON  EXTPROP.METADATA_ID=METADATA.ID
+                                      LEFT JOIN PLT_EXTPROP_MULTIVALUE MULTIVALUE
+                                       ON MULTIVALUE.EXTPROP_ID=EXTPROP.ID
+                                       WHERE  METADATA.CLASSNAME='com.flexnet.products.bizobjects.Orderable' 
+                                       AND PRODUCT.STATUS <> 'bo.constants.states.draft' 
+                                       AND METADATA.TYPE NOT IN('LONGTEXT')
+                                       AND METADATA.STATUS <> '0'
+									   AND METADATA.FOR_REPORTING=1
+									   AND METADATA.SUBGROUPNAME='customattribute'
+                                       AND (((EXTPROP.LASTUPDATED =? AND PRODUCT.ID > ?) OR EXTPROP.LASTUPDATED  > ?) 
+                                       AND EXTPROP.LASTUPDATED  < ?)
+                                       ORDER BY PRODUCT.ID,METADATA.REPORTING_ORDER,EXTPROP.LASTUPDATED ]]>
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getProductCustomAttributeById</name>
+		<comment>Select Product custom Attr Value by ID</comment>
+		<querydata>
+			SELECT PRODUCT_ID,CA1_NAME,CA1_VALUE,CA2_NAME,CA2_VALUE,CA3_NAME,CA3_VALUE,CA4_NAME,CA4_VALUE,CA5_NAME,CA5_VALUE
+,CA6_NAME,CA6_VALUE,CA7_NAME,CA7_VALUE,CA8_NAME,CA8_VALUE,CA9_NAME,CA9_VALUE,CA10_NAME,CA10_VALUE
+,CA11_NAME,CA11_VALUE,CA12_NAME,CA12_VALUE,CA13_NAME,CA13_VALUE,CA14_NAME,CA14_VALUE,CA15_NAME
+,CA15_VALUE,CA16_NAME,CA16_VALUE,CA17_NAME,CA17_VALUE,CA18_NAME,CA18_VALUE,CA19_NAME,CA19_VALUE
+,CA20_NAME,CA20_VALUE,CA21_NAME,CA21_VALUE,CA22_NAME,CA22_VALUE,CA23_NAME,CA23_VALUE,CA24_NAME
+,CA24_VALUE,CA25_NAME,CA25_VALUE,CA26_NAME,CA26_VALUE,CA27_NAME,CA27_VALUE,CA28_NAME,CA28_VALUE
+,CA29_NAME,CA29_VALUE,CA30_NAME,CA30_VALUE FROM PRODUCT_CUSTOM_ATTR WHERE  PRODUCT_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>updateProductCustomAttribute</name>
+		<comment>Update Product Custom Attrribute value</comment>
+		<querydata>
+			 UPDATE PRODUCT_CUSTOM_ATTR SET
+			TENANT_ID=?,
+CA1_NAME = ?, CA1_VALUE = ?, CA2_NAME = ?, CA2_VALUE = ?, CA3_NAME = ?, CA3_VALUE = ?, CA4_NAME = ?, CA4_VALUE = ?, 
+CA5_NAME = ?, CA5_VALUE = ?, CA6_NAME = ?, CA6_VALUE = ?, CA7_NAME = ?, CA7_VALUE = ?, CA8_NAME = ?, CA8_VALUE = ?, 
+CA9_NAME = ?, CA9_VALUE = ?, CA10_NAME = ?, CA10_VALUE = ?, CA11_NAME = ?, CA11_VALUE = ?, CA12_NAME = ?, CA12_VALUE = ?, 
+CA13_NAME = ?, CA13_VALUE = ?, CA14_NAME = ?, CA14_VALUE = ?, CA15_NAME = ?, CA15_VALUE = ?, CA16_NAME = ?, CA16_VALUE = ?, 
+CA17_NAME = ?, CA17_VALUE = ?, CA18_NAME = ?, CA18_VALUE = ?, CA19_NAME = ?, CA19_VALUE = ?, CA20_NAME = ?, CA20_VALUE = ?, 
+CA21_NAME = ?, CA21_VALUE = ?, CA22_NAME = ?, CA22_VALUE = ?, CA23_NAME = ?, CA23_VALUE = ?, CA24_NAME = ?, 
+CA24_VALUE = ?, CA25_NAME = ?, CA25_VALUE = ?, CA26_NAME = ?, CA26_VALUE = ?, CA27_NAME = ?, CA27_VALUE = ?, 
+CA28_NAME = ?, 
+CA28_VALUE = ?, CA29_NAME = ?, CA29_VALUE = ?, CA30_NAME = ?, CA30_VALUE = ?
+ WHERE PRODUCT_ID=?
+    	</querydata>
+	</query>
+	
+	<query>
+		<name>getOrgHierarchyRelationships</name>
+		<comment>get Org Hierarchy</comment>
+		<querydata><![CDATA[SELECT 
+								org.ORGID id,   
+		 						org.LINEAGE,
+								org.LAST_MODIFIED lastModified
+   							FROM     
+  								  OPS_ORGHIERARCHY org
+							WHERE  
+								org.ORGID NOT IN(SELECT ID FROM PLT_ORGUNIT WHERE name = 'PORTAL_ORG_UNIT')   	
+							   AND (((org.LAST_MODIFIED = ? AND org.ORGID > ?) OR org.LAST_MODIFIED > ?) 
+			   				   AND  org.LAST_MODIFIED < ?)]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertOrgHierarchyRelationship</name>
+		<comment>insert Org Hierarchy Relationship</comment>
+		<querydata>
+			INSERT INTO ORG_HIERARCHY(ORG_ID,PARENT_ORG_IDS)
+			VALUES (?,?)
+    	</querydata>
+	</query>
+	<query>
+		<name>getOrgHierarchyRelationshipById</name>
+		<comment>Select Org Hierarchy by ID</comment>
+		<querydata>
+			SELECT COUNT(ORG_ID) FROM ORG_HIERARCHY WHERE ORG_ID=?
+    	</querydata>
+	</query>
+	<query>
+		<name>updateOrgHierarchyRelationship</name>
+		<comment>update Org Hierarchy</comment>
+		<querydata>
+			update  ORG_HIERARCHY
+			set PARENT_ORG_IDS=?
+			 WHERE org_ID=?
+    	</querydata>
+	</query>
+	<query>
+		<name>getPartnerOrgRelations</name>
+		<comment>Get Partner Org Relations</comment>
+		<querydata>
+	       <![CDATA[select 
+(select ORG_ID FROM OPS_ORG_UNIT WHERE ID=RELATED_ORGS.OPS_ORG_ID) id,
+ (select ORG_ID FROM OPS_ORG_UNIT WHERE ID=RELATED_ORGS.RELATED_OPS_ORG_ID)  relatedOrgId,
+   ORG.LAST_MODIFIED lastModified
+FROM 
+	OPS_RELATED_ORGS RELATED_ORGS
+JOIN 
+	OPS_ORG_UNIT ORG on ORG.ID=RELATED_ORGS.OPS_ORG_ID
+JOIN 	
+        PLT_ORGUNIT PLT_ORG ON PLT_ORG.ID = ORG.ORG_ID
+JOIN   
+        PLT_ORGUNIT_ORGUNITTYPE ORG_TYPE ON ORG_TYPE.ORGUNIT_ID = PLT_ORG.ID         
+ WHERE
+  ORG_TYPE.ORGUNITTYPE_ID=(select id from PLT_ORGUNITTYPE where NAME='CHANNEL_PARTNER')
+ AND (((ORG.LAST_MODIFIED =? AND RELATED_ORGS.ops_org_id > ? ) OR ORG.LAST_MODIFIED  > ?) 
+                                       AND ORG.LAST_MODIFIED  < ?)
+                                       ORDER BY RELATED_ORGS.ops_org_id,ORG.LAST_MODIFIED ]]>
+		</querydata>
+	</query>
+	<query>
+	<name>insertPartnerOrgRelation</name>
+		<comment>Insert Partner Org Relation</comment>
+		<querydata>
+			INSERT INTO
+			PARTNER_RELATED_ORGS(ORG_ID,RELATED_ORG_ID)
+			VALUES(?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>getPartnerOrgRelationById</name>
+		<comment>Select Products</comment>
+		<querydata>
+			SELECT COUNT(ORG_ID) FROM PARTNER_RELATED_ORGS WHERE ORG_ID=? AND RELATED_ORG_ID=?
+    </querydata>
+	</query>
+	
+	<query>
+		<name>getEntitlementChannelPartnerRelations</name>
+		<comment>Get Entitlement Channel Partner Relationship</comment>
+		<querydata>
+			<![CDATA[select entitlementOrder.ID entitlement_id, entitlementOrder.ID id, partnerTierName.NAME name,
+    partnerTier.ORG_UNIT_ID orgUnitId, entitlementOrder.TENANT_ID tenantId, entitlementOrder.LAST_MODIFIED lastModified, 
+    partnerTier.CONTACT_ID contactid, partnerTier.CURRENT_OWNER currentowner
+FROM
+		OPS_ENTITLEMENT_ORDER  entitlementOrder
+    left join 
+		OPS_CHANNEL_PARTNER_SET channelPartnerSet 
+			on entitlementOrder.CHANNEL_PARTNER_SET=channelPartnerSet.ID
+    left join 
+        OPS_ENT_PARTNER_TIER partnerTier
+            on channelPartnerSet.id = partnerTier.CHANNEL_PARTNER_SET_ID
+    left join 
+		OPS_PARTNER_TIER_NAME partnerTierName
+			on partnerTier.PARTNER_TIER_ID = partnerTierName.id
+WHERE 
+    entitlementOrder.STATUS not in
+		('bo.constants.states.test','bo.constants.states.draft')
+	AND partnerTier.ORG_UNIT_ID NOT IN(select ID from PLT_ORGUNIT WHERE NAME = 'PORTAL_ORG_UNIT')
+	AND (((entitlementOrder.LAST_MODIFIED > ? OR entitlementOrder.ID > ?)
+		OR partnerTier.LAST_MODIFIED > ? ) 
+		and entitlementOrder.LAST_MODIFIED < ? )
+ORDER BY entitlementOrder.ID ,partnerTier.LAST_MODIFIED ASC ]]>
+		</querydata>
+	</query>
+	<query>
+		<name>insertEntitlementChannelPartnerRelation</name>
+		<comment></comment>
+		<querydata>
+			INSERT INTO 
+			ENTITLEMENT_CHANNEL_PARTNERS(ENTITLEMENT_ID, TIER_NAME, ORGUNIT_ID, TENANT_ID, CONTACT_ID, CURRENT_OWNER) 
+			VALUES (?,?,?,?,?,?)				
+		</querydata>
+	</query>
+	<query>
+		<name>updateEntitlementChannelPartnerRelation</name>
+		<comment></comment>
+		<querydata>
+			UPDATE ENTITLEMENT_CHANNEL_PARTNERS SET ORGUNIT_ID = ? , CONTACT_ID = ? , CURRENT_OWNER=? WHERE TENANT_ID LIKE ? AND ENTITLEMENT_ID = ? AND TIER_NAME LIKE ?
+		</querydata>
+	</query>
+	<query>
+		<name>getEntitlementChannelPartnerRelationById</name>
+		<comment></comment>
+		<querydata>
+			SELECT COUNT(ENTITLEMENT_ID) FROM ENTITLEMENT_CHANNEL_PARTNERS WHERE ENTITLEMENT_ID=? AND TENANT_ID LIKE ? AND TIER_NAME LIKE ?
+		</querydata>
+	</query>
+	
+	<query>
+		<name>getProductRelations</name>
+		<comment>Get Product Relations</comment>
+		<querydata>
+	       <![CDATA[SELECT DISTINCT RELATED_ORDERABLES.ORDERABLE_ID id,
+						RELATED_ORDERABLES.RELATION_TYPE relation,
+						RELATED_ORDERABLES.RELATED_ORDERABLE_ID as relatedProductId,
+						PROD_ORDERABLES.LAST_MODIFIED as lastModified
+					 FROM 
+						PROD_RELATED_ORDERABLES RELATED_ORDERABLES
+					LEFT JOIN
+						PROD_ORDERABLE	PROD_ORDERABLES on RELATED_ORDERABLES.ORDERABLE_ID = PROD_ORDERABLES.id
+ 					WHERE PROD_ORDERABLES.STATUS <> 'bo.constants.states.draft' 
+						AND RELATED_ORDERABLES.RELATED_ORDERABLE_ID in(Select ID from PROD_ORDERABLE where STATUS <> 'bo.constants.states.draft')
+	 					AND (((PROD_ORDERABLES.LAST_MODIFIED = ? AND PROD_ORDERABLES.ID > ?) OR PROD_ORDERABLES.LAST_MODIFIED > ?) 
+			   		AND  PROD_ORDERABLES.LAST_MODIFIED < ?)
+			   		ORDER BY PROD_ORDERABLES.LAST_MODIFIED,RELATED_ORDERABLES.ORDERABLE_ID,RELATED_ORDERABLES.RELATED_ORDERABLE_ID ]]>
+		</querydata>
+	</query>
+	<query>
+	<name>insertProductRelation</name>
+		<comment>Insert Product Relation</comment>
+		<querydata>
+			INSERT INTO
+			PRODUCT_RELATION(PRODUCT_ID,RELATION_TYPE,RELATED_PRODUCT_ID)
+			VALUES(?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>getProductRelationById</name>
+		<comment>Select Product Relation</comment>
+		<querydata>
+			SELECT COUNT(PRODUCT_ID) FROM PRODUCT_RELATION WHERE PRODUCT_ID=? AND RELATED_PRODUCT_ID=? AND RELATION_TYPE=?
+    </querydata>
+	</query>
+	
+	<query>
+		<name>getLineItemRelations</name>
+		<comment>Get Line Item Relations</comment>
+		<querydata>
+	       <![CDATA[SELECT 
+						id,
+						PARENT_LINE_ITEM parentLineItem,
+						SUPPORT_ACTION relation,
+						LAST_MODIFIED AS lastmodified
+ 					FROM 
+						OPS_ACTIVATABLE_ITEM
+					WHERE
+						PARENT_LINE_ITEM is not null
+						 AND 
+						 ACTIVATABLE_ITEM_TYPE='bo.constants.activatableitem.type.entitlement_line_item'
+                         AND 
+						 STATUS NOT IN('bo.constants.states.test','bo.constants.states.draft','bo.constants.states.onhold')
+						AND 
+	 					(((LAST_MODIFIED =? AND id > ? ) OR LAST_MODIFIED  > ?) 
+                                       AND LAST_MODIFIED  < ?)
+                                       ORDER BY id,LAST_MODIFIED ]]>
+		</querydata>
+	</query>
+	<query>
+	<name>insertLineItemRelation</name>
+		<comment>Insert Line Item Relation</comment>
+		<querydata>
+			INSERT INTO
+			LINE_ITEM_RELATION(LINE_ITEM_ID,PARENT_LINE_ITEM_ID,RELATION_TYPE)
+			VALUES(?,?,?)
+    </querydata>
+	</query>
+	<query>
+		<name>getLineItemRelationById</name>
+		<comment>Select Line Item</comment>
+		<querydata>
+			SELECT COUNT(LINE_ITEM_ID) FROM LINE_ITEM_RELATION WHERE LINE_ITEM_ID=?
+    </querydata>
+	</query>
+	<query>
+		<name>updateLineItemRelation</name>
+		<comment>update Line Item Relation</comment>
+		<querydata>
+			update  LINE_ITEM_RELATION
+			set RELATION_TYPE=?,PARENT_LINE_ITEM_ID=?
+			 WHERE LINE_ITEM_ID=?
+			 
+    	</querydata>
+	</query>
+	<query>
+		<name>getUserOrgRoles</name>
+		<comment>Get User Org Roles</comment>
+		<querydata>
+	       <![CDATA[SELECT PUOR.ID id,
+					PUOR.TENANT_ID tenantId,
+					PUOR.LASTUPDATED lastModified,
+					PUOR.USER_ID userId,
+					PUOR.ORG_ID orgId,
+					PUOR.ROLE_ID roleId,
+					PR.NAME roleName
+					FROM PLT_USER_ORGUNIT_ROLE PUOR
+					JOIN PLT_ROLE PR ON PR.ID = PUOR.ROLE_ID
+					WHERE  
+					PUOR.ORG_ID NOT IN(SELECT ID FROM PLT_ORGUNIT WHERE name = 'PORTAL_ORG_UNIT' ) 
+					AND (( PUOR.LASTUPDATED  = ?  AND PUOR.ID > ?) OR PUOR.LASTUPDATED  > ?)
+						AND  PUOR.LASTUPDATED  < ? 
+						ORDER BY PUOR.ID,PUOR.USER_ID,PUOR.ORG_ID ]]>
+		</querydata>
+	</query>
+	<query>
+			<name>insertUserOrgRole</name>
+			<comment>Insert User Org Role</comment>
+		<querydata>
+			INSERT INTO
+			USER_ORG_ROLE(ID,TENANT_ID,LAST_UPDATED,USER_ID,ORG_ID,ROLE_ID,ROLE_NAME)
+			VALUES(?,?,?,?,?,?,?)
+    		</querydata>
+	 </query>
+	 <query>
+			<name>updateUserOrgRole</name>
+			<comment>update User Org Role</comment>
+		<querydata>
+			UPDATE
+			USER_ORG_ROLE SET
+			ID = ?,
+			LAST_UPDATED = ?
+			WHERE
+			USER_ID=? AND
+			ORG_ID=? AND
+			ROLE_ID=?
+    	</querydata>
+	 </query>
+	 <query>
+		<name>getUserOrgRoleById</name>
+		<comment>Select User Org Role</comment>
+		<querydata>
+			SELECT COUNT(ID) FROM USER_ORG_ROLE WHERE USER_ID=? AND ORG_ID=? AND ROLE_ID=?
+    </querydata>
+	</query>
+	
+	<query>
+		<name>getFeatures</name>
+		<comment>Get Features</comment>
+			<querydata>
+		       <![CDATA[SELECT FEATURE.ID id,
+	       				FEATURE.NAME name,						
+						FEATURE.TENANT_ID tenantId,
+						FEATURE.STATUS status,
+						FEATURE.VERSION version,
+						FEATURE.COUNTED counted,
+						FEATURE.UNITS units,
+						FEATURE.SCALE scale,
+						FEATURE.DESCRIPTION description,
+						FEATURE.VERSION_FORMAT versionFormat,
+						FEATURE.CREATED_ON createDate,
+						FEATURE.LAST_MODIFIED lastModified 
+					    FROM PROD_PRODUCT_FEATURE FEATURE
+				        WHERE FEATURE.STATUS <> 'bo.constants.states.draft' 
+				        AND ((
+						  (FEATURE.LAST_MODIFIED = ? AND FEATURE.ID > ?)
+						   OR FEATURE.LAST_MODIFIED > ?) 
+				   		AND  FEATURE.LAST_MODIFIED < ?)							
+				        ORDER BY FEATURE.LAST_MODIFIED,FEATURE.ID]]>
+			</querydata>
+	</query>
+	
+	<query>
+		<name>getFeatureById</name>
+		<comment>Select Feature by ID</comment>
+			<querydata>
+				SELECT COUNT(ID) FROM FEATURE_DIMENSION WHERE ID=?
+	        </querydata>
+	</query>
+	
+	<query>
+		<name>insertFeature</name>
+		<comment>Insert Feature</comment>
+			<querydata>
+				INSERT INTO
+				FEATURE_DIMENSION(ID, NAME, TENANT_ID, STATUS, VERSION, COUNTED, UNITS, SCALE, DESCRIPTION, VERSION_FORMAT, CREATE_DATE, LAST_MODIFIED)
+				VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+	        </querydata>
+	</query>
+	
+	<query>
+		<name>updateFeature</name>
+		<comment>Update Feature</comment>
+			<querydata>
+				UPDATE FEATURE_DIMENSION SET
+				COUNTED = ?,				
+				UNITS = ? ,
+				SCALE = ?,
+				DESCRIPTION= ?					
+				WHERE ID = ? 
+	        </querydata>
+	</query>
+	
+	<query>
+		<name>getBundleFeatures</name>
+		<comment>Get Feature Bundles</comment>
+			<querydata>
+		       <![CDATA[SELECT BUNDLE.ID id,
+			   BUNDLE.NAME name,
+			   BUNDLE.TENANT_ID tenantId,
+			   BUNDLE.STATUS status,
+			   BUNDLE.DESCRIPTION description,			   
+			   BUNDLE.CREATED_ON createdOn,
+			   BUNDLE.LAST_MODIFIED lastModified
+		       FROM   PROD_FEATURE_BUNDLE BUNDLE
+	           WHERE  BUNDLE.STATUS <> 'bo.constants.states.draft' 
+		       AND ((
+					 (BUNDLE.LAST_MODIFIED = ? AND BUNDLE.ID > ?)
+					 OR BUNDLE.LAST_MODIFIED > ?) 
+					 AND  BUNDLE.LAST_MODIFIED < ?)
+			  ORDER BY BUNDLE.LAST_MODIFIED,BUNDLE.ID]]>
+			</querydata>
+	</query>
+	
+	<query>
+		<name>getBundleFeatureById</name>
+		<comment>Select Feature by ID</comment>
+			<querydata>
+				SELECT COUNT(ID) FROM FEATURE_BUNDLE_DIMENSION WHERE ID=?
+	        </querydata>
+	</query>
+	
+	<query>
+		<name>insertBundleFeature</name>
+		<comment>Insert Feature</comment>
+			<querydata>
+				INSERT INTO
+				FEATURE_BUNDLE_DIMENSION(ID, NAME, TENANT_ID, STATUS, DESCRIPTION, CREATE_DATE, LAST_MODIFIED)
+				VALUES(?,?,?,?,?,?,?)
+	        </querydata>
+	</query>
+	
+	<query>
+		<name>updateBundleFeature</name>
+		<comment>Update Feature</comment>
+			<querydata>
+				UPDATE FEATURE_BUNDLE_DIMENSION SET
+				NAME = ?,
+				DESCRIPTION = ?		
+				WHERE ID = ? 
+	        </querydata>
+	</query>
+	
+	<query>
+			<name>getBundleFeatureRelations</name>
+			<comment>Get Bundle Feature Relations</comment>
+				<querydata>
+			<![CDATA[SELECT (select distinct ID FROM PROD_FEATURE_BUNDLE  where ID = FEAT_BUND.FEATUREBUNDLE_ID) id, 
+				   (select distinct ID FROM PROD_PRODUCT_FEATURE where ID = FEAT_BUND.FEATURE_ID) featureId ,
+				   FEAT_BUND.FEATURE_COUNT featureCount,
+			  	   BUND.LAST_MODIFIED lastModified
+			FROM   PROD_BUNDLED_FEATURES FEAT_BUND JOIN 
+				   PROD_FEATURE_BUNDLE BUND on FEAT_BUND.FEATUREBUNDLE_ID=BUND.ID JOIN
+				   PROD_PRODUCT_FEATURE FEAT on FEAT_BUND.FEATURE_ID = FEAT.ID
+			WHERE  BUND.STATUS  <> 'bo.constants.states.draft' and 
+				   FEAT.STATUS <> 'bo.constants.states.draft' and
+				   FEAT_BUND.FEATUREBUNDLE_ID in (Select ID FROM PROD_FEATURE_BUNDLE where STATUS <> 'bo.constants.states.draft') and
+				   FEAT_BUND.FEATURE_ID in (Select ID FROM PROD_PRODUCT_FEATURE where STATUS <> 'bo.constants.states.draft') and 
+				   ((BUND.LAST_MODIFIED = ?  AND FEAT_BUND.FEATUREBUNDLE_ID > ?) OR BUND.LAST_MODIFIED  > ?)	
+				   AND  BUND.LAST_MODIFIED  < ?
+			ORDER BY FEAT_BUND.FEATUREBUNDLE_ID, FEAT_BUND.FEATURE_ID]]>
+			</querydata>
+   </query>
+  
+   <query>
+		<name>insertBundleFeatureRelation</name>
+		<comment>Insert Bundle Feature Relation</comment>
+			<querydata>
+				INSERT INTO BUNDLE_FEATURE_RELATION(
+				FEATUREBUNDLE_ID,FEATURE_ID,FEATURE_COUNT)
+				VALUES(?,?,?)
+	    	</querydata>
+  </query>
+  
+  <query>
+		<name>getBundleFeatureRelationById</name>
+		<comment>Select Bundle Feature by ID</comment>
+			<querydata>
+				SELECT COUNT(FEATUREBUNDLE_ID) FROM BUNDLE_FEATURE_RELATION WHERE FEATUREBUNDLE_ID=? AND
+				FEATURE_ID =?
+	    	</querydata>
+  </query>
+  
+  <query>
+		<name>updateBundleFeatureRelation</name>
+		<comment>Update Bundle Feature Relation</comment>
+			<querydata>
+				UPDATE BUNDLE_FEATURE_RELATION
+				SET FEATURE_COUNT = ?
+				WHERE FEATUREBUNDLE_ID= ?
+				AND FEATURE_ID = ?
+	    	</querydata>
+	</query>
+	
+	<query>
+			<name>getProductFeatureRelations</name>
+			<comment>Get Product Feature Relations</comment>
+				<querydata>
+			<![CDATA[SELECT (SELECT DISTINCT ID FROM PROD_ORDERABLE  WHERE ID = PROD_FEAT.ORDERABLE_ID) id, 
+						   (SELECT DISTINCT ID FROM PROD_PRODUCT_FEATURE WHERE ID = PROD_FEAT.FEATURE_ID) featureId ,
+						    PROD_FEAT.FEATURE_COUNT featureCount,
+							PROD.LAST_MODIFIED lastModified
+					 FROM    PROD_PRODUCT_FEATURE FEAT JOIN 
+							PROD_ORDERABLE_FEATURE PROD_FEAT  on PROD_FEAT.FEATURE_ID=FEAT.ID JOIN		
+							PROD_ORDERABLE PROD on PROD_FEAT.ORDERABLE_ID=PROD.ID 
+					 WHERE   FEAT.STATUS  <> 'bo.constants.states.draft' AND 
+							PROD.STATUS <> 'bo.constants.states.draft' AND
+						    PROD_FEAT.FEATURE_ID in (SELECT ID FROM PROD_PRODUCT_FEATURE WHERE STATUS <> 'bo.constants.states.draft') AND
+							PROD_FEAT.ORDERABLE_ID in (SELECT ID FROM PROD_ORDERABLE WHERE STATUS <> 'bo.constants.states.draft') AND 
+						    ((PROD.LAST_MODIFIED = ?  AND PROD_FEAT.ORDERABLE_ID> ?) OR PROD.LAST_MODIFIED  > ?) AND
+							PROD.LAST_MODIFIED  < ?
+				    ORDER BY PROD_FEAT.ORDERABLE_ID, PROD_FEAT.FEATURE_ID]]>
+			</querydata>
+   </query>
+   
+   
+   <query>
+		<name>insertProductFeatureRelation</name>
+		<comment>Insert Product Feature Relation</comment>
+			<querydata>
+				INSERT INTO PRODUCT_FEATURE_RELATION(
+				PRODUCT_ID,FEATURE_ID,FEATURE_COUNT)
+				VALUES(?,?,?)
+	    	</querydata>
+  </query>
+  
+  <query>
+		<name>getProductFeatureRelationById</name>
+		<comment>Select Product Feature by ID</comment>
+			<querydata>
+				SELECT COUNT(PRODUCT_ID) FROM PRODUCT_FEATURE_RELATION WHERE PRODUCT_ID=? AND
+				FEATURE_ID =?
+	    	</querydata>
+  </query>
+  
+  <query>
+		<name>updateProductFeatureRelation</name>
+		<comment>Update Product Feature Relation</comment>
+			<querydata>
+				UPDATE PRODUCT_FEATURE_RELATION
+				SET FEATURE_COUNT = ?
+				WHERE PRODUCT_ID= ?
+				AND FEATURE_ID = ?
+	    	</querydata>
+ </query>
+ 
+ <query>
+	<name>getProductBundleRelations</name>
+	<comment>Get Product Feature Relations</comment>
+	<querydata>
+			<![CDATA[SELECT (SELECT DISTINCT ID FROM PROD_ORDERABLE  WHERE ID = PROD_BUND.ORDERABLE_ID) id, 
+			   				(SELECT DISTINCT ID FROM PROD_FEATURE_BUNDLE WHERE ID = PROD_BUND.BUNDLE_ID) bundleId ,
+			   				 PROD_BUND.BUNDLE_COUNT bundleCount,
+							 PROD.LAST_MODIFIED lastModified
+							 FROM    PROD_FEATURE_BUNDLE BUND JOIN 
+							 PROD_ORDERABLE_BUNDLE PROD_BUND  on PROD_BUND.BUNDLE_ID = BUND.ID JOIN		
+							 PROD_ORDERABLE PROD on PROD_BUND.ORDERABLE_ID = PROD.ID 
+					WHERE    BUND.STATUS  <> 'bo.constants.states.draft' AND 
+							 PROD.STATUS <> 'bo.constants.states.draft' AND
+						     PROD_BUND.BUNDLE_ID in (SELECT ID FROM PROD_FEATURE_BUNDLE WHERE STATUS <> 'bo.constants.states.draft') AND
+							 PROD_BUND.ORDERABLE_ID in (SELECT ID FROM PROD_ORDERABLE WHERE STATUS <> 'bo.constants.states.draft') AND 
+							 ((PROD.LAST_MODIFIED = ? AND 
+							 PROD_BUND.ORDERABLE_ID > ?) OR
+							 PROD.LAST_MODIFIED  > ?)	AND
+							 PROD.LAST_MODIFIED  < ?
+				  ORDER BY PROD_BUND.ORDERABLE_ID, PROD_BUND.BUNDLE_ID]]>
+	</querydata>
+</query>
+
+   <query>
+		<name>insertProductBundleRelation</name>
+		<comment>Insert Product Bundle Relation</comment>
+			<querydata>
+				INSERT INTO PRODUCT_BUNDLE_RELATION(
+				PRODUCT_ID,BUNDLE_ID,BUNDLE_COUNT)
+				VALUES(?,?,?)
+	    	</querydata>
+  </query>
+  
+  <query>
+		<name>getProductBundleRelationById</name>
+		<comment>Select Product Bundle by ID</comment>
+			<querydata>
+				SELECT COUNT(PRODUCT_ID) FROM PRODUCT_BUNDLE_RELATION WHERE PRODUCT_ID=? AND
+				BUNDLE_ID =?
+	    	</querydata>
+  </query>
+  
+  <query>
+		<name>updateProductBundleRelation</name>
+		<comment>Update Product Bundle Relation</comment>
+			<querydata>
+				UPDATE PRODUCT_BUNDLE_RELATION
+				SET BUNDLE_COUNT = ?
+				WHERE PRODUCT_ID= ?
+				AND BUNDLE_ID = ?
+	    	</querydata>
+ </query>
+	
+</sql>

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false" name="com.flexnet.platform.entities.AlertHandlerType"
+		table="PLT_ALERT_HANDLERTYPE">
+
+		<meta attribute="class-description">
+			Represents a kind of alert handler for processing
+			alerts found.
+			@author Mark Rose
+		</meta>
+
+		<id name="id" type="java.lang.Long" column="id" unsaved-value="null">
+			<generator class="native" />
+		</id>
+		<property name="tenantId_" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TENANT_ID" not-null="true" />
+		</property>
+		<many-to-one name="alertType"
+			class="com.flexnet.platform.entities.AlertType" cascade="none"
+			index="PLT_IDX_ALTHANDTYPE_ALTYPE" />
+		<property name="handlerClass" type="string" />
+
+		<list name="properties" table="PLT_ALERT_HANDLERTYPEPROP"
+			cascade="all" lazy="true">
+			<key column="AlertHandlerType_id" />
+			<index column="pos" />
+			<composite-element
+				class="com.flexnet.platform.entities.AlertHandlerProperty">
+				<property name="name" type="string" />
+				<property name="defaultValue" type="string" />
+				<property name="resourceKey" type="string" />
+				<property name="size" column="prop_size" type="int" />
+				<property name="tenantId_" type="string" not-null="true"
+					length="255">
+					<meta attribute="scope-get">protected</meta>
+					<meta attribute="scope-set">protected</meta>
+					<column name="TENANT_ID" not-null="true" />
+				</property>
+			</composite-element>
+		</list>
+
+	</class>
+</hibernate-mapping>
+

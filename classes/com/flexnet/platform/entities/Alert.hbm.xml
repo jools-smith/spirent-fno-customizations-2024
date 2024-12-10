@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.platform.entities.Alert" table="PLT_ALERT">
+		
+			<meta attribute="class-description">
+				Represents an alert which occured while using FLEXnet Manager.
+				@author Carsten Blecken
+				@author Mark Rose
+    		</meta>
+
+			<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+			
+			<id name="id" type="java.lang.Long" column="id" unsaved-value="null">
+				<generator class="native"/>
+			</id>
+
+			<version column="HIB_VERSION" name="HibVersion">
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+			</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+			</property>
+
+			<many-to-one name="alertType" class="com.flexnet.platform.entities.AlertType" cascade="none" index="PLT_IDX_ALT_ALTYPE"/>
+			<property name="severity" type="int" />
+			<property name="message" column="alertMessage" type="string"/>
+			<property name="dismissed" index="PLT_IDX_ALT_DIS_DATE" type="boolean"/>
+		
+			<property name="dateCreated" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			   	<meta attribute="property-type">java.util.Date</meta>
+			</property>
+
+			<property name="effectiveDate" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			   	<meta attribute="property-type">java.util.Date</meta>
+			</property>
+
+			<property name="dateLastHandled" index="PLT_IDX_ALT_DIS_DATE" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			   	<meta attribute="property-type">java.util.Date</meta>
+			</property>
+
+			<many-to-one name="properties"
+			             class="com.flexnet.platform.entities.EntityPropertySet"
+			             cascade="all" index="PLT_IDX_ALT_EPS"/>
+			     
+		</class>
+	</hibernate-mapping>

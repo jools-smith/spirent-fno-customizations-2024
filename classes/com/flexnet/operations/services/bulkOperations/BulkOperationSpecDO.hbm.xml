@@ -1,0 +1,352 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.operations.services.bulkOperations.BulkOperationSpecDO"
+		table="OPS_BULK_OP_SPEC">
+		<meta attribute="class-description">
+			This class represents the meta-data specification
+			for a Bulk Operation.
+		</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.BulkOperationSpecData
+		</meta>
+		<meta attribute="extends">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+
+		<meta attribute="implement-equals">true</meta>
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-set">protected</meta>
+			<generator class="native" />
+		</id>
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" unique-key="BOS_UK" not-null="true"/> 
+			</property>
+
+		<property name="name_" type="string" length="255" unique-key="BOS_UK"
+			not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="NAME" length="255" unique-key="BOS_UK" not-null="true" />
+		</property>
+
+		<property name="description_" type="string" length="255"
+			not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="DESCRIPTION" not-null="false" />
+		</property>
+
+
+		<set name="currentProducts" table="OPS_BULK_OP_PRODUCT_FROM" lazy="false"
+			cascade="all">
+			<meta attribute="field-description">
+				This bulk operation's target Products to upgrade
+				from.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="BULK_OP_SPEC_ID" />
+			<composite-element
+				class="com.flexnet.operations.services.bulkOperations.OrderablesToUpgrade">
+				<meta attribute="generated-class" inherit="false">
+					com.flexnet.operations.entities.OrderablesToUpgradeData
+				</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<meta attribute="class-description">
+					This class represents the existing Products to
+					be Upgraded in a Bulk
+					Operation.
+				</meta>				
+				<many-to-one name="product"
+					class="com.flexnet.products.bizobjects.Orderable" column="ORDERABLE_ID"
+					index="OPS_IDX_UPG_ORD_FROM">
+					<meta attribute="use-in-equals">true</meta>
+					<meta attribute="scope-set">public</meta>
+					<meta attribute="scope-get">public</meta>
+				</many-to-one>
+                <property name="tenantId_" type="string" not-null="false" length="255">
+                    <meta attribute="scope-get">protected</meta>
+                    <meta attribute="scope-set">protected</meta>
+                    <column name="TENANT_ID" not-null="false"/>
+                </property>
+	
+			</composite-element>
+		</set>
+
+		<set name="targetProducts" table="OPS_BULK_OP_PRODUCT_TO" lazy="false"
+			cascade="all">
+			<meta attribute="field-description">
+				This bulk operation's target Products to upgrade
+				from.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="BULK_OP_SPEC_ID" />
+			<composite-element
+				class="com.flexnet.operations.services.bulkOperations.TargetOrderableOfUpgrade">
+				<meta attribute="generated-class" inherit="false">
+					com.flexnet.operations.entities.TargetOrderableOfUpgradeData
+				</meta>
+				<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+				<meta attribute="class-description">
+					This class represents the target Products of an
+					Upgrade Bulk Operation.
+				</meta>				
+				<many-to-one name="product"
+					class="com.flexnet.products.bizobjects.Orderable" column="ORDERABLE_ID"
+					index="OPS_IDX_UPG_ORD_TO">
+					<meta attribute="use-in-equals">true</meta>
+				</many-to-one>
+				<property name="count" column="ORDERABLE_QUANTITY" type="int" />
+                <property name="tenantId_" type="string" not-null="false" length="255">
+                    <meta attribute="scope-get">protected</meta>
+                    <meta attribute="scope-set">protected</meta>
+                    <column name="TENANT_ID" not-null="false"/>
+                </property>
+	
+			</composite-element>
+		</set>
+
+		<property name="submitted_" column="SUBMITTED" type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="checkMaintenance_" column="CHECK_MAINTENANCE"
+			type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="autoFulFillLicenses_" column="AUTO_FULFILL"
+			type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="markObsolete_" column="MARK_OBSOLETE" type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="includeAllOrgUnits_" column="INCLUDE_ALL_ORG_UNITS"
+			type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="maintenanceExpiration_" column="MAINTENANCE_EXPIRATION"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="property-type">java.util.Date</meta>
+		</property>
+
+		<many-to-one name="userId_" class="com.flexnet.platform.bizobjects.User">
+			<meta attribute="field-description">
+				the user who created the specification.
+			</meta>
+			<meta attribute="use-in-equals">true</meta>
+			<column name="USER_ID" />
+		</many-to-one>
+
+		<property name="type_" type="java.lang.String" not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TYPE" not-null="false" />
+		</property>
+
+		<property name="isTest" column="IS_TEST" type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="isVersionDateRenewal" column="IS_VER_DATE"
+			type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<many-to-one name="prototypeEntitlementLineItem_"
+			class="com.flexnet.operations.bizobjects.entitlements.ActivatableItemBO">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<column name="PROTOTYPE_ACTIVATABLE_ITEM_ID" />
+		</many-to-one>
+
+		<property name="permanent_" column="IS_PERMANENT" type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="duration_" type="integer" not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="DURATION" not-null="false" />
+		</property>
+
+		<property name="durationUnits_" type="java.lang.String"
+			not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="DURATION_UNITS" not-null="false" />
+		</property>
+
+		<property name="versionDate_" column="VERSION_DATE"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="property-type">java.util.Date</meta>
+		</property>
+
+		<property name="versionDuration_" type="integer" not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="VERSION_DURATION" not-null="false" />
+		</property>
+
+		<property name="versionDurationUnits_" type="java.lang.String"
+			not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="VERSION_DURATION_UNITS" not-null="false" />
+		</property>
+
+		<property name="versionStartDateOptions_" column="VERSION_DATE_OPTIONS"
+			type="string" length="64">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<many-to-one name="workBatch_"
+			class="com.flexnet.operations.services.bulkOperations.WorkBatchDO"
+			cascade="all" unique-key="BOS_UK">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<column name="WORK_BATCH_ID" />
+		</many-to-one>
+
+		<set name="soldTos_" inverse="true" cascade="delete" lazy="true">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">public</meta>
+			<key column="BULK_OP_SPEC_ID" />
+			<one-to-many
+				class="com.flexnet.operations.services.bulkOperations.TargetSoldTo" />
+		</set>
+
+		<set name="lineItems_" inverse="true" cascade="delete" lazy="true">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">public</meta>
+			<key column="BULK_OP_SPEC_ID" />
+			<one-to-many
+				class="com.flexnet.operations.services.bulkOperations.TargetLineItem" />
+		</set>
+
+		<component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+			<property name="createdBy" type="java.lang.Long">
+				<column name="AUDIT_CREATEDBY"></column>
+			</property>
+			<property name="createdOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="CREATED_ON"></column>
+			</property>
+			<property name="updatedBy" type="java.lang.Long">
+				<column name="AUDIT_UPDATEDBY"></column>
+			</property>
+			<property name="updatedOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LAST_MODIFIED"></column>
+			</property>
+		</component>
+		<property name="lineItemEmailSubmitted_" column="LINE_ITEM_EMAIL_SUBMITTED"
+			type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="fulfillmentEmailSubmitted_" column="FULFILLMENT_EMAIL_SUBMITTED"
+			type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+
+		<property name="lineItemsSql"
+			type="com.flexnet.platform.services.persistence.StringClobType">
+			<meta attribute="property-type">java.lang.String</meta>
+			<column name="LINE_ITEM_SQL"></column>
+		</property>
+		<property name="lineItemsCountSql"
+			type="com.flexnet.platform.services.persistence.StringClobType">
+			<meta attribute="property-type">java.lang.String</meta>
+			<column name="LINE_ITEM_COUNT_SQL"></column>
+		</property>
+		<property name="processAll_" type="com.flexnet.platform.services.persistence.FlexBooleanType">
+			<meta attribute="property-type">java.lang.Boolean</meta>
+			<column name="IS_PROCESS_ALL"></column>
+		</property>
+
+		<property name="emailStatus" type="string" length="255">
+			<column name="EMAIL_STATUS" length="255" />
+		</property>
+
+		<many-to-one name="extendedPropertySet" column="EXTENDED_PROPERTIES"
+			class="com.flexnet.platform.bizobjects.ExtendedPropertySet" cascade="all" index="FK_OPS_BULK_OPSPEC_EXTPROP">
+			<meta attribute="field-description">
+				The set of extended properties assigned to this
+				bulk op spec;
+				these represent fulfillment attributes collected in the
+				UI for the bulk
+				op
+				given to the license generator for each fulfillment
+				created by a bulk op.
+			</meta>
+		</many-to-one>
+
+		<property name="locale_" type="string" length="255" not-null="false">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="LOCALE" not-null="false" />
+		</property>
+
+		<many-to-one name="timeZoneValue_" column="TIME_ZONE_VALUE"
+			class="com.flexnet.products.bizobjects.FNPTimeZoneDO">
+			<meta attribute="field-description">
+				When set time zone option is at fulfill time,
+				the Fulfill-time
+				time-zone-value.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</many-to-one>
+
+		<property name="retainParentLineItem" column="RETAIN_PARENT_LINE_ITEM"
+				  type="boolean">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</property>
+		
+		<property name="copyParentLineItemCAValues" type="com.flexnet.platform.services.persistence.FlexBooleanType">
+			<meta attribute="property-type">java.lang.Boolean</meta>
+			<column name="IS_COPY_PARENT_CA_VALUES"></column>
+		</property>
+
+	</class>
+
+
+</hibernate-mapping>

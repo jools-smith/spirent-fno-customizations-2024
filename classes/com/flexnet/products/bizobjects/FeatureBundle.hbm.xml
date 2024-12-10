@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class name="com.flexnet.products.bizobjects.FeatureBundle" table="PROD_FEATURE_BUNDLE" lazy="false">
+			<meta attribute="generated-class" inherit="false">com.flexnet.products.entities.FeatureBundleData</meta>
+			<meta attribute="extends">com.flexnet.products.bizobjects.DeployedEntity</meta>
+			<meta attribute="implements" inherit="false">com.flexnet.products.bizobjects.IRecentlyAccessed</meta>
+			<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IExtendable</meta>
+			<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+     		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+			<meta attribute="scope-class">public abstract</meta>
+				<meta attribute="class-description">
+				This class represents a bundle of licensable features.  
+				It contains a set of ProductFeatures.
+				A FeatureBundle is a collection of features that are sold together, 
+				along with some property settings that may further refine the 
+				value of the bundled features. For example, a bundle may 
+				define a count which is applied to all of its components. 
+			</meta>
+			<meta attribute="implement-equals">true</meta>
+			
+			<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			<version column="HIB_VERSION" name="HibVersion">
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="scope-set">protected</meta>
+			</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" unique-key="PFB_UK" not-null="true"/> 
+			</property>			
+			
+			<property name="defaultObject_" column="DEFAULT_OBJECT" type="boolean" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>
+			
+			<property name="name_" type="string">
+				<meta attribute="field-description">
+					The human readable name of this feature bundle.
+				</meta>
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="NAME" length="64" unique-key="PFB_UK" not-null="true"/>
+			</property>
+			<property name="description" column="DESCRIPTION" type="string" length="2000">
+				<meta attribute="field-description">
+					Human readable description of the feature bundle.
+				</meta>
+			</property>
+			<property name="status_" column="STATUS" type="string" length="64" not-null="true">
+				<meta attribute="field-description">
+					The values for this are draft,deployed, inactive
+				</meta>
+				<meta attribute="scope-set">protected</meta>
+				<meta attribute="scope-get">protected</meta>
+			</property>
+		    <component name="auditInfo"	class="com.flexnet.platform.entities.AuditInfo">
+        		<property name="createdBy" type="java.lang.Long">
+					<column name="AUDIT_CREATEDBY"></column>
+				</property>
+				<property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType" >
+					<meta attribute="property-type">java.util.Date</meta>
+					<column name="CREATED_ON"></column>
+				</property>
+				<property name="updatedBy" type="java.lang.Long">
+					<column name="AUDIT_UPDATEDBY"></column>
+				</property>
+				<property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType" >
+					<meta attribute="property-type">java.util.Date</meta>
+					<column name="LAST_MODIFIED"></column>
+				</property>
+		    </component>			
+			<many-to-one name="extendedPropertySet" column="EXTENDED_PROPERTIES"
+			             class="com.flexnet.platform.bizobjects.ExtendedPropertySet"
+			             cascade="all"  index="FK_PROD_FEAT_BNDL_EXTPROP">
+			             <meta attribute="field-description">
+			             	The set of properties (license enforced or not) that are expressed 
+			             	in a license file that contains features owned by this Feature Bundle.
+			             	Defines property settings for this bundle; these settings override 
+			             	those defined by the component parts, and may in turn be overridden by 
+			             	settings in an entitlement.
+			             </meta>
+			</many-to-one>
+			
+			<set name="bundleItems" table="PROD_BUNDLED_FEATURES" lazy="true">
+				<meta attribute="field-description">
+					The set of features contained in this bundle.
+				</meta>
+				<meta attribute="scope-set">public</meta>
+				<meta attribute="implement-equals">true</meta>
+				
+				<key column="FEATUREBUNDLE_ID"/>
+				<composite-element class="com.flexnet.products.bizobjects.BundleItem">
+					<meta attribute="generated-class" inherit="false">com.flexnet.products.entities.BundleItemData</meta>
+					<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+					<parent name="bundle"/>
+					<property name="count" column="FEATURE_COUNT" type="int"/>
+					<many-to-one name="feature" class="com.flexnet.products.bizobjects.ProductFeature" column="FEATURE_ID" index="PROD_IDX_FEATURE_BUNDLE">
+						<meta attribute="use-in-equals">true</meta>
+					</many-to-one>
+                    <property name="tenantId" column="TENANT_ID" type="string" not-null="false" length="255"/>
+				</composite-element>
+			</set>
+		</class>
+	</hibernate-mapping>

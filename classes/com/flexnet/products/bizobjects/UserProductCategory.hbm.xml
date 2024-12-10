@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.products.bizobjects.UserProductCategory" table="OPS_USER_PDT_CATEGORY">
+        <meta attribute="class-description">
+            This class stores the userId and ProductCategoryId relation
+        </meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.products.bizobjects.UserProductCategoryData</meta>
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+        <meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+
+        <composite-id>
+            <key-many-to-one name="productcategory" class="com.flexnet.products.bizobjects.ProductCategoryDO" column="PRODUCT_CATEGORY_ID">
+                <meta attribute="use-in-equals">true</meta>
+                <meta attribute="scope-set">public</meta>
+                <meta attribute="scope-get">public</meta>
+            </key-many-to-one>
+            <key-many-to-one name="userid" class="com.flexnet.platform.bizobjects.User" column="USER_ID">
+                <meta attribute="use-in-equals">true</meta>
+                <meta attribute="scope-set">public</meta>
+                <meta attribute="scope-get">public</meta>
+            </key-many-to-one>
+        </composite-id>
+        <property name="tenantId_" type="string" not-null="false" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="TENANT_ID" not-null="false"/>
+        </property>
+
+    </class>
+</hibernate-mapping>
+

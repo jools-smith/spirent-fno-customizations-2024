@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.administer.EmailContentBO" table="OPS_EMAIL_CONTENT">
+			<meta attribute="class-description">
+				This class represents email template's versioned html content and text content by language. 
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.administer.EmailContent</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<meta attribute="implement-equals" inherit="false">true</meta>			
+			
+			<id name="email_cont_id" type="java.lang.Long" column="email_cont_id" unsaved-value="null">
+				<meta attribute="scope-set">protected</meta>
+				<generator class="native"/>
+			</id>
+			
+			<many-to-one name="email_tpl_ver_id" column="email_tpl_ver_id"
+				 class="com.flexnet.operations.bizobjects.administer.EmailTemplateVersionBO" not-null="true">
+				 <meta attribute="field-description">             
+					The set of email contents per email template version;
+				 </meta>
+			</many-to-one>	
+
+    		<property name="html_content" type="text" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<column name="html_content" />
+			</property>
+			
+			<property name="text_content" type="text" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<column name="text_content" />
+			</property>
+
+			<property name="subj_val" type="string" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<column name="subj_val" length="2000"/>
+			</property>    
+    
+			<property name="lang_cd" type="string" not-null="false">
+				<meta attribute="scope-set">protected</meta>
+				<column name="lang_cd" length="30"/>
+			</property>
+			
+			<property name="tenant_id" type="string" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<column name="tenant_id" length="255"/>
+			</property>
+			
+		</class>
+	</hibernate-mapping>

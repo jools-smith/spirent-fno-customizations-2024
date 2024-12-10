@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false" name="com.flexnet.operations.bizobjects.file.File"
+		table="OPS_FILE">
+		<meta attribute="class-description">
+			This class represents FILE meta-data.
+		</meta>
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.file.FileData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+		<meta attribute="implement-equals" inherit="false">true</meta>
+
+		<id name="id" type="java.lang.Long" column="id" unsaved-value="null">
+			<meta attribute="scope-set">public</meta>
+			<generator class="native" />
+		</id>
+
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+
+		<property name="tenantId" type="string">
+			<meta attribute="scope-set">protected</meta>
+			<column name="TENANT_ID" length="255" unique-key="UK_OPS_FILE"
+				not-null="true" />
+		</property>
+
+		<property name="fileId" type="string">
+			<meta attribute="scope-set">protected</meta>
+			<column name="FILE_ID" length="100" unique-key="UK_OPS_FILE"
+				not-null="true" />
+		</property>
+
+		<property name="description" type="string">
+			<meta attribute="scope-set">protected</meta>
+			<column name="DESCRIPTION" length="500"  not-null="true"/>
+		</property>
+
+		<property name="extDscr" type="string" >
+			<meta attribute="scope-set">protected</meta>
+			<column name="EXT_DESCRIPTION" length="1000"/>
+		</property>
+
+		<property name="fileName" type="string" >
+			<meta attribute="scope-set">protected</meta>
+			<column name="FILE_NAME" length="255" not-null="true"/>
+		</property>
+
+		<property name="fileSize" type="java.lang.Long" >
+			<column name="FILE_SIZE" not-null="false"></column>
+		</property>
+
+		<property name="extCd" type="string">
+			<meta attribute="scope-set">protected</meta>
+			<column name="EXT_CD" length="5"  not-null="false" />
+		</property>
+
+		<property name="upld_img_loc_val" type="string" >
+			<meta attribute="scope-set">protected</meta>
+			<column name="UPLD_IMG_LOC_VAL" length="1000" not-null="false" />
+		</property>
+
+		<property name="status">
+			<meta attribute="property-type">com.flexnet.operations.bizobjects.common.Status</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="STATUS" not-null="true" />
+			<type name="com.flexnet.platform.services.persistence.PersistentEnumType">
+				<param name="enumClass">com.flexnet.operations.bizobjects.common.Status</param>
+				<param name="useNamed">true</param>
+			</type>
+		</property>
+
+		<property name="availability">
+			<meta attribute="property-type">com.flexnet.operations.util.ApplicationUtility.enumAvailability</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="availability" length="20" not-null="true" />
+			<type name="com.flexnet.platform.services.persistence.PersistentEnumType">
+				<param name="enumClass">com.flexnet.operations.util.ApplicationUtility$enumAvailability</param>
+				<param name="useNamed">true</param>
+			</type>
+		</property>
+
+		<property name="cksum_expct_txt" type="string" not-null="false">
+			<meta attribute="scope-set">protected</meta>
+			<column name="CKSUM_EXPCT_TXT" length="32" />
+		</property>
+
+		<property name="cksum_actl_txt" type="string" not-null="false">
+			<meta attribute="scope-set">protected</meta>
+			<column name="CKSUM_ACTL_TXT" length="32" />
+		</property>
+
+		<property name="sha2_sign_val" type="string" not-null="false">
+			<meta attribute="scope-set">protected</meta>
+			<column name="SHA2_SIGN_VAL" length="64" />
+		</property>
+
+		<property name="hide_ind" type="string" not-null="true">
+			<meta attribute="scope-set">protected</meta>
+			<column name="HIDE_IND" length="1" />
+		</property>
+
+		<property name="akamai_sync_ind" type="string" >
+			<meta attribute="scope-set">protected</meta>
+			<column name="AKAMAI_SYNC_IND" length="1" />
+		</property>
+
+		<property name="downloadUrl" type="string">
+			<meta attribute="scope-set">protected</meta>
+			<column name="DOWNLOAD_URL" length="1000" not-null="false"/>
+		</property>
+	
+		<property name="deliverySource">
+			<meta attribute="property-type">com.flexnet.operations.bizobjects.file.DeliverySourceEnum</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="delivery_src_type_code" not-null="true" />
+			<type name="com.flexnet.platform.services.persistence.PersistentEnumType">
+				<param name="enumClass">com.flexnet.operations.bizobjects.file.DeliverySourceEnum</param>
+				<param name="useNamed">true</param>
+			</type>
+		</property>
+
+		<property name="external_url" type="string" >
+			<meta attribute="scope-set">protected</meta>
+			<column name="EXTERNAL_URL" length="255" not-null="false" />
+		</property>
+
+		<property name="exec_dwnld_indicator" type="string" > 
+			<meta attribute="scope-set">protected</meta>
+			<column name="EXEC_DWNLD_INDICATOR"  length="1" not-null="false"/>
+		</property>
+
+		<component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+			<property name="createdBy" type="java.lang.Long">
+				<column name="AUDIT_CREATEDBY"></column>
+			</property>
+			<property name="createdOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="CREATED_ON"></column>
+			</property>
+			<property name="updatedBy" type="java.lang.Long">
+				<column name="AUDIT_UPDATEDBY"></column>
+			</property>
+			<property name="updatedOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LAST_MODIFIED"></column>
+			</property>
+		</component>
+
+		<property name="upload_dtm"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType"
+			not-null="false">
+			<meta attribute="property-type">java.util.Date</meta>
+			<column name="UPLOAD_DTM"></column>
+		</property>
+
+		<set name="customAttributes" cascade="all-delete-orphan">
+			<meta attribute="field-description">
+				Custom Attributes for a given File.
+			</meta>
+			<meta attribute="scope-set">public</meta>
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="FILE_ID" not-null="true" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.file.FileCustomAttributes" />
+		</set>
+		
+		<set name="associatedDownloadPackages" cascade="delete" inverse="true"
+			lazy="false">
+			<meta attribute="field-description">
+				Associated files for a given Download Package.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+			<key column="FILE_ID" not-null="true" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageFile" />
+		</set>
+		
+	</class>
+</hibernate-mapping>

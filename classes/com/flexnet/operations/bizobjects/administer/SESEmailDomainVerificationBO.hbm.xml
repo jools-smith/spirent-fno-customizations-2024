@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.administer.SESEmailDomainVerificationBO"
+		table="PLT_SES_VERIFICATION_DETAILS">
+
+		<meta attribute="class-description">
+			This class contains the EMAIL/DOMAIN detail.
+		</meta>
+
+		<id name="id" type="long" column="ID">
+			<generator class="native" />
+		</id>
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+		<property name="tenantId" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TENANT_ID" not-null="true"  unique-key="UK_PLT_SES_VERIFICATION_DETAILS" />
+		</property>
+		<property name="email" column="EMAIL" type="string"  unique-key="UK_PLT_SES_VERIFICATION_DETAILS" />
+		<property name="domain" column="DOMAIN" type="string"  unique-key="UK_PLT_SES_VERIFICATION_DETAILS" />
+		
+		
+	</class>
+</hibernate-mapping>

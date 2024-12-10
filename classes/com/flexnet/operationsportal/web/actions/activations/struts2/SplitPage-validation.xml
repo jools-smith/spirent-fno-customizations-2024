@@ -1,0 +1,16 @@
+<!DOCTYPE validators PUBLIC "-//Apache Struts//XWork Validator 1.0.2//EN"
+       "http://struts.apache.org/dtds/xwork-validator-1.0.2.dtd">
+       
+<validators>
+
+    <field name="splitBean.splitAmount">
+        <field-validator type="conversion" short-circuit="true">
+        	<param name="repopulateField">true</param>
+            <message key="portal.SplitLineItem.error.invalidSplitAmount"/>
+        </field-validator>
+        <field-validator type="int">
+            <param name="min">1</param>
+            <message key="portal.SplitLineItem.error.invalidSplitAmount"/>
+        </field-validator>
+    </field>
+</validators>

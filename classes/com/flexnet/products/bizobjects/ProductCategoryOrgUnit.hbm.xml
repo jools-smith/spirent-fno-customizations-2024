@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false"
+           name="com.flexnet.products.bizobjects.ProductCategoryOrgUnit"
+           table="OPS_ORG_PRODUCT_CATEGORY" dynamic-update="true">
+        <meta attribute="generated-class" inherit="false">com.flexnet.products.bizobjects.ProductCategoryOrgUnitData
+        </meta>
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+
+        <composite-id>
+            <key-many-to-one name="productCategory_" class="com.flexnet.products.bizobjects.ProductCategoryDO" column="PRODUCT_CATEGORY_ID">
+                <meta attribute="use-in-equals">true</meta>
+            </key-many-to-one>
+            <key-many-to-one name="orgUnit_" class="com.flexnet.platform.bizobjects.OrgUnit" column="ORGUNIT_ID">
+                <meta attribute="use-in-equals">true</meta>
+            </key-many-to-one>
+        </composite-id>
+
+        <property name="tenantId_" type="string" not-null="false" length="255">
+            <meta attribute="implements">com.flexnet.operations.bizobjects.ITenantIdUpdateAware</meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="use-in-equals">false</meta>
+            <column name="TENANT_ID" not-null="false"/>
+        </property>
+
+    </class>
+</hibernate-mapping>

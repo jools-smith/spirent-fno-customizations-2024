@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.products.bizobjects.FNPTimeZoneDO"
+           table="PROD_FNP_TIMEZONE">
+        <meta attribute="class-description">
+            This class represents the various timezones.
+        </meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.products.entities.FNPTimeZoneData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>						
+		<meta attribute="scope-field">private</meta>
+		<meta attribute="implement-equals">true</meta>
+        <meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+ 
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native"/>
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+
+       	<property name="name" type="string">
+			<meta attribute="use-in-equals">true</meta>
+			<column name="NAME" length="64" not-null="true"/>
+		</property>
+		<property name="FNPValue" column="FNP_VALUE" type="string" length="2000"/>
+    
+		<property name="description" column="DESCRIPTION" type="string" length="2000"/>
+		
+ 		<property name="isServed_" column="IS_SERVED" type="com.flexnet.platform.services.persistence.FlexBooleanType">
+			<meta attribute="scope">protected</meta>
+			<meta attribute="property-type">java.lang.Boolean</meta>
+		</property>
+ 
+  		<property name="isClient_" column="IS_CLIENT" type="com.flexnet.platform.services.persistence.FlexBooleanType">
+			<meta attribute="scope">protected</meta>
+			<meta attribute="property-type">java.lang.Boolean</meta>
+		</property>
+       
+       <property name="tenantId_" type="string" length="64">
+			<meta attribute="scope-get">public</meta>
+			<column name="TENANT_ID" not-null="true"/>
+		</property>
+		
+    </class>
+</hibernate-mapping>

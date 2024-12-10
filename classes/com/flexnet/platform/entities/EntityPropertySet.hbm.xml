@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false" name="com.flexnet.platform.entities.EntityPropertySet"
+		table="PLT_ENTITYPROPSET">
+
+		<meta attribute="class-description">
+			Represents an open-ended set of typed properties
+			for an entity.
+			@author Mark Rose
+		</meta>
+
+		<id name="id" type="java.lang.Long" column="id" unsaved-value="null">
+			<generator class="native" />
+		</id>
+		<property name="dummyCol" type="string" length="1" not-null="false">
+			<column name="DUMMYCOL" length="1" not-null="false" />
+		</property>
+
+		<property name="tenantId_" type="string"  not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" not-null="true"/> 
+		</property>
+			
+		<map name="properties" table="PLT_ENTITYPROP" cascade="all" sort="unsorted"
+			lazy="true">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<key column="id" />
+			<index column="name" type="string" />
+			<composite-element class="com.flexnet.platform.entities.EntityProperty">
+				<property name="className" type="string" />
+				<property name="entityClass" type="boolean" />
+				<property name="stringValue" type="string" length="4000" />
+				<property name="validator" type="string" />
+				<property name="tenantId_" type="string" not-null="true"
+					length="255">
+					<meta attribute="scope-get">protected</meta>
+					<meta attribute="scope-set">protected</meta>
+					<column name="TENANT_ID" not-null="true" />
+				</property>
+
+			</composite-element>
+		</map>
+
+	</class>
+</hibernate-mapping>
+

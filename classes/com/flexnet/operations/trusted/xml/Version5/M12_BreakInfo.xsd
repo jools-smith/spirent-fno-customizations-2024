@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<!-- Version 5 schema -->
+<!-- 
+	* Copyright 2008 Flexera Software, Inc. All Rights Reserved. 
+	* 
+	* This software has been provided pursuant to a License Agreement containing
+	* restrictions on its use. This software contains valuable trade secrets 
+	* and proprietary information of Flexera Software, Inc. and is protected 
+	* by law. It may not be copied or distributed in any form or medium, 
+	* disclosed to third parties, reverse engineered or used in any manner not 
+	* provided for in said License Agreement except with the prior written 
+	* authorization from Flexera Software, Inc. 
+  *
+  * BreakInfo has not changed from version 3, just separated into its own schema.
+    -->
+<xsd:schema targetNamespace="FLEXnetPublisher_01EFFF13-92D7-469e-B7CC-35E13C2E8D4A"
+    xmlns="FLEXnetPublisher_01EFFF13-92D7-469e-B7CC-35E13C2E8D4A"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:fnp="FLEXnetPublisher_01EFFF13-92D7-469e-B7CC-35E13C2E8D4A"
+    elementFormDefault="qualified">
+
+  <!-- Names referenced by other schemas -->
+
+  <xsd:complexType name="typeBreakInfo">
+    <xsd:sequence>
+      <xsd:element name="TimeChange" type="xsd:boolean" minOccurs="0" />
+      <xsd:element name="Anchoring" type="AnchoringBreakType" minOccurs="0" />
+      <xsd:element name="Binding" type="BindingBreakType" minOccurs="0" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- End names referenced by other schemas -->
+
+  <xsd:simpleType name="BreakReasonRestriction">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ItemHasChanged" />
+      <xsd:enumeration value="ItemNotAvailable" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="AnchoringBreakItemTypeRestriction">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="TrackZero" />
+      <xsd:enumeration value="Registry" />
+      <xsd:enumeration value="FileBased" />
+      <xsd:enumeration value="OSXFileBased" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="AnchoringBreakItemType">
+    <xsd:sequence>
+      <xsd:element name="Type" type="AnchoringBreakItemTypeRestriction" />
+      <xsd:element name="Reason" type="BreakReasonRestriction" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="AnchoringBreakType">
+    <xsd:sequence>
+      <xsd:element name="Break" type="AnchoringBreakItemType" maxOccurs="3" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="BindingBreakItemTypeRestriction">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="SYSTEM" />
+      <xsd:enumeration value="HARDDISK" />
+      <xsd:enumeration value="DISPLAY" />
+      <xsd:enumeration value="BIOS" />
+      <xsd:enumeration value="CPU" />
+      <xsd:enumeration value="MEMORY" />
+      <xsd:enumeration value="ETHERNET" />
+      <xsd:enumeration value="INTERNET" />
+      <xsd:enumeration value="FLEXID6" />
+      <xsd:enumeration value="FLEXID8" />
+      <xsd:enumeration value="FLEXID9" />
+      <xsd:enumeration value="MSN" />
+      <xsd:enumeration value="PUBLISHER" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="BindingBreakItemType">
+    <xsd:sequence>
+      <xsd:element name="Type" type="BindingBreakItemTypeRestriction" />
+      <xsd:element name="Reason" type="BreakReasonRestriction" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="BindingBreakType">
+    <xsd:sequence>
+      <xsd:element name="Break" type="BindingBreakItemType" maxOccurs="13" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+</xsd:schema>

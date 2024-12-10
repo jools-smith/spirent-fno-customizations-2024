@@ -1,0 +1,244 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+	<class lazy="false"
+		name="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackage"
+		table="OPS_DOWNLOAD_PACKAGE">
+		<meta attribute="class-description">
+			This class represents the entity that maintains
+			the attributes of a Download Package in Ops.
+		</meta>
+
+		<meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageData</meta>
+		<meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+		<meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+		<meta attribute="implement-equals">true</meta>
+		<meta attribute="scope-field">private</meta>
+
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<generator class="native" />
+		</id>
+
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+
+		<property name="tenantId" type="string" length="255">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="TENANT_ID" unique-key="UK_OPS_DOWNLOAD_PACKAGE"
+				not-null="true" />
+		</property>
+
+		<property name="downloadPackageId" type="string">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="DOWNLOAD_PACKAGE_ID" unique-key="UK_OPS_DOWNLOAD_PACKAGE"
+				not-null="true" />
+		</property>
+
+		<property name="description" column="DESCRIPTION" type="string"
+            length="2000">
+            <meta attribute="field-description">
+                Human readable description of the download package.
+            </meta>
+        </property>
+        
+        <property name="extDescription" column="EXT_DESCRIPTION" type="string"
+            length="2000">
+            <meta attribute="field-extDescription">
+                Human readable extDescription of the download package.
+            </meta>
+        </property>
+        
+        <property name="downloadInstructions" column="DOWNLOAD_INSTRUCTIONS" type="string"
+            length="2000">
+            <meta attribute="field-downloadInstructions">
+                Human readable downloadInstructions of the download package.
+            </meta>
+        </property>
+
+
+		<property name="sortGroup" type="string" length="255">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="SORT_GROUP" />
+		</property>
+
+		<property name="status">
+			<meta attribute="property-type">com.flexnet.operations.bizobjects.common.Status</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="STATUS" not-null="true" />
+			<type name="com.flexnet.platform.services.persistence.PersistentEnumType">
+				<param name="enumClass">com.flexnet.operations.bizobjects.common.Status</param>
+				<param name="useNamed">true</param>
+			</type>
+		</property>
+
+		<property name="producerId" type="int">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="PRODUCER_ID" />
+		</property>
+
+		<property name="version" type="string" length="20">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="VERSION" />
+		</property>
+
+		<property name="effectiveDate"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="EFFECTIVE_DATE" not-null="true"></column>
+		</property>
+
+		<property name="expirationDate"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="EXPIRATION_DATE" not-null="true"></column>
+		</property>
+
+		<property name="archiveDate"
+			type="com.flexnet.platform.services.persistence.GMTTimestampType">
+			<meta attribute="property-type">java.util.Date</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="ARCHIVE_DATE"></column>
+		</property>
+
+		<property name="eccn" type="string" length="16">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="ECCN" />
+		</property>
+
+		<property name="enc" type="string" length="16">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="ENC" />
+		</property>
+
+		<property name="nlr" type="boolean">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="NLR" />
+		</property>
+
+		<many-to-one name="agreement"
+			class="com.flexnet.operations.bizobjects.agreement.Agreement" column="AGREEMENT_ID">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</many-to-one>
+
+		<property name="physicalDistAvailable" type="boolean">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="PHYS_DIST_AVAIL" />
+		</property>
+
+		<set name="ccats" cascade="all-delete-orphan" lazy="false">
+			<meta attribute="field-description">
+				CCATs for a given Download Package.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="DOWNLOAD_PACKAGE_ID" not-null="true" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageCcats" />
+		</set>
+
+		<set name="customAttributes" cascade="all-delete-orphan" lazy="false">
+			<meta attribute="field-description">
+				Custom Attributes for a given Download Package.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+
+			<key column="DOWNLOAD_PACKAGE_ID" not-null="true" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageCustomAttributes" />
+		</set>
+
+		<many-to-one name="productLine"
+			class="com.flexnet.products.bizobjects.ProductCategoryDO" column="PRODUCT_LINE_ID"
+			not-null="true">
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+		</many-to-one>
+
+		<set name="associatedFiles" cascade="all-delete-orphan" inverse="true"
+			lazy="false">
+			<meta attribute="field-description">
+				Associated files for a given Download Package.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="implement-equals">true</meta>
+			<key column="DOWNLOAD_PACKAGE_ID" not-null="true" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageFile" />
+		</set>
+
+		<set name="associatedProducts" cascade="all-delete-orphan"
+			inverse="true" table="OPS_DOWNLOAD_PACKAGE_PRODUCT" lazy="false">
+			<meta attribute="field-description">
+				Products associated with a given Download
+				Package.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<key column="DOWNLOAD_PACKAGE_ID" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageProduct" />
+		</set>
+
+		<set name="associatedOrgs" cascade="all-delete-orphan" inverse="true"
+			table="OPS_DOWNLOAD_PACKAGE_ORG" lazy="false">
+			<meta attribute="field-description">
+				Organizations/Restrictions associated with this
+				Download Package.
+			</meta>
+			<meta attribute="scope-set">protected</meta>
+			<meta attribute="scope-get">protected</meta>
+			<key column="DOWNLOAD_PACKAGE_ID" />
+			<one-to-many
+				class="com.flexnet.operations.bizobjects.downloadpackage.DownloadPackageOrg" />
+		</set>
+
+		<component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+			<property name="createdBy" type="java.lang.Long">
+				<column name="AUDIT_CREATEDBY"></column>
+			</property>
+			<property name="createdOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<meta attribute="use-in-equals">true</meta>
+				<column name="CREATED_ON"></column>
+			</property>
+			<property name="updatedBy" type="java.lang.Long">
+				<column name="AUDIT_UPDATEDBY"></column>
+			</property>
+			<property name="updatedOn"
+				type="com.flexnet.platform.services.persistence.GMTTimestampType">
+				<meta attribute="property-type">java.util.Date</meta>
+				<column name="LAST_MODIFIED"></column>
+			</property>
+		</component>
+	</class>
+</hibernate-mapping>

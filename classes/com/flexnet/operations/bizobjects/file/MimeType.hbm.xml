@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <!DOCTYPE hibernate-mapping PUBLIC
+     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+     "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+	<hibernate-mapping>
+		<class lazy="false" name="com.flexnet.operations.bizobjects.file.MimeType" table="OPS_MIME_TYPE">
+			<meta attribute="class-description">
+				This class represents all the mime type definitions. 
+			</meta>
+			<meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.file.MimeTypeData</meta>
+			<meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+			<meta attribute="scope-class">public abstract</meta>
+			
+			<meta attribute="implement-equals" inherit="false">true</meta>			
+			
+			<id name="ext_cd" type="string" unsaved-value="null">
+				<meta attribute="scope-set">public</meta>
+				<column name="EXT_CD" length="5"/>
+			</id>
+
+			<property name="mime_typ_nm" type="string" not-null="true">
+				<meta attribute="scope-set">protected</meta>
+				<column name="MIME_TYP_NM" length="50"/>
+			</property>
+            
+		</class>
+	</hibernate-mapping>

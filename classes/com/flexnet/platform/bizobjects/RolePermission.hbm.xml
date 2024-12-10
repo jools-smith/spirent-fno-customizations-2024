@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false"
+           name="com.flexnet.platform.bizobjects.RolePermission"
+           table="PLT_ROLE_PERMISSION" dynamic-update="true">
+
+        <meta attribute="generated-class" inherit="false">com.flexnet.platform.bizobjects.RolePermissionData</meta>
+        <meta attribute="implement-equals">true</meta>
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+        <meta attribute="implements">com.flexnet.operations.bizobjects.ITenantIdUpdateAware</meta>
+        <id name="id" type="java.lang.Long" column="ID">
+            <generator class="native"/>
+        </id>
+
+        <many-to-one name="grants_" column="GRANTEDBY_ID" class="com.flexnet.platform.bizobjects.Role">
+            <meta attribute="use-in-equals">true</meta>
+        </many-to-one>
+        <many-to-one name="grantedBy_" column="GRANTS_ID" class="com.flexnet.platform.bizobjects.Permission">
+            <meta attribute="use-in-equals">true</meta>
+        </many-to-one>
+
+        <property name="tenantId_" type="string" not-null="false" length="255">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="use-in-equals">false</meta>
+            <column name="TENANT_ID" not-null="false"/>
+        </property>
+    </class>
+</hibernate-mapping> 
+
+   
+

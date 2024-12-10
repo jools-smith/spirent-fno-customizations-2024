@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+  xmlns:xsd=      "http://www.w3.org/2001/XMLSchema"
+  xmlns:tns=      "http://services.platform.flexnet.macrovision.com/config.xsd"
+  targetNamespace="http://services.platform.flexnet.macrovision.com/config.xsd"
+  >
+
+  <xsd:element name="ConfigGroup" type="tns:GroupType"/>
+    <xsd:complexType name="GroupType">
+      <xsd:sequence>
+        <xsd:element name="Name"         type="xsd:string"/>
+        <xsd:element name="ModuleName"   type="xsd:string"/>
+        <xsd:element name="DisplayOrder" type="xsd:int"/>
+        <xsd:element name="FieldWidth"   type="xsd:int" minOccurs="0"/>
+        <xsd:element ref="tns:ConfigEnum" minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:element name="ConfigEntry"  type="tns:ConfigEntryType"  maxOccurs="unbounded"/>
+        <xsd:element name="DefaultConfigEntry" type="tns:ConfigEntryType" minOccurs="0"/>
+      </xsd:sequence>
+      <xsd:attribute name="visible"         type="xsd:boolean" default="true"  use="optional"/>
+    </xsd:complexType>
+
+  <xsd:element name="ConfigEnum" type="tns:EnumeratedType"/>
+    <xsd:complexType name="EnumeratedType">
+      <xsd:complexContent>
+        <xsd:extension base="xsd:anyType">
+          <xsd:sequence>
+            <xsd:element name="Enum" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+          <xsd:attribute name="name"  type="xsd:string" use="required"/>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+
+<!--
+  <xsd:element name="ConfigStruct" type="tns:ConfigStructType"/>
+-->
+    <xsd:complexType name="ConfigStructType">
+      <xsd:complexContent>
+        <xsd:extension base="xsd:anyType">
+          <xsd:sequence>
+            <xsd:element name="ConfigEntry" type="tns:ConfigEntry" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+          <xsd:attribute name="visible" type="xsd:boolean" default="true" use="optional"/>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConfigEntryType">
+      <xsd:complexContent>
+        <xsd:extension base="xsd:anyType">
+          <xsd:sequence>
+            <xsd:choice>
+              <xsd:element name="ConfigBoolean" type="xsd:boolean"           minOccurs="1" maxOccurs="unbounded"/>
+              <xsd:element name="ConfigString"  type="tns:ConfigStringType"  minOccurs="1" maxOccurs="unbounded"/>
+              <xsd:element name="ConfigInteger" type="tns:ConfigIntegerType" minOccurs="1" maxOccurs="unbounded"/>
+              <xsd:element name="ConfigLong"    type="tns:ConfigLongType"    minOccurs="1" maxOccurs="unbounded"/>
+              <xsd:element name="ConfigFloat"   type="tns:ConfigFloatType"   minOccurs="1" maxOccurs="unbounded"/>
+              <xsd:element name="ConfigStruct"  type="tns:ConfigStructType"  minOccurs="1" maxOccurs="unbounded"/>
+            </xsd:choice>
+          </xsd:sequence>
+
+          <!-- the key/id of the entry -->
+          <xsd:attribute name="name"            type="xsd:string"                  use="required"/>
+          <xsd:attribute name="serverId"        type="xsd:string"                  use="optional"/>
+
+          <!-- determines whether the value can be modified -->
+          <xsd:attribute name="readOnly"        type="xsd:boolean" default="false" use="optional"/>
+
+          <!-- determines whether the value is displayed in the UI -->
+          <xsd:attribute name="visible"         type="xsd:boolean" default="true"  use="optional"/>
+
+          <!-- is the value shown as-is or masked with series of * characters -->
+          <xsd:attribute name="masked"          type="xsd:boolean" default="false" use="optional"/>
+
+          <!-- is an empty value permissible? -->
+          <xsd:attribute name="required"        type="xsd:boolean" default="true" use="optional"/>
+
+          <!-- a system cannot process this change immediately -->
+          <xsd:attribute name="requiresRestart" type="xsd:boolean" default="false" use="optional"/>
+
+          <!-- can additional values be added from the UI -->
+          <xsd:attribute name="extensible"      type="xsd:boolean" default="false" use="optional"/>
+
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConfigStringType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="encrypted" type="xsd:boolean" use="optional" default="false" />
+          <xsd:attribute name="browsable" type="xsd:boolean" use="optional" default="false" />
+          <!-- only one of enum or regex attributes should be specified -->
+          <!-- XSD validation won't catch this but our tool should -->
+          <xsd:attribute name="enum"      type="xsd:string"  use="optional"/>
+          <xsd:attribute name="regex"     type="xsd:string"  use="optional"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConfigIntegerType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:int">
+          <xsd:attribute name="minInclusive" type="xsd:int" use="optional"/>
+          <xsd:attribute name="maxInclusive" type="xsd:int" use="optional"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConfigLongType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:long">
+          <xsd:attribute name="minInclusive" type="xsd:long" use="optional"/>
+          <xsd:attribute name="maxInclusive" type="xsd:long" use="optional"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ConfigFloatType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:float">
+          <xsd:attribute name="minInclusive" type="xsd:float" use="optional"/>
+          <xsd:attribute name="maxInclusive" type="xsd:float" use="optional"/>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+</xsd:schema>

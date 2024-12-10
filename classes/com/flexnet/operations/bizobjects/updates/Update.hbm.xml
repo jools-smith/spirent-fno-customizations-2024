@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.operations.bizobjects.updates.Update" table="OPS_UPDATE">
+        <meta attribute="class-description">This class has FNC Updates data.</meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.updates.UpdateData</meta>
+        <meta attribute="extends" inherit="false">com.flexnet.products.server.model.OperationsBaseDO</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+        <meta attribute="implement-equals">true</meta>
+        <meta attribute="scope-field">private</meta>
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native" />
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+        <property name="description" type="nstring" not-null="false" column="DESCRIPTION" length="2000">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <property name="endDate" type="com.flexnet.platform.services.persistence.GMTTimestampType" column="END_DATE">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="property-type">java.util.Date</meta>
+        </property>
+        <property name="entitlementCheckOption" column="ENT_CHECK" type="string" length="100">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+        <property name="name" type="string" not-null="true" column="NAME" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <property name="startDate" type="com.flexnet.platform.services.persistence.GMTTimestampType" column="START_DATE">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="property-type">java.util.Date</meta>
+        </property>
+        <property name="status">
+            <meta attribute="property-type">com.flexnet.operations.bizobjects.common.Status</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="STATUS" not-null="true"/>
+            <type name="com.flexnet.platform.services.persistence.PersistentEnumType">
+                <param name="enumClass">com.flexnet.operations.bizobjects.common.Status</param>
+                <param name="useNamed">true</param>
+            </type>
+        </property>
+        <property name="tenantId" type="string" not-null="true" length="255">
+            <meta attribute="scope-get">public</meta>
+            <meta attribute="scope-set">protected</meta>
+            <column name="TENANT_ID" not-null="true" />
+        </property>
+ 
+        <property name="updateId" type="string" not-null="true" unique="true" column="UPDATE_ID" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+        <component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+            <property name="createdBy" type="java.lang.Long">
+                <column name="AUDIT_CREATEDBY"></column>
+            </property>
+            <property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="CREATED_ON"></column>
+            </property>
+            <property name="updatedBy" type="java.lang.Long">
+                <column name="AUDIT_UPDATEDBY"></column>
+            </property>
+            <property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="LAST_MODIFIED" index="OPS_IDX_UPDATED_LASTMODIFIED"></column>
+            </property>
+        </component> 
+    	<!-- <bag name="updateFromPkgIds"  table="OPS_UPDATE_FROM_PKG_ID" cascade="all" fetch="join">
+			<key column="UPDATE_ID" />
+			<element column="PACKAGE_ID" type="string" /> 	
+		</bag> -->
+		 <set name="updateFromPkgIds" cascade="all-delete-orphan" fetch="join">
+            <meta attribute="field-description">Associated release froms for a given update.</meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+            <key column="UPDATE_ID" not-null="true" />
+            <one-to-many class="com.flexnet.operations.bizobjects.updates.UpdateReleaseFromPackageIds" />
+        </set>
+        <set name="associatedLanguages" cascade="all-delete-orphan" fetch="join">
+            <meta attribute="field-description">Associated languages for a given update.</meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+            <key column="UPDATE_ID" not-null="true" />
+            <one-to-many class="com.flexnet.operations.bizobjects.updates.UpdateLanguage" />
+        </set>
+        <set name="associatedPlatforms" cascade="all-delete-orphan" fetch="join">
+            <meta attribute="field-description">Associated platforms for a given update.</meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+            <key column="UPDATE_ID" not-null="true" />
+            <one-to-many class="com.flexnet.operations.bizobjects.updates.UpdatePlatform" />
+        </set>
+    </class>
+     <class lazy="false" name="com.flexnet.operations.bizobjects.updates.UpdateReleaseFromPackageIds" table="OPS_UPDATE_FROM_PKG_ID">
+        <meta attribute="class-description">This class has mapping of package ids to which an update is applicable.</meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.bizobjects.updates.UpdateFromPackageIds</meta>
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native" />
+        </id>
+         <property name="packageID" type="string" column="PACKAGE_ID" not-null="true" length="255">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </property>
+         <property name="tenantId_" type="string" not-null="false" length="255">
+             <meta attribute="scope-get">protected</meta>
+             <meta attribute="scope-set">protected</meta>
+             <column name="TENANT_ID" not-null="false"/>
+         </property>
+     </class>
+</hibernate-mapping>

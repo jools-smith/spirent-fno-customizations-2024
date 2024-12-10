@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+     <class lazy="false" name="com.flexnet.operations.bizobjects.entitlements.ActivatableMaintenanceBO" table="OPS_MAINTENANCE_TO_ACTIVATABLE"  dynamic-update="true">
+       
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.ActivatableMaintenanceData</meta>    
+       <!-- <meta attribute="implement-equals">true</meta>  -->
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta> 
+        
+         <composite-id>
+            <key-many-to-one name="activatableItem" class="com.flexnet.operations.bizobjects.entitlements.ActivatableItemBO" column="ACTIVATEABLE_ITEM_ID" >
+             	<meta attribute="use-in-equals">true</meta>
+            </key-many-to-one>
+            <key-many-to-one name="maintenanceItem" class="com.flexnet.operations.bizobjects.MaintenanceItemDO" column="MAINTENANCE_ITEM_ID" > 
+            	<meta attribute="use-in-equals">true</meta>
+            </key-many-to-one>            
+        </composite-id> 
+        
+		<property name="tenantId_" type="string" not-null="false" length="255">
+                     <meta attribute="scope-set">protected</meta>
+                     <meta attribute="scope-get">protected</meta>
+                     <meta attribute="use-in-equals">false</meta>
+                     <column name="TENANT_ID" not-null="false" />
+       </property>     
+       
+    </class>
+</hibernate-mapping>

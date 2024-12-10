@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="false" name="com.flexnet.operations.bizobjects.MaintenanceItemDO" table="OPS_MAINTENANCE_ITEM" >
+        <meta attribute="class-description">
+            This class represents the Maintenance Item associated with an Entitlement order.
+        </meta>
+        <meta attribute="generated-class" inherit="false">com.flexnet.operations.entities.MaintenanceItemData</meta>
+        <meta attribute="extends">com.flexnet.products.server.model.DeployedEntityDO</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IAuditable</meta>
+        <meta attribute="implements" inherit="false">com.flexnet.platform.bizobjects.IExtendable</meta>
+        <meta attribute="scope-class">public abstract</meta>
+
+        <meta attribute="implement-equals" inherit="false">true</meta>
+
+        <id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+            <meta attribute="scope-set">protected</meta>
+            <generator class="native"/>
+        </id>
+        <version column="HIB_VERSION" name="HibVersion">
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="scope-set">protected</meta>
+        </version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" unique-key="mi_activation_id" not-null="true"/> 
+			</property>
+
+        <many-to-one name="parentEntitlement_" class="com.flexnet.operations.bizobjects.entitlements.EntitlementBO">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="PARENT_ENTITLEMENT_ID"/>
+        </many-to-one>
+
+        <many-to-one name="orderable_" class="com.flexnet.products.bizobjects.Orderable"
+                     index="OPS_IDX_MAINT_ITEM_ORDERABLE">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="ORDERABLE_ID"/>
+        </many-to-one>
+
+        <many-to-one name="sku_" column="SKU" class="com.flexnet.products.bizobjects.Sku"
+                     index="OPS_IDX_MAINT_ITEM_SKU">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </many-to-one>
+
+        <property name="validAfter_" column="VALID_AFTER"
+                  type="com.flexnet.platform.services.persistence.GMTTimestampType">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="property-type">java.util.Date</meta>
+        </property>
+
+        <property name="validUntil_" column="VALID_UNTIL"
+                  type="com.flexnet.platform.services.persistence.GMTTimestampType">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="property-type">java.util.Date</meta>
+        </property>
+
+        <property name="permanent_" column="IS_PERMANENT" type="boolean">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+
+        <set name="activatableItems" table="OPS_MAINTENANCE_TO_ACTIVATABLE" inverse="true" cascade="all-delete-orphan" lazy="true">
+            <meta attribute="field-description">
+                This maintenance item's associated activatable items.
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <key column="MAINTENANCE_ITEM_ID" not-null="true"/>
+             <one-to-many class="com.flexnet.operations.bizobjects.entitlements.ActivatableMaintenanceBO"/>
+        </set>
+
+        <property name="activationID_" type="string">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <meta attribute="use-in-equals">true</meta>
+            <column name="ACTIVATION_ID" unique-key="mi_activation_id" length="255" not-null="false"></column>
+        </property>
+
+        <property name="orderID_" column="ORDER_ID" type="string">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+
+        <property name="orderLineNumber_" column="ORDER_LINE_NUMBER" type="string">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+        </property>
+
+        <property name="status_" column="STATUS" type="string" length="64" not-null="true">
+            <meta attribute="scope-set">public</meta>
+            <meta attribute="scope-get">public</meta>
+        </property>
+
+        <component name="auditInfo" class="com.flexnet.platform.entities.AuditInfo">
+            <property name="createdBy" type="java.lang.Long">
+                <column name="AUDIT_CREATEDBY"></column>
+            </property>
+            <property name="createdOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="CREATED_ON"></column>
+            </property>
+            <property name="updatedBy" type="java.lang.Long">
+                <column name="AUDIT_UPDATEDBY"></column>
+            </property>
+            <property name="updatedOn" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                <meta attribute="property-type">java.util.Date</meta>
+                <column name="LAST_MODIFIED" index="OPS_IDX_MAINT_ITEM_LASTMOD"></column>
+            </property>
+        </component>
+        <many-to-one name="extendedPropertySet" cascade="all" class="com.flexnet.platform.bizobjects.ExtendedPropertySet" column="EXTENDEDPROPERTYSET_ID" index="FK_OPS_MAINT_ITEM_EXTPROP"/>
+        
+        <set name="stringMainLineItemAttrs_" table="OPS_MAINT_LI_STR_ATTRS_DBVIEW" lazy="true" inverse="true">
+            <meta attribute="field-description">
+                The set of string custom line item attrs in an maintenance item
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+
+            <key column="MAINTENANCE_ITEM_ID"/>
+            <composite-element class="com.flexnet.operations.bizobjects.MaintenanceItemStringLineItemAttrBO">
+                <meta attribute="generated-class" inherit="false">
+                    com.flexnet.operations.entities.MaintenanceItemStringLineItemAttrData
+                </meta>
+                <meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+                <property name="attributeName_" column="ATTRIBUTE_NAME" type="string" length="64">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+                <property name="attributeValue_" column="ATTRIBUTE_VALUE" type="string" length="64">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+                <property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+				</property>
+            </composite-element>
+        </set>
+
+        <set name="booleanMainLineItemAttrs_" table="OPS_MAINT_LI_BOOL_ATTRS_DBVIEW" lazy="true" inverse="true">
+            <meta attribute="field-description">
+                The set of boolean custom line item attrs in an maintenance item
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+
+            <key column="MAINTENANCE_ITEM_ID"/>
+            <composite-element class="com.flexnet.operations.bizobjects.MaintenanceItemBooleanLineItemAttrBO">
+                <meta attribute="generated-class" inherit="false">
+                    com.flexnet.operations.entities.MaintenanceItemBooleanLineItemAttrData
+                </meta>
+                <meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+                <property name="attributeName_" column="ATTRIBUTE_NAME" type="string" length="64">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+
+                <property name="attributeValue_" column="ATTRIBUTE_VALUE" type="boolean">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+                <property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+            </composite-element>
+        </set>
+
+        <set name="numberMainLineItemAttrs_" table="OPS_MAINT_LI_NUM_ATTRS_DBVIEW" lazy="true" inverse="true">
+            <meta attribute="field-description">
+                The set of number custom line item attrs in an maintenance item
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+
+            <key column="MAINTENANCE_ITEM_ID"/>
+            <composite-element class="com.flexnet.operations.bizobjects.MaintenanceItemNumberLineItemAttrBO">
+                <meta attribute="generated-class" inherit="false">
+                    com.flexnet.operations.entities.MaintenanceItemNumberLineItemAttrData
+                </meta>
+                <meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+                <property name="attributeName_" column="ATTRIBUTE_NAME" type="string" length="64">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+
+                <property name="attributeValue_" column="ATTRIBUTE_VALUE" type="java.lang.Double">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+                <property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+            </composite-element>
+        </set>
+
+        <set name="dateMainLineItemAttrs_" table="OPS_MAINT_LI_DATE_ATTRS_DBVIEW" lazy="true" inverse="true">
+            <meta attribute="field-description">
+                The set of date custom line item attrs in an maintenance item
+            </meta>
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="implement-equals">true</meta>
+
+            <key column="MAINTENANCE_ITEM_ID"/>
+            <composite-element class="com.flexnet.operations.bizobjects.MaintenanceItemDateLineItemAttrBO">
+                <meta attribute="generated-class" inherit="false">
+                    com.flexnet.operations.entities.MaintenanceItemDateLineItemAttrData
+                </meta>
+                <meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+        		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+                <property name="attributeName_" column="ATTRIBUTE_NAME" type="string" length="64">
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                </property>
+
+                <property name="attributeValue_" type="com.flexnet.platform.services.persistence.GMTTimestampType">
+                    <meta attribute="property-type">java.util.Date</meta>
+                    <meta attribute="scope-set">protected</meta>
+                    <meta attribute="scope-get">protected</meta>
+                    <column name="ATTRIBUTE_VALUE"></column>
+                </property>
+                <property name="tenantId_" column="TENANT_ID"
+					type="string" length="4">
+					<meta attribute="scope-set">protected</meta>
+					<meta attribute="scope-get">protected</meta>
+                </property>
+            </composite-element>
+        </set>
+    </class>
+</hibernate-mapping>

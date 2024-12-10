@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class lazy="false"
+		name="com.flexnet.platform.entities.AlertHandlerConfiguration" table="PLT_ALERT_HANDLERCONFIG">
+
+		<meta attribute="class-description">
+			Represents an alert handler configured for a
+			particular alert type.
+			@author
+		</meta>
+
+		<id name="id" type="java.lang.Long" column="id" unsaved-value="null">
+			<generator class="native" />
+		</id>
+		<property name="tenantId_" type="string" not-null="true"
+			length="255">
+			<meta attribute="scope-get">public</meta>
+			<meta attribute="scope-set">public</meta>
+			<column name="TENANT_ID" not-null="true" />
+		</property>
+		<many-to-one name="handlerType"
+			class="com.flexnet.platform.entities.AlertHandlerType" cascade="none"
+			index="PLT_IDX_ALTCONF_ALTHANDTYPE" />
+
+		<property name="triggerOffset" type="int" />
+
+		<many-to-one name="properties"
+			class="com.flexnet.platform.entities.EntityPropertySet" cascade="all"
+			index="PLT_IDX_ALTCONF_EPS" />
+
+		<many-to-one name="subscription"
+			class="com.flexnet.platform.entities.AlertSubscription" cascade="none"
+			index="PLT_IDX_ALTCONF_ALTSUB">
+			<column name="SUBSCRIPTION_ID" not-null="true" />
+		</many-to-one>
+
+
+	</class>
+</hibernate-mapping>
+

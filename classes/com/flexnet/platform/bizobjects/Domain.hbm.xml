@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">    
+
+<hibernate-mapping>
+	<meta attribute="generated-class">com.flexnet.platform.entities.DomainData</meta>
+	<class lazy="false" name="com.flexnet.platform.bizobjects.Domain" table="PLT_DOMAIN">
+		<meta attribute="class-description">
+			This is a domain that stores user and group information including the mapping of users to groups.
+			@author Navin Melville
+			April 21st, 2005
+		</meta>
+		<meta attribute="extends">com.flexnet.platform.entities.Entity</meta>
+		<meta attribute="implements">com.flexnet.platform.bizobjects.IMarkTimestampable</meta>
+		<id name="id" type="java.lang.Long" column="ID" unsaved-value="null">
+			<meta attribute="scope-set">protected</meta>
+			<generator class="native"/>
+		</id>
+		<version column="HIB_VERSION" name="HibVersion">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+		</version>
+			<property name="tenantId_" type="string" not-null="true" length="255"> 
+			<meta attribute="scope-get">protected</meta> 
+			<meta attribute="scope-set">protected</meta> 
+			<column name="TENANT_ID" unique-key="PLD_UK" not-null="true"/> 
+			</property>
+		
+		<property column="LASTUPDATED" type="com.flexnet.platform.services.persistence.GMTTimestampType" name="lastUpdated" not-null="true">
+		   	<meta attribute="property-type">java.util.Date</meta>
+		</property>
+		
+		<property name="name_" type="string" length="255" not-null="true" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="NAME" unique-key="PLD_UK" not-null="true" />
+		</property>
+		
+		<property name="active_" type="int" not-null="true">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="ACTIVE" not-null="true" />
+		</property>
+		
+		<property name="protocol_" type="string" length="255" not-null="true" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="PROTOCOL" not-null="true" />
+		</property>
+		
+		<property name="host_" type="string" length="255" not-null="true" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="HOST" not-null="true" />
+		</property>
+		
+		<property name="port_" type="int" not-null="true" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="PORT" not-null="true" />
+		</property>
+		
+		<property name="login_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="LOGINNAME" not-null="false" />
+		</property>
+		
+		<property name="password_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="LOGINPASSWORD" not-null="false" />
+		</property>
+		
+		<property name="pageSize_" type="int" not-null="true" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="PAGESIZE" not-null="true" />
+		</property>
+		
+		<property name="authSearchBase_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="AUTHSEARCHBASE" not-null="false" />
+		</property>
+		
+		<property name="authSearchFilter_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="AUTHSEARCHFILTER" not-null="false" />
+		</property>
+		
+		<property name="authSearchAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="AUTHSEARCHATTRIBUTE" not-null="false" />
+		</property>
+		
+		<property name="userSearchFilter_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USERSEARCHFILTER" not-null="false" />
+		</property>
+		
+		<property name="userDisplayNameAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USERDISPLAYNAMEATTRIBUTE" not-null="false" />
+		</property>
+
+		<property name="userDisplayDetailAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USERDISPLAYDETAILATTRIBUTE" not-null="false" />
+		</property>
+
+		<property name="userOrgUnitAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USERORGUNITATTRIBUTE" not-null="false" />
+		</property>
+
+		<property name="userEmailAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USEREMAILATTRIBUTE" not-null="false" />
+		</property>
+
+		<property name="userLocaleAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USERLOCALEATTRIBUTE" not-null="false" />
+		</property>
+		
+		<property name="userTimeZoneAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="USERTIMEZONEATTRIBUTE" not-null="false" />
+		</property>
+
+		<property name="groupSearchFilter_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="GROUPSEARCHFILTER" not-null="false" />
+		</property>
+		
+		<property name="groupDisplayNameAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="GROUPDISPLAYNAMEATTRIBUTE" not-null="false" />
+		</property>
+
+		<property name="groupDisplayDetailAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="GROUPDISPLAYDETAILATTRIBUTE" not-null="false" />
+		</property>
+		
+		<property name="groupNameAttribute_" type="string" length="255" not-null="false" >
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<column name="GROUPNAMEATTRIBUTE" not-null="false" />
+		</property>
+		
+		<set name="groups_" inverse="true" cascade="all" lazy="true">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<key column="DOMAIN_ID"/>
+			<one-to-many class="com.flexnet.platform.bizobjects.Group" />
+		</set>
+
+		<set name="users_" inverse="true" cascade="all" lazy="true">
+			<meta attribute="scope-get">protected</meta>
+			<meta attribute="scope-set">protected</meta>
+			<key column="DOMAIN_ID"/>
+			<one-to-many class="com.flexnet.platform.bizobjects.User" />
+		</set>
+
+
+	</class>
+</hibernate-mapping>
+

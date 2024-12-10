@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class lazy="true" name="com.flexnet.platform.bizobjects.UserAccountWatchList" table="OPS_HEALTH_WATCHLIST"
+           dynamic-update="true">
+
+        <meta attribute="generated-class" inherit="false">com.flexnet.platform.bizobjects.UserAccountWatchListData
+        </meta>
+        <meta attribute="implement-equals">true</meta>
+        <meta attribute="extends" inherit="false">com.flexnet.platform.entities.Entity</meta>
+
+        <id name="id" type="java.lang.Long" column="ID">
+            <generator class="native"/>
+        </id>
+
+        <many-to-one name="user" column="USER_ID" class="com.flexnet.platform.bizobjects.User" unique-key="UNIQUE_OPS_HEALTH_WATCHLIST">
+            <meta attribute="use-in-equals">true</meta>
+        </many-to-one>
+
+        <many-to-one name="orgUnit" column="ORG_ID" class="com.flexnet.platform.bizobjects.OrgUnit" unique-key="UNIQUE_OPS_HEALTH_WATCHLIST">
+            <meta attribute="use-in-equals">true</meta>
+        </many-to-one>
+
+        <property name="tenantId_" type="string" not-null="false" length="255" unique-key="UNIQUE_OPS_HEALTH_WATCHLIST">
+            <meta attribute="scope-set">protected</meta>
+            <meta attribute="scope-get">protected</meta>
+            <column name="TENANT_ID" not-null="false"/>
+        </property>
+
+    </class>
+</hibernate-mapping>
