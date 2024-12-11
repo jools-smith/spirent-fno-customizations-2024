@@ -857,7 +857,7 @@ public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
             return mapping.findForward(FORWARD_UNSUCCESSFUL);
         }
     }
-///TODO
+
     public ActionForward activate(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
