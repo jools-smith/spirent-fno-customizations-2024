@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.flexnet.operations.publicapi.ChannelPartner;
+import com.spirent.fno.utils.Customization;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.struts.action.ActionForm;
@@ -105,31 +107,42 @@ public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
                         new String[] {});
             }
 
-            /** Revenera GCS 2024.12.10 */
-            if (CollectionUtils.isNotEmpty(slBean.getFulfillments())) {
-                final AtomicBoolean found = new AtomicBoolean();
+            @Customization("2024-12-11")
+            final Function<Void,Void>  setup_sold_to = (obj) -> {
+                try {
+                    if (CollectionUtils.isNotEmpty(slBean.getFulfillments())) {
+                        final AtomicBoolean found = new AtomicBoolean();
 
-                /// this is a distillation of Lars' code
-                for (final Object fulfillId : slBean.getFulfillments()) {
+                        /// this is a distillation of Lars' code
+                        for (final Object fulfillId : slBean.getFulfillments()) {
 
-                    final Set<ChannelPartner> partners = OperationsServiceFactory.getFulfillmentManager()
-                            .getFulfillmentByFulfillmentID(fulfillId.toString())
-                            .getLineItem()
-                            .getParentEntitlement()
-                            .getEntChannelPartners();
+                            final Set<ChannelPartner> partners = OperationsServiceFactory
+                                    .getFulfillmentManager()
+                                    .getFulfillmentByFulfillmentID(fulfillId.toString())
+                                    .getLineItem()
+                                    .getParentEntitlement()
+                                    .getEntChannelPartners();
 
-                    SpirentUtils.getFirstTier1ChannelPartner(partners).ifPresent(cp -> {
-                        trueForm.setSoldTo(cp.getOrgUnit().getDisplayName());
-                        found.set(true);
-                    });
+                            SpirentUtils.getFirstTier1ChannelPartner(partners).ifPresent(cp -> {
+                                trueForm.setSoldTo(cp.getOrgUnit().getDisplayName());
+                                found.set(true);
+                            });
 
-                    if (found.get()) {
-                        /// probably have gone far enough now
-                        break;
+                            if (found.get()) {
+                                /// probably have gone far enough now
+                                break;
+                            }
+                        }
                     }
+                    return null;
                 }
-            }
-            /** to here */
+                catch(final Throwable t) {
+                    return SpirentUtils.ManageException(t);
+                }
+            };
+            @Customization("2024-12-11")
+            final Object _unused_ = setup_sold_to.apply(null);
+
             return mapping.findForward(FORWARD_SUCCESSFUL);
         }
         catch (OperationsException ex) {

@@ -38,6 +38,7 @@ import com.flexnet.operations.bizobjects.entitlements.ActivatableMaintenanceBO;
 import com.flexnet.operations.services.FlexUtil;
 import com.flexnet.platform.config.data.ViewEntitledDownloadFilesPageItemServiceConfig;
 import com.flexnet.platform.web.utils.*;
+import com.spirent.fno.utils.Customization;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -140,6 +141,8 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.function.Function;
+
 import org.apache.struts.action.ActionErrors;
 
 public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
@@ -1079,19 +1082,30 @@ public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
             baBean.setNeedNodeLockId(fr.needNodeLockId());
             baBean.setAllowPartialFulfillments(fr.isAllowPartialFulfillments());
 
-            /** Revenera GCS 2024.12.10 */
-            baBean.setTier1ID(null);
-            baBean.setTier1Name(null);
+            @Customization("2024-12-11")
+            final Function<Void,Void> setup_tier_details = (dummy) -> {
+                try {
+                    baBean.setTier1ID(null);
+                    baBean.setTier1Name(null);
 
-            SpirentUtils.getFirstTier1ChannelPartner(entMgr
-                  .getEntitlementLineItemByActivationID(activationIds[0])
-                  .getParentEntitlement()
-                  .getEntChannelPartners())
-                  .ifPresent(cp -> {
-                      baBean.setTier1ID(cp.getOrgUnit().getName());
-                      baBean.setTier1Name(cp.getOrgUnit().getDisplayName());
-                  });
-            /** end */
+                    SpirentUtils.getFirstTier1ChannelPartner(entMgr
+                            .getEntitlementLineItemByActivationID(activationIds[0])
+                            .getParentEntitlement()
+                            .getEntChannelPartners())
+                            .ifPresent(cp -> {
+                                baBean.setTier1ID(cp.getOrgUnit().getName());
+                                baBean.setTier1Name(cp.getOrgUnit().getDisplayName());
+                            });
+                    return null;
+                }
+                catch (final Throwable t) {
+                    return SpirentUtils.ManageException(t);
+                }
+            };
+
+            @Customization("2024-12-11")
+            final Object _unused_ = setup_tier_details.apply(null);
+
 
             if (!unifiedHost.isEmpty()) {
                 try {

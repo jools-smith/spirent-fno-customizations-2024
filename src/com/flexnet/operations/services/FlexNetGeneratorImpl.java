@@ -54,6 +54,7 @@ import com.flexnet.products.bizobjects.LicensedProduct;
 import com.flexnet.products.bizobjects.Orderable;
 import com.flexnet.products.bizobjects.FeatureBundle;
 /** Revenera GCS 2024.12.10 */
+import com.spirent.fno.utils.Customization;
 import com.spirent.fno.utils.SpirentUtils;
 /** end */
 
@@ -240,8 +241,8 @@ public class FlexNetGeneratorImpl implements LicenseGeneratorService, LicenseGen
 
     public void validateFeature(Feature feature) throws OperationsException {
         try {
-            /** Revenera GCS 2024.12.10 */
             //String name = feature.getName();
+            @Customization("2024-12-10")
             final String name = SpirentUtils.removeSpirentSuffix(feature.getName());
 
             if (!featurePat.matcher(name).matches())

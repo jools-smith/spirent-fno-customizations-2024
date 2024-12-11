@@ -2,6 +2,7 @@ package com.flexnet.operations.web.beans;
 
 import com.flexnet.operations.publicapi.*;
 import com.flexnet.products.publicapi.FNPTimeZone;
+import com.spirent.fno.utils.Customization;
 
 import java.util.*;
 
@@ -32,10 +33,13 @@ public class BatchActivationStateBean implements java.io.Serializable {
   Map fulfillmentAttributesVals = new HashMap();
   String soldToID = null;
   String soldToName = null;
-  /** Revenera GCS 2024.12.09 */
+
+  @Customization("2024-12.09")
   String tier1ID = null;
+
+  @Customization("2024-12.09")
   String tier1Name = null;
-  /** end */
+
   PolicyTypeENC policyDenied = null;
   Map policyDeniedMap = null;
   String[] selectedExistingHosts;
@@ -87,10 +91,9 @@ public class BatchActivationStateBean implements java.io.Serializable {
     fulfillmentAttributesVals = new HashMap();
     soldToID = null;
     soldToName = null;
-    /** Revenera GCS 2024.12.09 */
-    this.tier1ID = null;
-    this.tier1Name = null;
-    /** end */
+    ///@Customization("2024-12.10")
+    this.tier1ID = this.tier1Name = null;;
+
     policyDenied = null;
     policyDeniedMap = null;
     ownerID = null;
@@ -733,23 +736,25 @@ public class BatchActivationStateBean implements java.io.Serializable {
     this.soldToName = soldToName;
   }
 
-  /** Revenera GCS 2024.12.09 */
+  @Customization("2024-12.09")
   public String getTier1ID() {
     return this.soldToID;
   }
 
+  @Customization("2024-12.09")
   public void setTier1ID(String tier1ID) {
     this.tier1ID = tier1ID;
   }
 
+  @Customization("2024-12.09")
   public String getTier1Name() {
     return this.tier1Name;
   }
 
+  @Customization("2024-12.09")
   public void setTier1Name(String tier1Name) {
     this.tier1Name = tier1Name;
   }
-  /** end */
 
   public Map getCountedNodeLockedHostIds() {
     return countedNodeLockedHostIds;

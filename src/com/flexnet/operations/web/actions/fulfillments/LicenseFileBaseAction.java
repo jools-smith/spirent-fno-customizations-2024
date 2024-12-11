@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.flexnet.operations.publicapi.*;
+import com.spirent.fno.utils.Customization;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -640,26 +642,36 @@ public class LicenseFileBaseAction extends OperationsBaseAction {
                         val = fulfillRec.getExpirationDate();
                     }
                     else if (fieldName.equals("portal.supportLicenses.TableColumn.soldTo")) {
-                        /** Revenera GCS 2024.12.10 */
-                        final AtomicReference<String> ref = new AtomicReference<>(fulfillRec.getSoldTo());
 
-                        final String lid = fulfillRec.getLineItemId();
+                        @Customization("2024.12.11")
+                        final Function<Void, String > calculate_sold_to = bean -> {
+                            try {
+                                final AtomicReference<String> ref = new AtomicReference<>(fulfillRec.getSoldTo());
 
-                        if (lid != null) {
-                            final Set<ChannelPartner> partners = OperationsServiceFactory
-                                    .getEntitlementManager()
-                                    .getEntitlementLineItemByActivationID(lid)
-                                    .getParentEntitlement()
-                                    .getEntChannelPartners();
+                                final String lid = fulfillRec.getLineItemId();
 
-                            SpirentUtils.getFirstTier1ChannelPartner(partners).ifPresent(cp -> {
-                                ref.set(cp.getOrgUnit().getDisplayName());
-                            });
-                        }
+                                if (lid != null) {
+                                    final Set<ChannelPartner> partners = OperationsServiceFactory
+                                            .getEntitlementManager()
+                                            .getEntitlementLineItemByActivationID(lid)
+                                            .getParentEntitlement()
+                                            .getEntChannelPartners();
 
-                        val = ref.get();
+                                    SpirentUtils.getFirstTier1ChannelPartner(partners).ifPresent(cp -> {
+                                        ref.set(cp.getOrgUnit().getDisplayName());
+                                    });
+                                }
 
-                        /** end */
+                                return ref.get();
+                            }
+                            catch (final Throwable t) {
+                                return SpirentUtils.ManageException(t);
+                            }
+                        };
+
+                        @Customization("2024-12-11")
+                        final Object _unused_ = val = calculate_sold_to.apply(null);
+
                     }
                     else if (fieldName.equals("portal.supportLicenses.TableColumn.startDate")) {
                         val = fulfillRec.getStartDate();

@@ -7,10 +7,12 @@ import com.flexnet.operations.publicapi.OperationsServiceFactory;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Revenera GCS 2024.12.10 - imported from Perforce and merged with Spirent 2021R1 custom folder
  */
+@Customization("2024-12-10")
 public final class SpirentUtils {
 
   private static final String ESCAPE_ENT_ID = "%%orders:web_key%%";
@@ -49,4 +51,10 @@ public final class SpirentUtils {
   public static Optional<ChannelPartner> getFirstTier1ChannelPartner(final Collection<ChannelPartner> partners) {
     return partners.stream().filter(cp -> cp.getPartnerTierName().getName().endsWith(TIER1)).findFirst();
   }
+
+  public static <T> T ManageException(final Throwable t) {
+    throw new RuntimeException(t);
+  }
 }
+
+
