@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.flexnet.operations.publicapi.ChannelPartner;
+import com.flexnet.platform.services.logging.LogMessage;
 import com.spirent.fno.utils.Customization;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -110,6 +111,8 @@ public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
             @Customization("2024-12-11")
             final Function<Void,Void>  setup_sold_to = (obj) -> {
                 try {
+                    logger.debug(new LogMessage("setup_sold_to"));
+
                     if (CollectionUtils.isNotEmpty(slBean.getFulfillments())) {
                         final AtomicBoolean found = new AtomicBoolean();
 
@@ -123,13 +126,19 @@ public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
                                     .getParentEntitlement()
                                     .getEntChannelPartners();
 
+                            logger.debug(new LogMessage("number of partners | " + partners.size()));
+
                             SpirentUtils.getFirstTier1ChannelPartner(partners).ifPresent(cp -> {
                                 trueForm.setSoldTo(cp.getOrgUnit().getDisplayName());
+
+                                logger.debug(new LogMessage("setSoldTo | " + trueForm.getSoldTo()));
+
                                 found.set(true);
                             });
 
                             if (found.get()) {
                                 /// probably have gone far enough now
+                                logger.debug(new LogMessage("found therefore breaking loop"));
                                 break;
                             }
                         }
@@ -137,11 +146,13 @@ public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
                     return null;
                 }
                 catch(final Throwable t) {
-                    return SpirentUtils.ManageException(t);
+                    return SpirentUtils.ManageException("setup_sold_to", t);
                 }
             };
             @Customization("2024-12-11")
             final Object _unused_ = setup_sold_to.apply(null);
+
+            logger.debug(new LogMessage("setup_sold_to | succeeded"));
 
             return mapping.findForward(FORWARD_SUCCESSFUL);
         }

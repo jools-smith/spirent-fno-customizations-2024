@@ -47,6 +47,8 @@ import com.flexnet.operations.trusted.TrustedActivationInstance;
 import com.flexnet.platform.config.AppConfigUtil;
 import com.flexnet.platform.exceptions.FlexnetBaseException;
 import com.flexnet.platform.exceptions.FlexnetBaseRuntimeException;
+import com.flexnet.platform.services.logging.LogMessage;
+import com.flexnet.platform.services.logging.Logger;
 import com.flexnet.products.bizobjects.ClientUniquenessEncoder;
 import com.flexnet.products.bizobjects.LicenseModelBO;
 import com.flexnet.products.bizobjects.LicenseTechnologyBO;
@@ -70,6 +72,9 @@ public class FlexNetGeneratorImpl implements LicenseGeneratorService, LicenseGen
     private static Pattern versionPat = Pattern.compile("\\d+(\\.\\d+)?");
 
     private static FlexFilenameGenerator filenameGen = null;
+
+    @Customization("2024-12-17")
+    private static Logger logger = new Logger(FlexNetGeneratorImpl.class.getSimpleName());
 
     static {
         configureFilenameGenerator();
@@ -244,6 +249,8 @@ public class FlexNetGeneratorImpl implements LicenseGeneratorService, LicenseGen
             //String name = feature.getName();
             @Customization("2024-12-10")
             final String name = SpirentUtils.removeSpirentSuffix(feature.getName());
+
+            logger.debug(new LogMessage(String.format("feature name %s -> %s", feature.getName(), name)));
 
             if (!featurePat.matcher(name).matches())
                 throw new GeneratorValidationException("name", "FLEXlm_InvalidFeatureName",

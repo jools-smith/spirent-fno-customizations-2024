@@ -4,6 +4,8 @@ import com.flexnet.operations.publicapi.ChannelPartner;
 import com.flexnet.operations.publicapi.FlexnetFulfillmentRecord;
 import com.flexnet.operations.publicapi.OperationsException;
 import com.flexnet.operations.publicapi.OperationsServiceFactory;
+import com.flexnet.platform.services.logging.LogMessage;
+import com.flexnet.platform.services.logging.Logger;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -12,8 +14,10 @@ import java.util.function.Function;
 /**
  * Revenera GCS 2024.12.10 - imported from Perforce and merged with Spirent 2021R1 custom folder
  */
-@Customization("2024-12-10")
+@Customization("2024-12-17")
 public final class SpirentUtils {
+
+  private final static Logger logger = new Logger(SpirentUtils.class.getSimpleName());
 
   private static final String ESCAPE_ENT_ID = "%%orders:web_key%%";
 
@@ -52,7 +56,9 @@ public final class SpirentUtils {
     return partners.stream().filter(cp -> cp.getPartnerTierName().getName().endsWith(TIER1)).findFirst();
   }
 
-  public static <T> T ManageException(final Throwable t) {
+  public static <T> T ManageException(final String source, final Throwable t) {
+    logger.error(new LogMessage("source"), t);
+
     throw new RuntimeException(t);
   }
 }

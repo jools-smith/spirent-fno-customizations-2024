@@ -1085,6 +1085,8 @@ public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
             @Customization("2024-12-11")
             final Function<Void,Void> setup_tier_details = (dummy) -> {
                 try {
+                    logger.debug(new LogMessage("setup_tier_details"));
+
                     baBean.setTier1ID(null);
                     baBean.setTier1Name(null);
 
@@ -1094,18 +1096,22 @@ public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
                             .getEntChannelPartners())
                             .ifPresent(cp -> {
                                 baBean.setTier1ID(cp.getOrgUnit().getName());
+                                logger.debug(new LogMessage("setTier1ID | " +  baBean.getTier1ID()));
+
                                 baBean.setTier1Name(cp.getOrgUnit().getDisplayName());
+                                logger.debug(new LogMessage("setTier1Name | " +  baBean.getTier1Name()));
                             });
                     return null;
                 }
                 catch (final Throwable t) {
-                    return SpirentUtils.ManageException(t);
+                    return SpirentUtils.ManageException("setup_tier_details", t);
                 }
             };
 
             @Customization("2024-12-11")
             final Object _unused_ = setup_tier_details.apply(null);
 
+            logger.debug(new LogMessage("setup_tier_details | succeeded"));
 
             if (!unifiedHost.isEmpty()) {
                 try {

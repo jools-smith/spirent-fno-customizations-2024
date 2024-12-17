@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.flexnet.operations.publicapi.*;
+import com.flexnet.platform.services.logging.LogMessage;
 import com.spirent.fno.utils.Customization;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.struts.action.ActionForm;
@@ -657,21 +658,26 @@ public class LicenseFileBaseAction extends OperationsBaseAction {
                                             .getParentEntitlement()
                                             .getEntChannelPartners();
 
+                                    logger.debug(new LogMessage("number of partners | " + partners.size()));
+
                                     SpirentUtils.getFirstTier1ChannelPartner(partners).ifPresent(cp -> {
                                         ref.set(cp.getOrgUnit().getDisplayName());
+
+                                        logger.debug(new LogMessage("found tier1 partner | " + ref.get()));
                                     });
                                 }
 
                                 return ref.get();
                             }
                             catch (final Throwable t) {
-                                return SpirentUtils.ManageException(t);
+                                return SpirentUtils.ManageException("calculate_sold_to", t);
                             }
                         };
 
                         @Customization("2024-12-11")
                         final Object _unused_ = val = calculate_sold_to.apply(null);
 
+                        logger.debug(new LogMessage("calculate_sold_to | succeeded -> " + val));
                     }
                     else if (fieldName.equals("portal.supportLicenses.TableColumn.startDate")) {
                         val = fulfillRec.getStartDate();
