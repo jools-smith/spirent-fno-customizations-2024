@@ -644,12 +644,16 @@ public class LicenseFileBaseAction extends OperationsBaseAction {
                     }
                     else if (fieldName.equals("portal.supportLicenses.TableColumn.soldTo")) {
 
-                        @Customization("2024.12.11")
+                        @Customization("2024.12.17")
                         final Function<Void, String > calculate_sold_to = bean -> {
                             try {
+                                logger.debug(new LogMessage("calculate_sold_to"));
+
                                 final AtomicReference<String> ref = new AtomicReference<>(fulfillRec.getSoldTo());
 
                                 final String lid = fulfillRec.getLineItemId();
+
+                                logger.debug(new LogMessage("line item id | " + lid));
 
                                 if (lid != null) {
                                     final Set<ChannelPartner> partners = OperationsServiceFactory
