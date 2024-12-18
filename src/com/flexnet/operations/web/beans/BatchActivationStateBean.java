@@ -2,11 +2,11 @@ package com.flexnet.operations.web.beans;
 
 import com.flexnet.operations.publicapi.*;
 import com.flexnet.products.publicapi.FNPTimeZone;
-import com.spirent.fno.utils.Customization;
+import com.spirent.fno.utils.ReveneraServices;
 
 import java.util.*;
 
-@SuppressWarnings("unchecked")
+@ReveneraServices(date = "2024-12-18", purpose = "Spirent UI customization", author = "Jools Smith")
 public class BatchActivationStateBean implements java.io.Serializable {
 
   public static final String BATCH_ACTIVATION_STATE_BEAN_ID = "OPERATIONS_BATCH_ACTIVATION_STATE_BEAN";
@@ -34,10 +34,10 @@ public class BatchActivationStateBean implements java.io.Serializable {
   String soldToID = null;
   String soldToName = null;
 
-  @Customization("2024-12.09")
+  @ReveneraServices(date = "2024-12.09")
   String tier1ID = null;
 
-  @Customization("2024-12.09")
+  @ReveneraServices(date = "2024-12.09")
   String tier1Name = null;
 
   PolicyTypeENC policyDenied = null;
@@ -736,22 +736,22 @@ public class BatchActivationStateBean implements java.io.Serializable {
     this.soldToName = soldToName;
   }
 
-  @Customization("2024-12.09")
+  @ReveneraServices(date = "2024-12.09", purpose = "getter")
   public String getTier1ID() {
     return this.soldToID;
   }
 
-  @Customization("2024-12.09")
+  @ReveneraServices(date = "2024-12.09", purpose = "setter")
   public void setTier1ID(String tier1ID) {
     this.tier1ID = tier1ID;
   }
 
-  @Customization("2024-12.09")
+  @ReveneraServices(date = "2024-12.09", purpose = "getter")
   public String getTier1Name() {
     return this.tier1Name;
   }
 
-  @Customization("2024-12.09")
+  @ReveneraServices(date = "2024-12.09", purpose = "setter")
   public void setTier1Name(String tier1Name) {
     this.tier1Name = tier1Name;
   }

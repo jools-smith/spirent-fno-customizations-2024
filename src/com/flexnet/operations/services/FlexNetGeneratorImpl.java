@@ -18,7 +18,6 @@ package com.flexnet.operations.services;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import com.flexnet.operations.api.ILicenseTechnology;
@@ -56,10 +55,11 @@ import com.flexnet.products.bizobjects.LicensedProduct;
 import com.flexnet.products.bizobjects.Orderable;
 import com.flexnet.products.bizobjects.FeatureBundle;
 /** Revenera GCS 2024.12.10 */
-import com.spirent.fno.utils.Customization;
+import com.spirent.fno.utils.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 /** end */
 
+@ReveneraServices(date = "2024-12-18", purpose = "Spirent UI customization", author = "Jools Smith")
 public class FlexNetGeneratorImpl implements LicenseGeneratorService, LicenseGeneratorValidator,
         LicenseConsolidator {
     static public final String PACKAGE_OPTION_NONE = LicenseModelBO.PACKAGE_NONE;
@@ -73,7 +73,7 @@ public class FlexNetGeneratorImpl implements LicenseGeneratorService, LicenseGen
 
     private static FlexFilenameGenerator filenameGen = null;
 
-    @Customization("2024-12-17")
+    @ReveneraServices(date = "2024-12-17", purpose = "enable customization debug logging")
     private static Logger logger = new Logger(FlexNetGeneratorImpl.class.getSimpleName());
 
     static {
@@ -247,7 +247,7 @@ public class FlexNetGeneratorImpl implements LicenseGeneratorService, LicenseGen
     public void validateFeature(Feature feature) throws OperationsException {
         try {
             //String name = feature.getName();
-            @Customization("2024-12-10")
+            @ReveneraServices(date = "2024-12-10", purpose = "display the hostid value without any VDH=... preamble")
             final String name = SpirentUtils.removeSpirentSuffix(feature.getName());
 
             logger.debug(new LogMessage(String.format("feature name %s -> %s", feature.getName(), name)));

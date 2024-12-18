@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.flexnet.operations.publicapi.*;
 import com.flexnet.platform.services.logging.LogMessage;
-import com.spirent.fno.utils.Customization;
+import com.spirent.fno.utils.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -59,11 +59,7 @@ import com.flexnet.platform.web.utils.ThreadContextUtil;
 import com.flexnet.products.exceptions.PRDBaseException;
 import com.flexnet.products.publicapi.LicenseFileTypeENC;
 
-/** Revenera GCS 2024.12.10 */
-import com.flexnet.operations.api.IEntitlementManager;
-
-/** end */
-
+@ReveneraServices(date = "2024-12-18", purpose = "Spirent UI customization", author = "Jools Smith")
 public class LicenseFileBaseAction extends OperationsBaseAction {
     public static final String ID_KEY = "id";
     public static final String FORWARD_VIEW = "View";
@@ -644,7 +640,7 @@ public class LicenseFileBaseAction extends OperationsBaseAction {
                     }
                     else if (fieldName.equals("portal.supportLicenses.TableColumn.soldTo")) {
 
-                        @Customization("2024.12.17")
+                        @ReveneraServices(date = "2024.12.17", purpose = "locate the first TIER1 partner and display as sold-to")
                         final Function<Void, String > calculate_sold_to = bean -> {
                             try {
                                 logger.debug(new LogMessage("calculate_sold_to"));
@@ -678,7 +674,7 @@ public class LicenseFileBaseAction extends OperationsBaseAction {
                             }
                         };
 
-                        @Customization("2024-12-11")
+                        @ReveneraServices(date = "2024-12-11")
                         final Object _unused_ = val = calculate_sold_to.apply(null);
 
                         logger.debug(new LogMessage("calculate_sold_to | succeeded -> " + val));

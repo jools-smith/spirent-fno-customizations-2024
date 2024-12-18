@@ -13,29 +13,9 @@
 
 package com.flexnet.operationsportal.web.actions.activations;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.flexnet.operations.publicapi.ChannelPartner;
-import com.flexnet.platform.services.logging.LogMessage;
-import com.spirent.fno.utils.Customization;
-import com.spirent.fno.utils.SpirentUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-
 import com.flexnet.operations.api.IFulfillmentManager;
 import com.flexnet.operations.api.IFulfillmentRecord;
+import com.flexnet.operations.publicapi.ChannelPartner;
 import com.flexnet.operations.publicapi.EntityStateENC;
 import com.flexnet.operations.publicapi.OperationsException;
 import com.flexnet.operations.publicapi.OperationsServiceFactory;
@@ -45,9 +25,27 @@ import com.flexnet.operations.web.util.SessionUtils;
 import com.flexnet.operationsportal.web.actions.fulfillments.LicenseFileBaseAction;
 import com.flexnet.operationsportal.web.forms.activations.LicenseSummaryLandingPageForm;
 import com.flexnet.platform.exceptions.FlexnetBaseException;
+import com.flexnet.platform.services.logging.LogMessage;
 import com.flexnet.platform.web.actions.ActionsConstants;
 import com.flexnet.platform.web.utils.ThreadContextUtil;
+import com.spirent.fno.utils.ReveneraServices;
+import com.spirent.fno.utils.SpirentUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+
+@ReveneraServices(date = "2024-12-18", purpose = "Spirent UI customization", author = "Jools Smith")
 public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
 
     private String FORWARD_SUCCESSFUL_UNIFIED_HOST = "view_unifiedHost";
@@ -108,7 +106,7 @@ public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
                         new String[] {});
             }
 
-            @Customization("2024-12-11")
+            @ReveneraServices(date = "2024-12-11", purpose = "display the first TIER1 partner as sold-to")
             final Function<Void,Void>  setup_sold_to = (obj) -> {
                 try {
                     logger.debug(new LogMessage("setup_sold_to"));
@@ -149,7 +147,7 @@ public class LicenseSummaryLandingPageAction extends LicenseFileBaseAction {
                     return SpirentUtils.ManageException("setup_sold_to", t);
                 }
             };
-            @Customization("2024-12-11")
+            @ReveneraServices(date = "2024-12-11")
             final Object _unused_ = setup_sold_to.apply(null);
 
             logger.debug(new LogMessage("setup_sold_to | succeeded"));

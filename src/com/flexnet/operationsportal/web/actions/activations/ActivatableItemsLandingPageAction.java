@@ -38,7 +38,7 @@ import com.flexnet.operations.bizobjects.entitlements.ActivatableMaintenanceBO;
 import com.flexnet.operations.services.FlexUtil;
 import com.flexnet.platform.config.data.ViewEntitledDownloadFilesPageItemServiceConfig;
 import com.flexnet.platform.web.utils.*;
-import com.spirent.fno.utils.Customization;
+import com.spirent.fno.utils.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -145,6 +145,7 @@ import java.util.function.Function;
 
 import org.apache.struts.action.ActionErrors;
 
+@ReveneraServices(date = "2024-12-18", purpose = "Spirent UI customization", author = "Jools Smith")
 public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
 
     private static final String ACTIVATABLE_IDS = "activatableIDs";
@@ -1082,7 +1083,7 @@ public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
             baBean.setNeedNodeLockId(fr.needNodeLockId());
             baBean.setAllowPartialFulfillments(fr.isAllowPartialFulfillments());
 
-            @Customization("2024-12-11")
+            @ReveneraServices(date = "2024-12-11", purpose = "display the first TIER1 partner as sold-tp")
             final Function<Void,Void> setup_tier_details = (dummy) -> {
                 try {
                     logger.debug(new LogMessage("setup_tier_details"));
@@ -1108,7 +1109,7 @@ public class ActivatableItemsLandingPageAction extends OperationsBaseAction {
                 }
             };
 
-            @Customization("2024-12-11")
+            @ReveneraServices(date = "2024-12-11")
             final Object _unused_ = setup_tier_details.apply(null);
 
             logger.debug(new LogMessage("setup_tier_details | succeeded"));

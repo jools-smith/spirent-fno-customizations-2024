@@ -3,14 +3,14 @@ package com.spirent.fno.hostid;
 import com.flexnet.operations.publicapi.HostIDValidator;
 import com.flexnet.operations.publicapi.LicenseHostId;
 import com.flexnet.operations.publicapi.OperationsException;
-import com.spirent.fno.utils.Customization;
+import com.spirent.fno.utils.ReveneraServices;
 
 import java.util.regex.Pattern;
 
 /**
  * Revenera GCS 2024.12.10 - decompiled from Spirent 2021R1 custom folder and merged with Perforce
  */
-@Customization("2024-12-10")
+@ReveneraServices(date = "2024-12-10", purpose = "validate Spirent VDH", author = "Jools Smith")
 public class SpirentHostIdValidator implements HostIDValidator {
 
   private static final String VENDOR_DEFINED = "VENDOR_DEFINED=";
