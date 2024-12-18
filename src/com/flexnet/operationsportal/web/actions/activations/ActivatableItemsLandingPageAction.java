@@ -38,7 +38,7 @@ import com.flexnet.operations.bizobjects.entitlements.ActivatableMaintenanceBO;
 import com.flexnet.operations.services.FlexUtil;
 import com.flexnet.platform.config.data.ViewEntitledDownloadFilesPageItemServiceConfig;
 import com.flexnet.platform.web.utils.*;
-import com.spirent.fno.utils.ReveneraServices;
+import com.revenera.services.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;

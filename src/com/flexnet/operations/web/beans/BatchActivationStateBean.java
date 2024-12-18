@@ -2,7 +2,7 @@ package com.flexnet.operations.web.beans;
 
 import com.flexnet.operations.publicapi.*;
 import com.flexnet.products.publicapi.FNPTimeZone;
-import com.spirent.fno.utils.ReveneraServices;
+import com.revenera.services.ReveneraServices;
 
 import java.util.*;
 

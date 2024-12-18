@@ -55,7 +55,7 @@ import com.flexnet.products.bizobjects.LicensedProduct;
 import com.flexnet.products.bizobjects.Orderable;
 import com.flexnet.products.bizobjects.FeatureBundle;
 /** Revenera GCS 2024.12.10 */
-import com.spirent.fno.utils.ReveneraServices;
+import com.revenera.services.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 /** end */
 

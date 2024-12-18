@@ -3,7 +3,7 @@ package com.spirent.fno.hostid;
 import com.flexnet.operations.publicapi.HostIDValidator;
 import com.flexnet.operations.publicapi.LicenseHostId;
 import com.flexnet.operations.publicapi.OperationsException;
-import com.spirent.fno.utils.ReveneraServices;
+import com.revenera.services.ReveneraServices;
 
 import java.util.regex.Pattern;
 

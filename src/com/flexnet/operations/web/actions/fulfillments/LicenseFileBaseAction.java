@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.flexnet.operations.publicapi.*;
 import com.flexnet.platform.services.logging.LogMessage;
-import com.spirent.fno.utils.ReveneraServices;
+import com.revenera.services.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;

@@ -4,6 +4,7 @@ import com.flexnet.operations.publicapi.ChannelPartner;
 import com.flexnet.operations.publicapi.FlexnetFulfillmentRecord;
 import com.flexnet.platform.services.logging.LogMessage;
 import com.flexnet.platform.services.logging.Logger;
+import com.revenera.services.ReveneraServices;
 
 import java.util.Collection;
 import java.util.Optional;

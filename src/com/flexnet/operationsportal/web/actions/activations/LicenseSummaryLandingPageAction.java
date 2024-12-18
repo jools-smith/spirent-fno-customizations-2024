@@ -28,7 +28,7 @@ import com.flexnet.platform.exceptions.FlexnetBaseException;
 import com.flexnet.platform.services.logging.LogMessage;
 import com.flexnet.platform.web.actions.ActionsConstants;
 import com.flexnet.platform.web.utils.ThreadContextUtil;
-import com.spirent.fno.utils.ReveneraServices;
+import com.revenera.services.ReveneraServices;
 import com.spirent.fno.utils.SpirentUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.struts.action.ActionForm;
